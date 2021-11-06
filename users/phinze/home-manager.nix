@@ -160,22 +160,39 @@ let sources = import ../../nix/sources.nix; in {
 
   programs.tmux = {
     enable = true;
-    terminal = "xterm-256color";
-    shortcut = "l";
-    secureSocket = false;
+    shortcut = "a";
+    escapeTime = 0;
+    terminal = "screen-256color";
+    historyLimit = 999999999;
+    keyMode = "vi";
 
-    extraConfig = ''
-      set -ga terminal-overrides ",*256col*:Tc"
+    plugins = with pkgs.tmuxPlugins; [
+      sensible
+      yank
+      vim-tmux-navigator
+      {
+        plugin = dracula;
+        extraConfig = ''
+          set -g @dracula-show-powerline true
+          set -g @dracula-show-left-icon ∞
+          set -g @dracula-plugins "time"
+        '';
+      }
+      {
+        plugin = pain-control;
+        extraConfig = ''
+          # I like vim-style splits vs pain-control's pipe-ish mnemonics.
+          bind s split-window -v -c "#{pane_current_path}"
+          bind v split-window -h -c "#{pane_current_path}"
 
-      set -g @dracula-show-battery false
-      set -g @dracula-show-network false
-      set -g @dracula-show-weather false
+          bind ^s split-window -v -c "#{pane_current_path}"
+          bind ^v split-window -h -c "#{pane_current_path}"
+        '';
+      }
+    ];
 
-      bind -n C-k send-keys "clear"\; send-keys "Enter"
-
-      run-shell ${sources.tmux-pain-control}/pain_control.tmux
-      run-shell ${sources.tmux-dracula}/dracula.tmux
-    '';
+		extraConfig = ''
+		'';
   };
 
   programs.alacritty = {
@@ -220,6 +237,7 @@ let sources = import ../../nix/sources.nix; in {
   programs.neovim = {
     enable = true;
     package = pkgs.neovim-nightly;
+    vimAlias = true;
 
     plugins = with pkgs; [
       customVim.vim-fish
@@ -240,6 +258,7 @@ let sources = import ../../nix/sources.nix; in {
       vimPlugins.vim-airline-themes
       vimPlugins.vim-eunuch
       vimPlugins.vim-gitgutter
+      vimPlugins.vim-tmux-navigator
 
       vimPlugins.vim-markdown
       vimPlugins.vim-nix
