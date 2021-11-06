@@ -119,16 +119,16 @@
         "url": "https://github.com/buildpacks/pack/archive/2cf2c3442f574a2239ea3ee17aad7058fefe5410.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
-    "theme-bobthefish": {
+    "fish-pure": {
         "branch": "master",
-        "description": "A Powerline-style, Git-aware fish theme optimized for awesome.",
+        "description": "Pretty, minimal, and fast prompt for Fish from Zsh.fish theme prompt fish-theme fish-prompt ",
         "homepage": "",
-        "owner": "oh-my-fish",
-        "repo": "theme-bobthefish",
-        "rev": "a2ad38aa051aaed25ae3bd6129986e7f27d42d7b",
-        "sha256": "1fssb5bqd2d7856gsylf93d28n3rw4rlqkhbg120j5ng27c7v7lq",
+        "owner": "pure-fish",
+        "repo": "pure",
+        "rev": "c0df5cb4726aa6831c0473556066a4cbf48fc79e",
+        "sha256": "1ki7b6b7nrb8fzhcslkvg6a9i5fi2da6bv9fm693yvhfhccf863b",
         "type": "tarball",
-        "url": "https://github.com/oh-my-fish/theme-bobthefish/archive/a2ad38aa051aaed25ae3bd6129986e7f27d42d7b.tar.gz",
+        "url": "https://github.com/pure-fish/pure/archive/c0df5cb4726aa6831c0473556066a4cbf48fc79e.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "tmux-dracula": {
