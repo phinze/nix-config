@@ -24,6 +24,8 @@ let sources = import ../../nix/sources.nix; in {
 
     pkgs.tlaplusToolbox
     pkgs.tetex
+
+    pkgs.gh
   ];
 
   #---------------------------------------------------------------------
@@ -131,12 +133,14 @@ let sources = import ../../nix/sources.nix; in {
     userName = "Paul Hinze";
     userEmail = "phinze@phinze.com";
     signing = {
-      key = "5D0BC309CE2245C2";
+      key = "70B94C31D170FB29";
       signByDefault = true;
     };
     aliases = {
       prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
       root = "rev-parse --show-toplevel";
+      co = "checkout";
+      st = "status";
     };
     extraConfig = {
       branch.autosetuprebase = "always";
