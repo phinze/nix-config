@@ -256,6 +256,7 @@ let sources = import ../../nix/sources.nix; in {
       vimPlugins.vim-eunuch
       vimPlugins.vim-gitgutter
       vimPlugins.vim-tmux-navigator
+      vimPlugins.vim-vinegar
 
       vimPlugins.vim-markdown
       vimPlugins.vim-nix

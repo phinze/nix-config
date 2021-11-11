@@ -66,4 +66,8 @@ require'nvim-treesitter.configs'.setup {
 }
 
 EOF
+
+
+" Use system clipboard when yanking
+set clipboard=unnamed
 ''
