@@ -26,6 +26,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.tetex
 
     pkgs.gh
+    pkgs.ripgrep
   ];
 
   #---------------------------------------------------------------------
@@ -146,7 +147,7 @@ let sources = import ../../nix/sources.nix; in {
       branch.autosetuprebase = "always";
       color.ui = true;
       core.askPass = ""; # needs to be empty to use terminal for ask pass
-      credential.helper = "store"; # want to make this more secure
+      credential.helper = "!gh auth git-credential";
       github.user = "phinze";
       push.default = "tracking";
       init.defaultBranch = "main";
@@ -259,8 +260,20 @@ let sources = import ../../nix/sources.nix; in {
       vimPlugins.vim-airline-themes
       vimPlugins.vim-eunuch
       vimPlugins.vim-gitgutter
+      {
+        plugin = vimPlugins.vim-grepper;
+        config = ''
+nnoremap <leader>g :Grepper -tool rg -cword -noprompt<cr>
+nnoremap <leader>G :Grepper -tool rg<cr>
+
+nmap gs  <plug>(GrepperOperator)
+xmap gs  <plug>(GrepperOperator)
+        '';
+      }
+      vimPlugins.vim-test
       vimPlugins.vim-tmux-navigator
       vimPlugins.vim-vinegar
+      vimPlugins.vimux
 
       vimPlugins.vim-markdown
       vimPlugins.vim-nix

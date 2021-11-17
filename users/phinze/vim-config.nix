@@ -70,4 +70,37 @@ EOF
 
 " Use system clipboard when yanking
 set clipboard=unnamed
+
+" Space Leader OMG
+let mapleader = "\<Space>"
+
+" <Space>o to open things
+nnoremap <Leader>o :CtrlP<CR>
+
+" Enter visual line mode with <Space><Space>:
+nmap <Leader><Leader> V
+
+" enter reruns last test...
+nmap <CR> :wa<CR>:TestLast<CR>
+
+" ...but does normal thing in quickfix window
+autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
+
+" tagbar
+nmap <silent> <Leader>t :TagbarToggle<CR>
+
+" vim-test
+nmap <silent> <Leader>n :TestNearest<CR>
+nmap <silent> <Leader>f :TestFile<CR>
+nmap <silent> <Leader>s :TestSuite<CR>   " t Ctrl+s
+nmap <silent> <Leader>l :TestLast<CR>    " t Ctrl+l
+nmap <silent> <Leader>v :TestVisit<CR>   " t Ctrl+g
+let test#strategy = "vimux"
+let test#go#gotest#options = "-v"
+
+" Going to turn on the mouse so we play nice w/ tmux mouse support
+set mouse=a
+
+
+" vim-grepper
 ''
