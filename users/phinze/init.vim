@@ -18,11 +18,11 @@ endif
 call plug#begin('~/.vim/plugged')
 " my fork until https://github.com/benmills/vimux-golang/pull/5 is merged
 Plug 'airblade/vim-gitgutter'
-Plug 'arcticicestudio/nord-vim'
 Plug 'b4b4r07/vim-hcl'
 Plug 'benmills/vimux'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'dsawardekar/ember.vim'
+Plug 'dracula/vim', { 'as': 'dracula' }
 Plug 'elixir-lang/vim-elixir'
 Plug 'elzr/vim-json'
 Plug 'fatih/vim-go'
@@ -55,7 +55,6 @@ Plug 'tpope/vim-rails'
 Plug 'tpope/vim-rhubarb'
 Plug 'tpope/vim-vinegar'
 Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'vim-ruby/vim-ruby'
 Plug 'vim-scripts/netrw.vim'
 Plug 'zerowidth/vim-copy-as-rtf'
@@ -288,16 +287,6 @@ let g:tagbar_autofocus = 1
 " ==>  plugin/tcomment.vim
 map <silent> <LocalLeader>cc :TComment<CR>
 
-" ==>  plugin/vim-airline.vim
-let g:airline_powerline_fonts = 1
-let g:airline_theme = 'powerlineish'
-
-let g:airline#extensions#branch#enabled = 0
-
-let g:airline_left_sep=''
-let g:airline_right_sep=''
-let g:airline_section_z=''
-"
 " ==>  plugin/vim-expand-region.vim
 vmap v <Plug>(expand_region_expand)
 vmap <C-v> <Plug>(expand_region_shrink)
@@ -344,6 +333,6 @@ au filetype go set noexpandtab tabstop=4 softtabstop=4
 " see https://github.com/dsawardekar/ember.vim/issues/8
 autocmd BufNewFile,BufRead *.hbs,*.hbt set filetype=html.handlebars
 
-"" Nord
-colorscheme nord
-let g:airline_theme = 'nord'
+colorscheme dracula
+let g:airline_powerline_fonts = 1
+let g:airline_theme = 'dracula'
