@@ -9,8 +9,12 @@ NIXBLOCKDEVICE ?= sda
 # Get the path to this Makefile and directory
 MAKEFILE_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
-# The name of the nixosConfiguration in the flake
-NIXNAME ?= vm-aarch64
+# The name of the nixosConfiguration in the flake, defaulted based on
+# architecture of machine where we're running this
+uname_m := $(shell uname -m)
+NIXNAME.x86_64 := vm-intel
+NIXNAME.aarch64 := vm-aarch64
+NIXNAME ?= $(NIXNAME.$(uname_m))
 
 # SSH options that are used. These aren't meant to be overridden but are
 # reused a lot so we just store them up here.
