@@ -25,17 +25,20 @@ Plug 'dsawardekar/ember.vim'
 Plug 'dracula/vim', { 'as': 'dracula' }
 Plug 'elixir-lang/vim-elixir'
 Plug 'elzr/vim-json'
-Plug 'fatih/vim-go'
 Plug 'fatih/vim-hclfmt'
 Plug 'godlygeek/tabular'
 Plug 'google/vim-jsonnet'
 Plug 'hashivim/vim-hashicorp-tools'
+Plug 'hrsh7th/cmp-nvim-lsp', {'commit': 'f93a6cf9761b096ff2c28a4f0defe941a6ffffb5'}
+Plug 'hrsh7th/nvim-cmp', {'commit': 'c2a9e0ccaa5c441821f320675c559d723df70f3d'}
+Plug 'hrsh7th/vim-vsnip', {'commit': '9ac8044206d32bea4dba34e77b6a3b7b87f65df6'}
 Plug 'janko-m/vim-test'
 Plug 'juliosueiras/vim-terraform-completion'
 Plug 'kchmck/vim-coffee-script'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'kien/rainbow_parentheses.vim'
 Plug 'majutsushi/tagbar'
+Plug 'neovim/nvim-lspconfig', {'commit': '25841e38e9c70279ee1d7153097c9e66a88d4fa5'}
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'pangloss/vim-javascript'
 Plug 'rizzatti/dash.vim'
@@ -333,6 +336,110 @@ au filetype go set noexpandtab tabstop=4 softtabstop=4
 " see https://github.com/dsawardekar/ember.vim/issues/8
 autocmd BufNewFile,BufRead *.hbs,*.hbt set filetype=html.handlebars
 
+" theme
 colorscheme dracula
 let g:airline_powerline_fonts = 1
 let g:airline_theme = 'dracula'
+
+" lsp time!
+lua << EOF
+_G.nvim_lsp = require('lspconfig')
+
+function _G.lsp_on_attach(client, bufnr)
+  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+
+  local opts = { noremap=true, silent=true }
+
+  buf_set_keymap('n', '<C-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+  buf_set_keymap('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  buf_set_keymap('n', '<LocalLeader>cl', '<cmd>lua vim.lsp.codelens.refresh()<CR>', opts)
+  buf_set_keymap('n', '<LocalLeader>cr', '<cmd>lua vim.lsp.codelens.run()<CR>', opts)
+  buf_set_keymap('n', '<LocalLeader>cd', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+
+  vim.api.nvim_command([[autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()]])
+
+  local cmp = require 'cmp'
+
+  cmp.setup {
+    mapping = {
+      ['<C-p>'] = cmp.mapping.select_prev_item(),
+      ['<C-n>'] = cmp.mapping.select_next_item(),
+      ['<C-y>'] = cmp.mapping.confirm {
+        behavior = cmp.ConfirmBehavior.Replace,
+        select = true,
+      },
+      ['<C-X><C-O>'] = cmp.mapping.complete(),
+    },
+    snippet = {
+      expand = function(args)
+        vim.fn['vsnip#anonymous'](args.body)
+      end,
+    },
+    sources = {
+      { name = 'nvim_lsp' },
+      { name = 'buffer' },
+    },
+    completion = {
+      autocomplete = false,
+    },
+  }
+end
+
+_G.lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
+_G.lsp_capabilities = require('cmp_nvim_lsp').update_capabilities(_G.lsp_capabilities)
+
+local vanilla_servers = {
+  'dhall_lsp_server',
+  'elmls',
+  'gopls',
+  'intelephense',
+  'ocamllsp',
+  'rust_analyzer',
+  'tsserver',
+}
+
+for _, lsp in ipairs(vanilla_servers) do
+  _G.nvim_lsp[lsp].setup {
+    on_attach = _G.lsp_on_attach,
+    capabilities = _G.lsp_capabilities,
+    flags = {
+      debounce_text_changes = 150,
+    }
+  }
+end
+  -- …
+
+  function goimports(timeout_ms)
+    local context = { only = { "source.organizeImports" } }
+    vim.validate { context = { context, "t", true } }
+
+    local params = vim.lsp.util.make_range_params()
+    params.context = context
+
+    -- See the implementation of the textDocument/codeAction callback
+    -- (lua/vim/lsp/handler.lua) for how to do this properly.
+    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, timeout_ms)
+    if not result or next(result) == nil then return end
+    local actions = result[1].result
+    if not actions then return end
+    local action = actions[1]
+
+    -- textDocument/codeAction can return either Command[] or CodeAction[]. If it
+    -- is a CodeAction, it can have either an edit, a command or both. Edits
+    -- should be executed first.
+    if action.edit or type(action.command) == "table" then
+      if action.edit then
+        vim.lsp.util.apply_workspace_edit(action.edit)
+      end
+      if type(action.command) == "table" then
+        vim.lsp.buf.execute_command(action.command)
+      end
+    else
+      vim.lsp.buf.execute_command(action)
+    end
+  end
+EOF
+
+autocmd BufWritePre *.go lua goimports(1000)
