@@ -173,7 +173,16 @@ let sources = import ../../nix/sources.nix; in {
       yank
       vim-tmux-navigator
       {
-        plugin = dracula;
+        plugin = mkTmuxPlugin rec {
+          pluginName = "dracula";
+          version = "2.0.0";
+          src = pkgs.fetchFromGitHub {
+            owner = "dracula";
+            repo = "tmux";
+            rev = "v${version}";
+            sha256 = "ILs+GMltb2AYNUecFMyQZ/AuETB0PCFF2InSnptVBos=";
+          };
+        };
         extraConfig = ''
           set -g @dracula-show-powerline true
           set -g @dracula-show-left-icon ∞
