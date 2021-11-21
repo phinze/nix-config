@@ -38,5 +38,11 @@
       system = "x86_64-linux";
       user   = "phinze";
     };
+
+    nixosConfigurations.vm-tunnel = mkVM "vm-tunnel" {
+      inherit nixpkgs home-manager;
+      system = "x86_64-linux";
+      user   = "phinze";
+    };
   };
 }
