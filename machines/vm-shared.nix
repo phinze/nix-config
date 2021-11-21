@@ -82,6 +82,7 @@
         path = ../secret/fonts;
         recursive = true;
       })
+      (pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; })
     ];
   };
 

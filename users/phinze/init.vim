@@ -40,7 +40,12 @@ Plug 'kien/rainbow_parentheses.vim'
 Plug 'majutsushi/tagbar'
 Plug 'neovim/nvim-lspconfig', {'commit': '25841e38e9c70279ee1d7153097c9e66a88d4fa5'}
 Plug 'ntpeters/vim-better-whitespace'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
+Plug 'onsails/lspkind-nvim'
 Plug 'pangloss/vim-javascript'
+Plug 'ray-x/lsp_signature.nvim'
 Plug 'rizzatti/dash.vim'
 Plug 'rking/ag.vim'
 Plug 'rodjek/vim-puppet'
@@ -207,19 +212,8 @@ nmap <CR> :wa<CR> :TestLast<CR>
 " ...but does normal thing in quickfix window
 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 
-if executable('ag')
-  set grepprg=ag\ --nogroup\ --nocolor
-endif
-
-" grep for word/Word under cursor with leader-g/G
-nnoremap <Leader>g :grep! "\b<C-R><C-W>\b"<CR>:cw<CR>
-nnoremap <Leader>G :grep! "\b<C-R><C-A>\b"<CR>:cw<CR>
-
 " tagbar
 nmap <silent> <Leader>t :TagbarToggle<CR>
-
-" ctrl-p
-nnoremap <Leader>o :CtrlP<CR>
 
 " vim-test
 nmap <silent> <Leader>n :TestNearest<CR>
@@ -229,8 +223,6 @@ nmap <silent> <Leader>l :TestLast<CR>    " t Ctrl+l
 nmap <silent> <Leader>v :TestVisit<CR>   " t Ctrl+g
 let test#strategy = "vimux"
 let test#go#gotest#options = "-v"
-
-let g:go_fmt_command = "goimports"
 
 if exists('+colorcolumn')
   set colorcolumn=80
@@ -251,23 +243,10 @@ let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
 "     edit lots of scripts that are destined for other filesystems
 let g:syntastic_sh_shellcheck_args = "-e SC1091"
 
-let g:go_term_enabled = 1
-let g:go_term_mode = "vsplit"
-
 au BufRead,BufNewFile *.job set filetype=hcl
 
 " ==>  plugin/clipboard.vim
 set clipboard=unnamed
-
-" ==>  plugin/ctrlp.vim
-let g:ctrlp_working_path_mode = 'ra'
-
-" Use rg (ripgrep) for ctrlp indexing
-if executable('rg')
-  let g:ctrlp_user_command = 'rg %s --files --hidden --color=never --glob ""'
-  " rg is fast enough that CtrlP doesn't need to cache
-  let g:ctrlp_use_caching = 0
-endif
 
 " ==>  plugin/rainbow_parentheses.vim
 au VimEnter * RainbowParenthesesToggle
@@ -284,7 +263,6 @@ let g:syntastic_ruby_checkers = ['mri']
 let g:syntastic_yaml_checkers = ['jsyaml']
 
 " ==>  plugin/tagbar.vim
-nmap <silent> <Leader>tb :TagbarToggle<CR>
 let g:tagbar_autofocus = 1
 
 " ==>  plugin/tcomment.vim
@@ -319,10 +297,6 @@ let g:VimuxOrientation = "h"
 let g:VimuxHeight = 40
 let g:VimuxUseNearestPane = 1
 
-" ==>  plugin/vroom.vim
-let g:vroom_use_vimux = 1
-let g:vroom_use_bundle_exec = 1
-
 " Disable mouse
 set mouse=
 
@@ -351,16 +325,29 @@ function _G.lsp_on_attach(client, bufnr)
 
   local opts = { noremap=true, silent=true }
 
-  buf_set_keymap('n', '<C-]>', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
   buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>cl', '<cmd>lua vim.lsp.codelens.refresh()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>cr', '<cmd>lua vim.lsp.codelens.run()<CR>', opts)
-  buf_set_keymap('n', '<LocalLeader>cd', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
+  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+  buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  buf_set_keymap('n', '<Leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+  buf_set_keymap('n', '<Leader>cl', '<cmd>lua vim.lsp.codelens.refresh()<CR>', opts)
+  buf_set_keymap('n', '<Leader>cr', '<cmd>lua vim.lsp.codelens.run()<CR>', opts)
+  buf_set_keymap('n', '<Leader>cd', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
 
   vim.api.nvim_command([[autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()]])
 
   local cmp = require 'cmp'
+  local lspkind = require 'lspkind'
+
+  local has_words_before = function()
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
+  end
+
+  local feedkey = function(key, mode)
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
+  end
 
   cmp.setup {
     mapping = {
@@ -371,6 +358,25 @@ function _G.lsp_on_attach(client, bufnr)
         select = true,
       },
       ['<C-X><C-O>'] = cmp.mapping.complete(),
+      ["<Tab>"] = cmp.mapping(function(fallback)
+        if cmp.visible() then
+          cmp.select_next_item()
+        elseif vim.fn["vsnip#available"](1) == 1 then
+          feedkey("<Plug>(vsnip-expand-or-jump)", "")
+        elseif has_words_before() then
+          cmp.complete()
+        else
+          fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
+        end
+      end, { "i", "s" }),
+
+      ["<S-Tab>"] = cmp.mapping(function()
+        if cmp.visible() then
+          cmp.select_prev_item()
+        elseif vim.fn["vsnip#jumpable"](-1) == 1 then
+          feedkey("<Plug>(vsnip-jump-prev)", "")
+        end
+      end, { "i", "s" }),
     },
     snippet = {
       expand = function(args)
@@ -381,16 +387,65 @@ function _G.lsp_on_attach(client, bufnr)
       { name = 'nvim_lsp' },
       { name = 'buffer' },
     },
-    completion = {
-      autocomplete = false,
+    formatting = {
+      format = lspkind.cmp_format({with_text = false, maxwidth = 50})
     },
   }
+
+  -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline('/', {
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline(':', {
+    sources = cmp.config.sources({
+      { name = 'path' }
+    }, {
+      { name = 'cmdline' }
+    })
+  })
+
+  require('lsp_signature').on_attach({
+    bind = true,
+    doc_lines = 0,
+    floating_window = false,
+    hint_scheme = 'Comment',
+  })
+end
+
+-- Use (s-)tab to:
+--- move to prev/next item in completion menuone
+--- jump to prev/next snippet's placeholder
+_G.tab_complete = function()
+  if vim.fn.pumvisible() == 1 then
+    return t "<CR>"
+  elseif vim.fn['vsnip#available'](1) == 1 then
+    return t "<Plug>(vsnip-expand-or-jump)"
+  elseif check_back_space() then
+    return t "<Tab>"
+  else
+    return vim.fn['compe#complete']()
+  end
+end
+
+_G.s_tab_complete = function()
+  if vim.fn.pumvisible() == 1 then
+    return t "<C-p>"
+  elseif vim.fn['vsnip#jumpable'](-1) == 1 then
+    return t "<Plug>(vsnip-jump-prev)"
+  else
+    -- If <S-Tab> is not working in your terminal, change it to <C-h>
+    return t "<S-Tab>"
+  end
 end
 
 _G.lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
 _G.lsp_capabilities = require('cmp_nvim_lsp').update_capabilities(_G.lsp_capabilities)
 
-local vanilla_servers = {
+local servers = {
   'dhall_lsp_server',
   'elmls',
   'gopls',
@@ -400,7 +455,7 @@ local vanilla_servers = {
   'tsserver',
 }
 
-for _, lsp in ipairs(vanilla_servers) do
+for _, lsp in ipairs(servers) do
   _G.nvim_lsp[lsp].setup {
     on_attach = _G.lsp_on_attach,
     capabilities = _G.lsp_capabilities,
@@ -443,3 +498,17 @@ end
 EOF
 
 autocmd BufWritePre *.go lua goimports(1000)
+
+map <leader>i <cmd>lua vim.lsp.buf.hover()<CR>
+map <leader>T <cmd>lua vim.lsp.buf.type_definition()<CR>
+map <leader>S <cmd>lua vim.lsp.buf.document_symbol()<CR>
+map <leader>C <cmd>lua vim.lsp.buf.incoming_calls()<CR>
+map <leader>rn <cmd>lua vim.lsp.buf.rename()<CR>
+map <leader>l <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
+map <leader>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
+
+nnoremap <leader>o <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap <leader>be <cmd>lua require('telescope.builtin').buffers({sort_lastused=true, ignore_current_buffer=true})<cr>
+nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+nnoremap <leader>R <cmd>lua require('telescope.builtin').lsp_references()<cr>
