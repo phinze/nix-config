@@ -20,7 +20,6 @@ Plug 'airblade/vim-gitgutter'
 Plug 'b4b4r07/vim-hcl'
 Plug 'benmills/vimux'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'dhruvasagar/vim-testify'
 Plug 'dracula/vim', { 'as': 'dracula' }
 Plug 'dsawardekar/ember.vim'
 Plug 'elixir-lang/vim-elixir'
@@ -32,7 +31,9 @@ Plug 'hashivim/vim-hashicorp-tools'
 Plug 'hrsh7th/cmp-nvim-lsp', {'commit': 'f93a6cf9761b096ff2c28a4f0defe941a6ffffb5'}
 Plug 'hrsh7th/nvim-cmp', {'commit': 'c2a9e0ccaa5c441821f320675c559d723df70f3d'}
 Plug 'hrsh7th/vim-vsnip', {'commit': '9ac8044206d32bea4dba34e77b6a3b7b87f65df6'}
-Plug 'janko-m/vim-test'
+" Plug 'janko-m/vim-test'
+" Use my fork until I can upstream subtest support
+Plug 'phinze/vim-test', { 'branch': 'support-go-subtests' }
 Plug 'juliosueiras/vim-terraform-completion'
 Plug 'kchmck/vim-coffee-script'
 Plug 'kien/rainbow_parentheses.vim'
