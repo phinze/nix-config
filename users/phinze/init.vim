@@ -16,13 +16,13 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 
 call plug#begin('~/.vim/plugged')
-" my fork until https://github.com/benmills/vimux-golang/pull/5 is merged
 Plug 'airblade/vim-gitgutter'
 Plug 'b4b4r07/vim-hcl'
 Plug 'benmills/vimux'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'dsawardekar/ember.vim'
+Plug 'dhruvasagar/vim-testify'
 Plug 'dracula/vim', { 'as': 'dracula' }
+Plug 'dsawardekar/ember.vim'
 Plug 'elixir-lang/vim-elixir'
 Plug 'elzr/vim-json'
 Plug 'fatih/vim-hclfmt'
@@ -35,7 +35,6 @@ Plug 'hrsh7th/vim-vsnip', {'commit': '9ac8044206d32bea4dba34e77b6a3b7b87f65df6'}
 Plug 'janko-m/vim-test'
 Plug 'juliosueiras/vim-terraform-completion'
 Plug 'kchmck/vim-coffee-script'
-Plug 'ctrlpvim/ctrlp.vim'
 Plug 'kien/rainbow_parentheses.vim'
 Plug 'majutsushi/tagbar'
 Plug 'neovim/nvim-lspconfig', {'commit': '25841e38e9c70279ee1d7153097c9e66a88d4fa5'}
@@ -65,7 +64,6 @@ Plug 'tpope/vim-vinegar'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-ruby/vim-ruby'
 Plug 'vim-scripts/netrw.vim'
-Plug 'zerowidth/vim-copy-as-rtf'
 call plug#end()
 
 
