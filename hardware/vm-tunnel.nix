@@ -24,7 +24,7 @@
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/swap"; }
+    [ { device = "/dev/disk/by-label/swap"; }
     ];
 
 }
