@@ -87,6 +87,8 @@ let sources = import ../../nix/sources.nix; in {
       };
     };
   };
+  programs.direnv.nix-direnv.enable = true;
+  programs.direnv.nix-direnv.enableFlakes = true;
 
   programs.fish = {
     enable = true;
