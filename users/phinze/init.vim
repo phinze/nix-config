@@ -70,9 +70,6 @@ call plug#end()
 
 let g:rspec_command = "Dispatch bundle exec rspec {spec}"
 
-" run terraform fmt on save of all *.tf or *.tfvars files
-let g:terraform_fmt_on_save = 1
-
 " ## Display
 
 " don't break words in middle
@@ -452,6 +449,7 @@ local servers = {
   'ocamllsp',
   'rust_analyzer',
   'tsserver',
+  'terraformls',
 }
 
 for _, lsp in ipairs(servers) do
@@ -463,6 +461,7 @@ for _, lsp in ipairs(servers) do
     }
   }
 end
+
   -- …
 
   function goimports(timeout_ms)
@@ -497,6 +496,7 @@ end
 EOF
 
 autocmd BufWritePre *.go lua goimports(1000)
+autocmd BufWritePre *.tf lua vim.lsp.buf.formatting()
 
 map <leader>i <cmd>lua vim.lsp.buf.hover()<CR>
 map <leader>T <cmd>lua vim.lsp.buf.type_definition()<CR>

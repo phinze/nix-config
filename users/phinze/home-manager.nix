@@ -18,6 +18,8 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.rofi
     pkgs.go
     pkgs.gopls
+    pkgs.terraform
+    pkgs.terraform-ls
     pkgs.tree
     pkgs.watch
     pkgs.zathura
