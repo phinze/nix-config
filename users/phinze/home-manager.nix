@@ -18,6 +18,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.rofi
     pkgs.go
     pkgs.gopls
+    pkgs.rust-analyzer
     pkgs.terraform
     pkgs.terraform-ls
     pkgs.tree
