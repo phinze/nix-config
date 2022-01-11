@@ -1,6 +1,9 @@
 { pkgs, ... }:
 
 {
+  # https://github.com/nix-community/home-manager/pull/2408
+  environment.pathsToLink = [ "/share/fish" ];
+
   users.users.phinze = {
     isNormalUser = true;
     home = "/home/phinze";
