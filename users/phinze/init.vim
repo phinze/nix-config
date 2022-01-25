@@ -39,9 +39,7 @@ Plug 'kchmck/vim-coffee-script'
 Plug 'majutsushi/tagbar'
 Plug 'neovim/nvim-lspconfig', {'commit': '25841e38e9c70279ee1d7153097c9e66a88d4fa5'}
 Plug 'ntpeters/vim-better-whitespace'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
+Plug 'ojroques/vim-oscyank'
 Plug 'onsails/lspkind-nvim'
 Plug 'p00f/nvim-ts-rainbow'
 Plug 'pangloss/vim-javascript'
@@ -65,6 +63,12 @@ Plug 'tpope/vim-vinegar'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-ruby/vim-ruby'
 Plug 'vim-scripts/netrw.vim'
+
+" telescope things
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' } " we suggest you install a native sorter to improve performance
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
 call plug#end()
 
 
@@ -242,7 +246,7 @@ let g:syntastic_sh_shellcheck_args = "-e SC1091"
 au BufRead,BufNewFile *.job set filetype=hcl
 
 " ==>  plugin/clipboard.vim
-set clipboard=unnamed
+set clipboard=unnamedplus
 
 
 " ==>  plugin/syntastic.vim
@@ -507,6 +511,10 @@ require'nvim-treesitter.configs'.setup {
     max_file_lines = 10000,
   },
 }
+
+-- To get fzf loaded and working with telescope, you need to call
+-- load_extension, somewhere after setup function:
+require('telescope').load_extension('fzf')
 EOF
 
 autocmd BufWritePre *.go lua goimports(1000)
@@ -525,3 +533,9 @@ nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<cr>
 nnoremap <leader>be <cmd>lua require('telescope.builtin').buffers({sort_lastused=true, ignore_current_buffer=true})<cr>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 nnoremap <leader>R <cmd>lua require('telescope.builtin').lsp_references()<cr>
+
+" Use opener and oscyank when on a remote connection
+if exists('$SSH_CONNECTION')
+  let g:netrw_browsex_viewer = "xdg-open"
+  autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
+endif

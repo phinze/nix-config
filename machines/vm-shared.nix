@@ -109,6 +109,12 @@
       xrandr --addmode Virtual-1 6016x3384_60.00
       xrandr -s 6016x3384_60.00
     '')
+
+    # Fake xdg-open for opener
+    # See https://github.com/superbrothers/opener
+    (writeShellScriptBin "xdg-open" ''
+      echo "''${@}" | nc -U "$HOME/.opener.sock"
+    '')
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -123,6 +129,10 @@
   services.openssh.enable = true;
   services.openssh.passwordAuthentication = true;
   services.openssh.permitRootLogin = "yes";
+  services.openssh.extraConfig = ''
+  # For opener
+  StreamLocalBindUnlink yes
+  '';
 
   services.tailscale.enable = true;
 
