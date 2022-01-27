@@ -5,6 +5,10 @@
 
   virtualisation.vmware.guest.enable = true;
 
+  # Virtualbox for Vagrant dev
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = ["phinze"];
+
   # Interface is this on Intel Fusion
   networking.interfaces.ens33.useDHCP = true;
 
