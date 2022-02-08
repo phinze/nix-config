@@ -17,10 +17,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.jq
     pkgs.rofi
     pkgs.go
-    pkgs.gopls
-    pkgs.rust-analyzer
     pkgs.terraform
-    pkgs.terraform-ls
     pkgs.tree
     pkgs.watch
     pkgs.zathura
@@ -30,6 +27,11 @@ let sources = import ../../nix/sources.nix; in {
 
     pkgs.gh
     pkgs.ripgrep
+
+    # lsps
+    pkgs.gopls
+    pkgs.rust-analyzer
+    pkgs.terraform-ls
   ];
 
   #---------------------------------------------------------------------
