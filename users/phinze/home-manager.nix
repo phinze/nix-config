@@ -141,7 +141,10 @@ let sources = import ../../nix/sources.nix; in {
       co = "checkout";
       st = "status";
     };
-    ignores = [".direnv"];
+    ignores = [
+      ".direnv"
+      ".byebug_history"
+    ];
     extraConfig = {
       branch.autosetuprebase = "always";
       color.ui = true;
