@@ -440,7 +440,7 @@ end
 _G.lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
 _G.lsp_capabilities = require('cmp_nvim_lsp').update_capabilities(_G.lsp_capabilities)
 
-local servers = {
+local vanilla_servers = {
   'dhall_lsp_server',
   'elmls',
   'gopls',
@@ -449,10 +449,9 @@ local servers = {
   'rust_analyzer',
   'tsserver',
   'terraformls',
-  'solargraph',
 }
 
-for _, lsp in ipairs(servers) do
+for _, lsp in ipairs(vanilla_servers) do
   _G.nvim_lsp[lsp].setup {
     on_attach = _G.lsp_on_attach,
     capabilities = _G.lsp_capabilities,
@@ -461,6 +460,22 @@ for _, lsp in ipairs(servers) do
     }
   }
 end
+
+-- TODO: figure out solargraph
+_G.nvim_lsp['solargraph'].setup {
+  on_attach = _G.lsp_on_attach,
+  capabilities = _G.lsp_capabilities,
+  flags = {
+    debounce_text_changes = 150,
+  },
+  settings = {
+    solargraph = {
+      -- stop rubocop from wreaking havoc on every file that gets saved
+      autoformat = false,
+      formatting = false,
+    }
+  }
+}
 
 function goimports(timeout_ms)
   local context = { only = { "source.organizeImports" } }
