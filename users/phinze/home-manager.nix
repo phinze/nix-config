@@ -167,7 +167,7 @@ let sources = import ../../nix/sources.nix; in {
     shortcut = "a";
     escapeTime = 0;
     terminal = "screen-256color";
-    historyLimit = 999999999;
+    historyLimit = 100000;
     keyMode = "vi";
 
     plugins = with pkgs.tmuxPlugins; [
