@@ -114,3 +114,7 @@ end
 # `fnix -p go` to get an environment with Go but use the fish shell along
 # with it.
 alias fnix "nix-shell --run fish"
+
+
+# Enable any-nix-shell
+any-nix-shell fish --info-right | source

@@ -32,6 +32,8 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.gopls
     pkgs.rust-analyzer
     pkgs.terraform-ls
+
+    pkgs.any-nix-shell
   ];
 
   #---------------------------------------------------------------------
