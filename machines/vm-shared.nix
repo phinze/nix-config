@@ -39,76 +39,15 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # setup windowing environment
-  services.xserver = {
-    enable = true;
-    layout = "us";
-    dpi = 220;
-
-    desktopManager = {
-      xterm.enable = false;
-      wallpaper.mode = "scale";
-    };
-
-    displayManager = {
-      defaultSession = "none+i3";
-      lightdm.enable = true;
-
-      # AARCH64: For now, on Apple Silicon, we must manually set the
-      # display resolution. This is a known issue with VMware Fusion.
-      sessionCommands = ''
-        ${pkgs.xlibs.xset}/bin/xset r rate 200 40
-      '' + (if currentSystem == "aarch64-linux" then ''
-        ${pkgs.xorg.xrandr}/bin/xrandr -s '2880x1800'
-      '' else "");
-    };
-
-    windowManager = {
-      i3.enable = true;
-    };
-  };
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.mutableUsers = false;
-
-  # Manage fonts. We pull these from a secret directory since most of these
-  # fonts require a purchase.
-  fonts = {
-    fontDir.enable = true;
-
-    fonts = [
-      (builtins.path {
-        name = "custom-fonts";
-        path = ../secret/fonts;
-        recursive = true;
-      })
-      (pkgs.nerdfonts.override { fonts = [ "FiraCode" ]; })
-    ];
-  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     gnumake
     killall
-    niv
     rxvt_unicode
-    xclip
-
-    # This is needed for the vmware user tools clipboard to work.
-    # You can test if you don't need this by deleting this and seeing
-    # if the clipboard sill works.
-    gtkmm3
-
-    # VMware on M1 doesn't support automatic resizing yet and on
-    # my big monitor it doesn't detect the resolution either so we just
-    # manualy create the resolution and switch to it with this script.
-    # This script could be better but its hopefully temporary so just force it.
-    (writeShellScriptBin "xrandr-big" ''
-      xrandr --newmode "6016x3384_60.00"  1768.50  6016 6544 7216 8416  3384 3387 3392 3503 -hsync +vsync
-      xrandr --addmode Virtual-1 6016x3384_60.00
-      xrandr -s 6016x3384_60.00
-    '')
 
     # Fake xdg-open for opener
     # See https://github.com/superbrothers/opener
@@ -146,5 +85,5 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "21.05"; # Did you read the comment?
+  system.stateVersion = "21.11"; # Did you read the comment?
 }

@@ -38,5 +38,11 @@
       system = "x86_64-linux";
       user   = "phinze";
     };
+
+    nixosConfigurations.vm-hc-dev = mkVM "vm-hc-dev" {
+      inherit nixpkgs home-manager;
+      system = "x86_64-linux";
+      user   = "phinze";
+    };
   };
 }
