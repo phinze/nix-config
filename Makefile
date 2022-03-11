@@ -11,20 +11,25 @@ MAKEFILE_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # The name of the nixosConfiguration in the flake, defaulted based on
 # architecture of machine where we're running this
-uname_m := $(shell uname -m)
-NIXNAME.x86_64 := vm-intel
-NIXNAME.aarch64 := vm-aarch64
-NIXNAME ?= $(NIXNAME.$(uname_m))
+# uname_m := $(shell uname -m)
+# NIXNAME.x86_64 := vm-intel
+# NIXNAME.aarch64 := vm-aarch64
+# NIXNAME ?= $(NIXNAME.$(uname_m))
 
 # SSH options that are used. These aren't meant to be overridden but are
 # reused a lot so we just store them up here.
 SSH_OPTIONS=-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
 
-switch:
+switch: check-nixname
 	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake ".#${NIXNAME}"
 
-test:
+test: check-nixname
 	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild test --flake ".#$(NIXNAME)"
+
+check-nixname:
+ifndef NIXNAME
+	$(error NIXNAME is undefined)
+endif
 
 # bootstrap a brand new VM. The VM should have NixOS ISO on the CD drive
 # and just set the password of the root user to "root". This will install
