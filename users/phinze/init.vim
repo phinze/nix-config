@@ -2,7 +2,6 @@
 " vim-plug
 "
 "
-
 set runtimepath+=~/.vim/
 
 if empty(glob('~/.vim/autoload/plug.vim'))
@@ -36,7 +35,6 @@ Plug 'hrsh7th/vim-vsnip', {'commit': '9ac8044206d32bea4dba34e77b6a3b7b87f65df6'}
 Plug 'phinze/vim-test', { 'branch': 'support-go-subtests' }
 Plug 'juliosueiras/vim-terraform-completion'
 Plug 'kchmck/vim-coffee-script'
-Plug 'majutsushi/tagbar'
 Plug 'neovim/nvim-lspconfig', {'commit': '25841e38e9c70279ee1d7153097c9e66a88d4fa5'}
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'ojroques/vim-oscyank'
@@ -50,6 +48,7 @@ Plug 'rodjek/vim-puppet'
 Plug 'rust-lang/rust.vim'
 Plug 'scrooloose/syntastic'
 Plug 'sheerun/vim-polyglot'
+Plug 'simrat39/symbols-outline.nvim'
 Plug 'slashmili/alchemist.vim'
 Plug 'terryma/vim-expand-region'
 Plug 'tomtom/tcomment_vim'
@@ -162,7 +161,6 @@ set backspace=indent,eol,start
 
 map <silent> <LocalLeader>nh :nohls<CR>
 map <silent> <LocalLeader>cc :TComment<CR>
-map <silent> <LocalLeader>rt :!ctags -R --exclude=".git\|.svn\|log\|tmp\|db\|pkg" --extra=+f<CR>
 
 if has('nvim')
   nmap <bs> :<c-u>TmuxNavigateLeft<cr>
@@ -213,7 +211,7 @@ nmap <CR> :wa<CR> :TestLast<CR>
 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
 
 " tagbar
-nmap <silent> <Leader>t :TagbarToggle<CR>
+nmap <silent> <Leader>t :SymbolsOutline<CR>
 
 " vim-test
 nmap <silent> <Leader>n :TestNearest<CR>
@@ -256,9 +254,6 @@ let syntastic_mode_map = { 'passive_filetypes': ['html', 'hbs', 'handlebars'] }
 let g:syntastic_javascript_checkers = ['jshint']
 let g:syntastic_ruby_checkers = ['mri']
 let g:syntastic_yaml_checkers = ['jsyaml']
-
-" ==>  plugin/tagbar.vim
-let g:tagbar_autofocus = 1
 
 " ==>  plugin/tcomment.vim
 map <silent> <LocalLeader>cc :TComment<CR>
@@ -530,6 +525,60 @@ require'nvim-treesitter.configs'.setup {
 -- To get fzf loaded and working with telescope, you need to call
 -- load_extension, somewhere after setup function:
 require('telescope').load_extension('fzf')
+
+-- symbols-outline.vim
+vim.g.symbols_outline = {
+    highlight_hovered_item = true,
+    show_guides = true,
+    auto_preview = true,
+    position = 'right',
+    relative_width = true,
+    width = 25,
+    auto_close = false,
+    show_numbers = false,
+    show_relative_numbers = false,
+    show_symbol_details = true,
+    preview_bg_highlight = 'Pmenu',
+    keymaps = { -- These keymaps can be a string or a table for multiple keys
+        close = {"<Esc>", "q"},
+        goto_location = "<Cr>",
+        focus_location = "o",
+        hover_symbol = "<C-space>",
+        toggle_preview = "K",
+        rename_symbol = "r",
+        code_actions = "a",
+    },
+    lsp_blacklist = {},
+    symbol_blacklist = {},
+    symbols = {
+        File = {icon = "", hl = "TSURI"},
+        Module = {icon = "", hl = "TSNamespace"},
+        Namespace = {icon = "", hl = "TSNamespace"},
+        Package = {icon = "", hl = "TSNamespace"},
+        Class = {icon = "𝓒", hl = "TSType"},
+        Method = {icon = "ƒ", hl = "TSMethod"},
+        Property = {icon = "", hl = "TSMethod"},
+        Field = {icon = "", hl = "TSField"},
+        Constructor = {icon = "", hl = "TSConstructor"},
+        Enum = {icon = "ℰ", hl = "TSType"},
+        Interface = {icon = "ﰮ", hl = "TSType"},
+        Function = {icon = "", hl = "TSFunction"},
+        Variable = {icon = "", hl = "TSConstant"},
+        Constant = {icon = "", hl = "TSConstant"},
+        String = {icon = "𝓐", hl = "TSString"},
+        Number = {icon = "#", hl = "TSNumber"},
+        Boolean = {icon = "⊨", hl = "TSBoolean"},
+        Array = {icon = "", hl = "TSConstant"},
+        Object = {icon = "⦿", hl = "TSType"},
+        Key = {icon = "🔐", hl = "TSType"},
+        Null = {icon = "NULL", hl = "TSType"},
+        EnumMember = {icon = "", hl = "TSField"},
+        Struct = {icon = "𝓢", hl = "TSType"},
+        Event = {icon = "🗲", hl = "TSType"},
+        Operator = {icon = "+", hl = "TSOperator"},
+        TypeParameter = {icon = "𝙏", hl = "TSParameter"}
+    }
+}
 EOF
 
 autocmd BufWritePre *.go lua goimports(1000)
@@ -537,17 +586,17 @@ autocmd BufWritePre *.tf lua vim.lsp.buf.formatting()
 
 map <leader>i <cmd>lua vim.lsp.buf.hover()<CR>
 map <leader>T <cmd>lua vim.lsp.buf.type_definition()<CR>
-map <leader>S <cmd>lua vim.lsp.buf.document_symbol()<CR>
 map <leader>C <cmd>lua vim.lsp.buf.incoming_calls()<CR>
 map <leader>rn <cmd>lua vim.lsp.buf.rename()<CR>
 map <leader>l <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
 map <leader>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
 
-nnoremap <leader>o <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap <leader>o <cmd>lua require('telescope.builtin').git_files()<cr>
 nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<cr>
 nnoremap <leader>be <cmd>lua require('telescope.builtin').buffers({sort_lastused=true, ignore_current_buffer=true})<cr>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
 nnoremap <leader>R <cmd>lua require('telescope.builtin').lsp_references()<cr>
+nnoremap <leader>S <cmd>lua require('telescope.builtin').lsp_document_symbols()<cr>
 
 " Use opener and oscyank when on a remote connection
 if exists('$SSH_CONNECTION')
