@@ -33,6 +33,12 @@
   # Don't require password for sudo
   security.sudo.wheelNeedsPassword = false;
 
+  # Raise ulimits because we love to open files
+  security.pam.loginLimits = [
+    { domain = "*"; type = "-"; item = "nofile"; value = "65535"; }
+  ];
+
+
   # Virtualization settings
   virtualisation.docker.enable = true;
 
