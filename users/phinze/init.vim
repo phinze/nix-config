@@ -603,3 +603,10 @@ if exists('$SSH_CONNECTION')
   let g:netrw_browsex_viewer = "xdg-open"
   autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
 endif
+
+function! VimTestForceRspec()
+  let g:test#ruby#rspec#file_pattern = '\v(((^|/)test_.+)|_test)(spec)@<!\.rb$'
+  let g:test#ruby#minitest#file_pattern = 'nothanks'
+endfunction
+
+command! VimTestForceRspec call VimTestForceRspec()
