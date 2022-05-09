@@ -155,6 +155,7 @@ let sources = import ../../nix/sources.nix; in {
       github.user = "phinze";
       push.default = "tracking";
       init.defaultBranch = "main";
+      safe.directory = "/home/phinze/projects/nixos-config";
     };
   };
 
