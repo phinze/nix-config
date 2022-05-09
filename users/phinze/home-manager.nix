@@ -207,6 +207,8 @@ let sources = import ../../nix/sources.nix; in {
     ];
 
 		extraConfig = ''
+      # Recommended by nvim :checkhealth
+      set-option -sa terminal-overrides ',xterm-256color:RGB'
 		'';
   };
 

@@ -456,21 +456,21 @@ for _, lsp in ipairs(vanilla_servers) do
   }
 end
 
--- TODO: figure out solargraph
--- _G.nvim_lsp['solargraph'].setup {
---   on_attach = _G.lsp_on_attach,
---   capabilities = _G.lsp_capabilities,
---   flags = {
---     debounce_text_changes = 150,
---   },
---   settings = {
---     solargraph = {
---       -- stop rubocop from wreaking havoc on every file that gets saved
---       autoformat = false,
---       formatting = false,
---     }
---   }
--- }
+_G.nvim_lsp['solargraph'].setup {
+  cmd_env = { GEM_HOME = ""; PHINZE = "wuz here"; },
+  on_attach = _G.lsp_on_attach,
+  capabilities = _G.lsp_capabilities,
+  flags = {
+    debounce_text_changes = 150,
+  },
+  settings = {
+    solargraph = {
+      -- stop rubocop from wreaking havoc on every file that gets saved
+      autoformat = false,
+      formatting = false,
+    }
+  }
+}
 
 function goimports(timeout_ms)
   local context = { only = { "source.organizeImports" } }
@@ -484,7 +484,7 @@ function goimports(timeout_ms)
   local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, timeout_ms)
   if not result or next(result) == nil then return end
   local actions = result[1].result
-  if not actions then return end
+  if not actions or next(actions) == nil then return end
   local action = actions[1]
 
   -- textDocument/codeAction can return either Command[] or CodeAction[]. If it
