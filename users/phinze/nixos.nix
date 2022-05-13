@@ -18,8 +18,8 @@
   nixpkgs.overlays = import ../../lib/overlays.nix ++ [
     (import ./vim.nix)
     (import (builtins.fetchTarball {
-      url = https://github.com/nix-community/neovim-nightly-overlay/archive/1dd99a6c91b4a6909e66d0ee69b3f31995f38851.tar.gz;
-      sha256 = "1z8gx1cqd18s8zgqksjbyinwgcbndg2r6wv59c4qs24rbgcsvny9";
+      url = https://github.com/nix-community/neovim-nightly-overlay/archive/3bbb08eace50f391839a898c944a226d9e32a71d.tar.gz;
+      sha256 = "1cw9f2dfd8i5s3zkri0n37dqdbraqjvxpnwdsgmsv7an9wcb8a7n";
     }))
   ];
 }

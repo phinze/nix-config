@@ -35,7 +35,7 @@ Plug 'hrsh7th/vim-vsnip', {'commit': '9ac8044206d32bea4dba34e77b6a3b7b87f65df6'}
 Plug 'phinze/vim-test', { 'branch': 'support-go-subtests' }
 Plug 'juliosueiras/vim-terraform-completion'
 Plug 'kchmck/vim-coffee-script'
-Plug 'neovim/nvim-lspconfig', {'commit': '25841e38e9c70279ee1d7153097c9e66a88d4fa5'}
+Plug 'neovim/nvim-lspconfig',
 Plug 'ntpeters/vim-better-whitespace'
 Plug 'ojroques/vim-oscyank'
 Plug 'onsails/lspkind-nvim'
@@ -503,7 +503,24 @@ function goimports(timeout_ms)
 end
 
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ensure_installed = {
+    "bash",
+    "c",
+    "cpp",
+    "go",
+    "gomod",
+    "hcl",
+    "json",
+    "lua",
+    "make",
+    "nix",
+    "proto",
+    "python",
+    "ruby",
+    "rust",
+    "typescript",
+    "vim",
+  }, -- one of "all", or a list of languages
   sync_install = false, -- install languages synchronously (only applied to `ensure_installed`)
   ignore_install = { "javascript" }, -- List of parsers to ignore installing
   highlight = {
