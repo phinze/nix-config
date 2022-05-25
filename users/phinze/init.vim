@@ -472,35 +472,37 @@ _G.nvim_lsp['solargraph'].setup {
   }
 }
 
-function goimports(timeout_ms)
-  local context = { only = { "source.organizeImports" } }
-  vim.validate { context = { context, "t", true } }
+-- code formatting ala goimports
+function organize_go_imports()
+    local enc = vim.lsp.util._get_offset_encoding()
+		local params = vim.lsp.util.make_range_params(nil, enc)
+		params.context = { only = { "source.organizeImports" } }
 
-  local params = vim.lsp.util.make_range_params()
-  params.context = context
-
-  -- See the implementation of the textDocument/codeAction callback
-  -- (lua/vim/lsp/handler.lua) for how to do this properly.
-  local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, timeout_ms)
-  if not result or next(result) == nil then return end
-  local actions = result[1].result
-  if not actions or next(actions) == nil then return end
-  local action = actions[1]
-
-  -- textDocument/codeAction can return either Command[] or CodeAction[]. If it
-  -- is a CodeAction, it can have either an edit, a command or both. Edits
-  -- should be executed first.
-  if action.edit or type(action.command) == "table" then
-    if action.edit then
-      vim.lsp.util.apply_workspace_edit(action.edit)
-    end
-    if type(action.command) == "table" then
-      vim.lsp.buf.execute_command(action.command)
-    end
-  else
-    vim.lsp.buf.execute_command(action)
-  end
+		local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 5000)
+		for _, res in pairs(result or {}) do
+			for _, r in pairs(res.result or {}) do
+				if r.edit then
+					vim.lsp.util.apply_workspace_edit(r.edit, enc)
+				else
+					vim.lsp.buf.execute_command(r.command)
+				end
+			end
+		end
 end
+
+
+-- code formatting ala goimports
+vim.api.nvim_create_autocmd("BufWritePre", {
+	pattern = { "*.go" },
+	callback = organize_go_imports
+})
+
+-- code formatting ala gofmt
+vim.api.nvim_create_autocmd("BufWritePre", {
+	pattern = { "*.go" },
+	callback = vim.lsp.buf.format
+})
+
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
@@ -598,7 +600,6 @@ vim.g.symbols_outline = {
 }
 EOF
 
-autocmd BufWritePre *.go lua goimports(1000)
 autocmd BufWritePre *.tf lua vim.lsp.buf.formatting()
 
 map <leader>i <cmd>lua vim.lsp.buf.hover()<CR>
@@ -606,7 +607,7 @@ map <leader>T <cmd>lua vim.lsp.buf.type_definition()<CR>
 map <leader>C <cmd>lua vim.lsp.buf.incoming_calls()<CR>
 map <leader>rn <cmd>lua vim.lsp.buf.rename()<CR>
 map <leader>l <cmd>lua vim.lsp.diagnostic.goto_next()<CR>
-map <leader>e <cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>
+map <leader>e <cmd>lua vim.diagnostic.open_float()<CR>
 
 nnoremap <leader>o <cmd>lua require('telescope.builtin').git_files()<cr>
 nnoremap <leader>g <cmd>lua require('telescope.builtin').live_grep()<cr>
