@@ -79,6 +79,8 @@
   StreamLocalBindUnlink yes
   '';
 
+  programs.mosh.enable = true;
+
   services.tailscale.enable = true;
 
   # Disable the firewall since we're in a VM and we want to make it
