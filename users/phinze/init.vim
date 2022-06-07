@@ -541,6 +541,15 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 
+require('telescope').setup {
+  defaults = {
+    preview = {
+      -- Disable treesitter to try and fix hitches during live grep see https://github.com/nvim-telescope/telescope.nvim/issues/1616
+      treesitter = false
+    }
+  }
+}
+
 -- To get fzf loaded and working with telescope, you need to call
 -- load_extension, somewhere after setup function:
 require('telescope').load_extension('fzf')
