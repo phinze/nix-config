@@ -507,8 +507,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     "bash",
-    "c",
-    "cpp",
     "go",
     "gomod",
     "hcl",

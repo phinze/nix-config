@@ -14,9 +14,12 @@ nixpkgs.lib.nixosSystem rec {
       home-manager.useUserPackages = true;
       home-manager.users.${user} = import ../users/${user}/home-manager.nix;
     }
+
+    {
+      config._module.args = {
+        currentSystem = system;
+      };
+    }
   ];
 
-  extraArgs = {
-    currentSystem = system;
-  };
 }
