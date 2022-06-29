@@ -11,29 +11,25 @@ let sources = import ../../nix/sources.nix; in {
   # per-project flakes sourced with direnv and nix-shell, so this is
   # not a huge list.
   home.packages = [
+    pkgs.any-nix-shell
+    pkgs.btop
+    pkgs.delve
     pkgs.fzf
     pkgs.git-crypt
+    pkgs.gh
+    pkgs.go
     pkgs.htop
     pkgs.jq
-    pkgs.rofi
-    pkgs.go
+    pkgs.ripgrep
     pkgs.terraform
     pkgs.tree
     pkgs.watch
     pkgs.zathura
 
-    pkgs.tlaplusToolbox
-    pkgs.tetex
-
-    pkgs.gh
-    pkgs.ripgrep
-
     # lsps
     pkgs.gopls
     pkgs.rust-analyzer
     pkgs.terraform-ls
-
-    pkgs.any-nix-shell
   ];
 
   #---------------------------------------------------------------------
