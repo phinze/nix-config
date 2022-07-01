@@ -14,6 +14,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.any-nix-shell
     pkgs.btop
     pkgs.delve
+    pkgs.fd
     pkgs.fzf
     pkgs.git-crypt
     pkgs.gh
