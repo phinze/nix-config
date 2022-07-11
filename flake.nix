@@ -44,5 +44,11 @@
       system = "x86_64-linux";
       user   = "phinze";
     };
+
+    nixosConfigurations.vm-echobase = mkVM "vm-echobase" {
+      inherit nixpkgs home-manager;
+      system = "x86_64-linux";
+      user   = "phinze";
+    };
   };
 }
