@@ -16,6 +16,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.bat-extras.batgrep
     pkgs.btop
     pkgs.delve
+    pkgs.du-dust
     pkgs.fd
     pkgs.fzf
     pkgs.git-crypt
