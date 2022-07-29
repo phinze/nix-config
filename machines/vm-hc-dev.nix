@@ -14,6 +14,10 @@
   virtualisation.virtualbox.host.enable = true;
   users.extraGroups.vboxusers.members = ["phinze"];
 
+  # libvirt / qemu for Vagrant dev
+  virtualisation.libvirtd.enable = true;
+  users.extraGroups.libvirtd.members = ["phinze"];
+
   # NFS for Vagrant dev
   services.nfs.server = {
     enable = true;
