@@ -18,6 +18,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.delve
     pkgs.du-dust
     pkgs.fd
+    pkgs.file
     pkgs.fzf
     pkgs.git-crypt
     pkgs.gh
