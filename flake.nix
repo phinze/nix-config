@@ -41,7 +41,7 @@
 
     nixosConfigurations.vm-hc-dev = mkVM "vm-hc-dev" {
       inherit nixpkgs nixpkgs-unstable home-manager;
-      system = "x87_64-linux";
+      system = "x86_64-linux";
       user   = "phinze";
     };
 
