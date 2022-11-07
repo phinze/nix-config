@@ -54,6 +54,7 @@
     gnumake
     killall
     rxvt_unicode
+    docker-compose
 
     # Fake xdg-open for opener
     # See https://github.com/superbrothers/opener
