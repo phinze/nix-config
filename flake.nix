@@ -22,31 +22,31 @@
     mkVM = import ./lib/mkvm.nix;
   in {
     nixosConfigurations.vm-aarch64 = mkVM "vm-aarch64" {
-      inherit nixpkgs home-manager;
+      inherit nixpkgs nixpkgs-unstable home-manager;
       system = "aarch64-linux";
       user   = "phinze";
     };
 
     nixosConfigurations.vm-intel = mkVM "vm-intel" {
-      inherit nixpkgs home-manager;
+      inherit nixpkgs nixpkgs-unstable home-manager;
       system = "x86_64-linux";
       user   = "phinze";
     };
 
     nixosConfigurations.vm-tunnel = mkVM "vm-tunnel" {
-      inherit nixpkgs home-manager;
+      inherit nixpkgs nixpkgs-unstable home-manager;
       system = "x86_64-linux";
       user   = "phinze";
     };
 
     nixosConfigurations.vm-hc-dev = mkVM "vm-hc-dev" {
-      inherit nixpkgs home-manager;
-      system = "x86_64-linux";
+      inherit nixpkgs nixpkgs-unstable home-manager;
+      system = "x87_64-linux";
       user   = "phinze";
     };
 
     nixosConfigurations.vm-echobase = mkVM "vm-echobase" {
-      inherit nixpkgs home-manager;
+      inherit nixpkgs nixpkgs-unstable home-manager;
       system = "x86_64-linux";
       user   = "phinze";
     };
