@@ -218,7 +218,7 @@ nmap <silent> <Leader>n :TestNearest<CR>
 nmap <silent> <Leader>f :TestFile<CR>
 nmap <silent> <Leader>s :TestSuite<CR>   " t Ctrl+s
 nmap <silent> <Leader>l :TestLast<CR>    " t Ctrl+l
-nmap <silent> <Leader>v :TestVisit<CR>   " t Ctrl+g
+nmap <silent> <Leader>V :TestVisit<CR>   " t Ctrl+g
 let test#strategy = "vimux"
 let test#go#gotest#options = "-v"
 
