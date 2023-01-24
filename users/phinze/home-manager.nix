@@ -3,6 +3,10 @@
 let sources = import ../../nix/sources.nix; in {
   xdg.enable = true;
 
+  # This no longer has a default so should be explicitly set to its original
+  # default
+  home.stateVersion = "18.09";
+
   #---------------------------------------------------------------------
   # Packages
   #---------------------------------------------------------------------
@@ -141,6 +145,8 @@ let sources = import ../../nix/sources.nix; in {
     ignores = [
       ".direnv"
       ".byebug_history"
+      ".rubocop.yml"
+      ".solargraph.yml"
     ];
     extraConfig = {
       branch.autosetuprebase = "always";
@@ -210,7 +216,6 @@ let sources = import ../../nix/sources.nix; in {
 
   programs.neovim = {
     enable = true;
-    package = pkgs.neovim-nightly;
     vimAlias = true;
     extraConfig = builtins.readFile ./init.vim;
   };

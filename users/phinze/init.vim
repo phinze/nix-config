@@ -457,17 +457,20 @@ for _, lsp in ipairs(vanilla_servers) do
 end
 
 _G.nvim_lsp['solargraph'].setup {
-  cmd_env = { GEM_HOME = ""; PHINZE = "wuz here"; },
+  cmd = {'bundle', 'exec', 'solargraph', 'stdio'},
   on_attach = _G.lsp_on_attach,
   capabilities = _G.lsp_capabilities,
   flags = {
     debounce_text_changes = 150,
   },
+  init_options = { formatting = false },
   settings = {
     solargraph = {
       -- stop rubocop from wreaking havoc on every file that gets saved
+      diganostics = true,
       autoformat = false,
       formatting = false,
+      logLevel = 'debug',
     }
   }
 }
