@@ -16,6 +16,7 @@ let sources = import ../../nix/sources.nix; in {
   # not a huge list.
   home.packages = [
     pkgs.any-nix-shell
+    pkgs.atuin
     pkgs.bat
     pkgs.bat-extras.batgrep
     pkgs.btop

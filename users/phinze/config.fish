@@ -78,3 +78,8 @@ end
 any-nix-shell fish --info-right | source
 
 set -gx GITHUB_TOKEN (gh config get -h github.com oauth_token)
+
+# Atuin
+if status --is-interactive
+  atuin init fish | source
+end
