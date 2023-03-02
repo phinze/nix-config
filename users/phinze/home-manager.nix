@@ -60,35 +60,10 @@ let sources = import ../../nix/sources.nix; in {
 
   programs.gpg.enable = true;
 
-  programs.bash = {
-    enable = true;
-    shellOptions = [];
-    historyControl = [ "ignoredups" "ignorespace" ];
-    initExtra = builtins.readFile ./bashrc;
-
-    shellAliases = {
-      ga = "git add";
-      gc = "git commit";
-      gco = "git checkout";
-      gcp = "git cherry-pick";
-      gdiff = "git diff";
-      gl = "git prettylog";
-      gp = "git push";
-      gs = "git status";
-      gt = "git tag";
-    };
-  };
-
   programs.direnv= {
     enable = true;
     config = {
       whitelist = {
-        prefix= [
-          "$HOME/code/go/src/github.com/hashicorp"
-          "$HOME/code/go/src/github.com/phinze"
-        ];
-
-        exact = ["$HOME/.envrc"];
       };
     };
   };
@@ -141,6 +116,7 @@ let sources = import ../../nix/sources.nix; in {
       st = "status";
     };
     ignores = [
+      ".direnv"
     ];
     extraConfig = {
       branch.autosetuprebase = "always";
@@ -156,7 +132,6 @@ let sources = import ../../nix/sources.nix; in {
 
   programs.go = {
     enable = true;
-    goPath = "code/go";
     goPrivate = [ "github.com/phinze" "github.com/hashicorp" "rfc822.mx" ];
   };
 

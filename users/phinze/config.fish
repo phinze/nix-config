@@ -67,8 +67,6 @@ funcsave -q set_tmux_window_to_pwd
 #-------------------------------------------------------------------------------
 # Vars
 #-------------------------------------------------------------------------------
-# Modify our path to include our Go binaries
-contains $HOME/code/go/bin $fish_user_paths; or set -Ua fish_user_paths $HOME/code/go/bin
 contains $HOME/bin $fish_user_paths; or set -Ua fish_user_paths $HOME/bin
 
 # Exported variables
