@@ -7,12 +7,8 @@
     # it'll impact your entire system.
     nixpkgs.url = "github:nixos/nixpkgs/release-22.11";
 
-    home-manager = {
-      url = "github:nix-community/home-manager/release-22.11";
-
-      # We want home-manager to use the same set of nixpkgs as our system.
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    home-manager.url = "github:nix-community/home-manager/release-22.11";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     # We have access to unstable nixpkgs if we want specific unstable packages.
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -49,6 +45,19 @@
       inherit nixpkgs nixpkgs-unstable home-manager;
       system = "x86_64-linux";
       user   = "phinze";
+    };
+
+    # Standalone home-manager configuration entrypoint
+    # Available through 'home-manager --flake .#user@host'
+    homeConfigurations = {
+      "phinze@pudl-dev" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
+        # extraSpecialArgs = { inherit inputs outputs; };
+        modules = [
+          # > Our main home-manager configuration file <
+          ./users/phinze/home-manager.nix
+        ];
+      };
     };
   };
 }

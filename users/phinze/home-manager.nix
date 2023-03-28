@@ -1,11 +1,21 @@
 { config, lib, pkgs, ... }:
 
 let sources = import ../../nix/sources.nix; in {
-  xdg.enable = true;
+  # It helps to set this explicitly for hosts using standalone home manager.
+  nix.extraOptions = ''
+    experimental-features = nix-command flakes
+  '';
+  # Need to explicitly set nix.package to make this work.
+  # See: https://github.com/nix-community/home-manager/issues/3644#issuecomment-1418707189
+  nix.package = pkgs.nix;
 
-  # This no longer has a default so should be explicitly set to its original
-  # default
-  home.stateVersion = "18.09";
+  # Home Manager needs a bit of information about you and the
+  # paths it should manage.
+  home.username = "phinze";
+  home.homeDirectory = "/home/phinze";
+
+  # Manage XDG home directories and set XDG_*_HOME env vars.
+  xdg.enable = true;
 
   #---------------------------------------------------------------------
   # Packages
@@ -27,14 +37,11 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.fzf
     pkgs.git-crypt
     pkgs.gh
-    pkgs.go
     pkgs.htop
     pkgs.jq
     pkgs.ripgrep
-    pkgs.terraform
     pkgs.tree
     pkgs.watch
-    pkgs.zathura
 
     # lsps
     pkgs.gopls
@@ -61,7 +68,7 @@ let sources = import ../../nix/sources.nix; in {
 
   programs.gpg.enable = true;
 
-  programs.direnv= {
+  programs.direnv = {
     enable = true;
     config = {
       whitelist = {
@@ -198,4 +205,10 @@ let sources = import ../../nix/sources.nix; in {
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
   };
+
+  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
+  home.stateVersion = "22.11";
+
+  # Let Home Manager install and manage itself.
+  programs.home-manager.enable = true;
 }
