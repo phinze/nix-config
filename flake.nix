@@ -58,6 +58,14 @@
           ./users/phinze/home-manager.nix
         ];
       };
+      "phinze@phinze-C02ZG0VNLVDL" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-darwin;
+        # extraSpecialArgs = { inherit inputs outputs; };
+        modules = [
+          # > Our main home-manager configuration file <
+          ./users/phinze/home-manager.nix
+        ];
+      };
     };
   };
 }

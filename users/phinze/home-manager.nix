@@ -12,7 +12,7 @@ let sources = import ../../nix/sources.nix; in {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
   home.username = "phinze";
-  home.homeDirectory = "/home/phinze";
+  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/phinze" else "/home/phinze";
 
   # Manage XDG home directories and set XDG_*_HOME env vars.
   xdg.enable = true;
@@ -65,6 +65,9 @@ let sources = import ../../nix/sources.nix; in {
   #---------------------------------------------------------------------
   # Programs
   #---------------------------------------------------------------------
+
+  # Work around https://github.com/NixOS/nixpkgs/pull/217205
+  programs.zsh.enable = true;
 
   programs.gpg.enable = true;
 
@@ -134,7 +137,7 @@ let sources = import ../../nix/sources.nix; in {
       github.user = "phinze";
       push.default = "tracking";
       init.defaultBranch = "main";
-      safe.directory = "/home/phinze/projects/nixos-config";
+      safe.directory = "${config.home.homeDirectory}/projects/nixos-config";
     };
   };
 
@@ -198,7 +201,7 @@ let sources = import ../../nix/sources.nix; in {
   };
 
   services.gpg-agent = {
-    enable = true;
+    enable = pkgs.stdenv.isLinux;
     pinentryFlavor = "tty";
 
     # cache the keys forever so we don't get asked for a password
