@@ -444,6 +444,7 @@ local vanilla_servers = {
   'rust_analyzer',
   'tsserver',
   'terraformls',
+  'bashls',
 }
 
 for _, lsp in ipairs(vanilla_servers) do

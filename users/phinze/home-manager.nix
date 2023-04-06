@@ -45,7 +45,9 @@ let sources = import ../../nix/sources.nix; in {
 
     # lsps
     pkgs.gopls
+    pkgs.nodePackages.bash-language-server
     pkgs.rust-analyzer
+    pkgs.shellcheck
     pkgs.terraform-ls
   ];
 
