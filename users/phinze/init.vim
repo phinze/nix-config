@@ -559,7 +559,7 @@ require('telescope').setup {
 require('telescope').load_extension('fzf')
 
 -- symbols-outline.vim
-vim.g.symbols_outline = {
+local symbols_outline_opts = {
     highlight_hovered_item = true,
     show_guides = true,
     auto_preview = true,
@@ -611,6 +611,7 @@ vim.g.symbols_outline = {
         TypeParameter = {icon = "𝙏", hl = "TSParameter"}
     }
 }
+require("symbols-outline").setup(symbols_outline_opts)
 EOF
 
 autocmd BufWritePre *.tf lua vim.lsp.buf.formatting()
