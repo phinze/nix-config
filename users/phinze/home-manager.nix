@@ -5,9 +5,6 @@ let sources = import ../../nix/sources.nix; in {
   nix.extraOptions = ''
     experimental-features = nix-command flakes
   '';
-  # Need to explicitly set nix.package to make this work.
-  # See: https://github.com/nix-community/home-manager/issues/3644#issuecomment-1418707189
-  nix.package = pkgs.nix;
 
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
