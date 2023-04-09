@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   # Need to explicitly set nix.package when using home-manager by itself make

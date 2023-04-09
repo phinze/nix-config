@@ -66,6 +66,14 @@
           ./users/phinze/home-manager-nix-workaround.nix
         ];
       };
+      "phinze@manticore" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        # extraSpecialArgs = { inherit inputs outputs; };
+        modules = [
+          ./users/phinze/home-manager.nix
+          ./users/phinze/home-manager-nix-workaround.nix
+        ];
+      };
     };
   };
 }
