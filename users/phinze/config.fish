@@ -65,7 +65,9 @@ set -g theme_color_scheme dracula
 # Automatically set tmux window name
 function set_tmux_window_to_pwd --on-event fish_prompt
   if not set -q disable_tmux_window_pwd
-    tmux rename-window $(basename $PWD)
+    if tmux info &> /dev/null
+      tmux rename-window $(basename $PWD)
+    end
   end
 end
 funcsave -q set_tmux_window_to_pwd
