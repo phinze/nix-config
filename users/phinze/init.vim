@@ -204,8 +204,8 @@ vmap <Leader>P "+P
 " Enter visual line mode with <Space><Space>:
 nmap <Leader><Leader> V
 
-" enter reruns last test...
-nmap <CR> :wa<CR> :TestLast<CR>
+" enter reruns last command...
+nmap <CR> :wa<CR> :VimuxRunLastCommand<CR>
 
 " ...but does normal thing in quickfix window
 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
