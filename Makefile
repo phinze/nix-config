@@ -21,10 +21,10 @@ NIXUSER ?= $(shell whoami)
 SSH_OPTIONS=-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
 
 switch:
-	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake ".#${NIXHOST}"
+	sudo nixos-rebuild switch --flake ".#vm-$(NIXHOST)"
 
 test:
-	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild test --flake ".#$(NIXHOST)"
+	sudo nixos-rebuild test --flake ".#vm-$(NIXHOST)"
 
 hm-switch:
 	home-manager switch --flake ".#$(NIXUSER)@$(NIXHOST)"
