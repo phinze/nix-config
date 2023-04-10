@@ -47,6 +47,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.rust-analyzer
     pkgs.shellcheck
     pkgs.terraform-ls
+    pkgs.zls
   ];
 
   #---------------------------------------------------------------------

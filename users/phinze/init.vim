@@ -446,6 +446,7 @@ local vanilla_servers = {
   'terraformls',
   'bashls',
   'yamlls',
+  'zls',
 }
 
 for _, lsp in ipairs(vanilla_servers) do
