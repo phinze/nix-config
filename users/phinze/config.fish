@@ -1,5 +1,8 @@
-# Source Nix setup script
-fenv source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 
+# Source Nix setup script (only used on non-nixos hosts)
+set nix_setup_path /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+if test -f $nix_setup_path
+  fenv source $nix_setup_path
+end
 
 #-------------------------------------------------------------------------------
 # SSH Agent

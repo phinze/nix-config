@@ -11,25 +11,23 @@ MAKEFILE_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
 # The name of the nixosConfiguration in the flake, defaulted based on
 # architecture of machine where we're running this
-# uname_m := $(shell uname -m)
-# NIXNAME.x86_64 := vm-intel
-# NIXNAME.aarch64 := vm-aarch64
-# NIXNAME ?= $(NIXNAME.$(uname_m))
+NIXHOST ?= $(shell hostname -s)
+
+# The name of the user, used for homeManager configurations
+NIXUSER ?= $(shell whoami)
 
 # SSH options that are used. These aren't meant to be overridden but are
 # reused a lot so we just store them up here.
 SSH_OPTIONS=-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
 
-switch: check-nixname
-	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake ".#${NIXNAME}"
+switch:
+	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake ".#${NIXHOST}"
 
-test: check-nixname
-	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild test --flake ".#$(NIXNAME)"
+test:
+	sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild test --flake ".#$(NIXHOST)"
 
-check-nixname:
-ifndef NIXNAME
-	$(error NIXNAME is undefined)
-endif
+hm-switch:
+	home-manager switch --flake ".#$(NIXUSER)@$(NIXHOST)"
 
 # bootstrap a brand new VM. The VM should have NixOS ISO on the CD drive
 # and just set the password of the root user to "root". This will install
@@ -102,7 +100,7 @@ vm/copy:
 # have to run vm/copy before.
 vm/switch:
 	ssh $(SSH_OPTIONS) -p$(NIXPORT) $(NIXUSER)@$(NIXADDR) " \
-		sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake \"/nix-config#${NIXNAME}\" \
+		sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake \"/nix-config#${NIXHOST}\" \
 	"
 
 # Build an ISO image
