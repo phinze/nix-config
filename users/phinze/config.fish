@@ -85,6 +85,7 @@ end
 # Enable any-nix-shell
 any-nix-shell fish --info-right | source
 
+set -gx HOMEBREW_GITHUB_API_TOKEN (gh config get -h github.com oauth_token)
 set -gx GITHUB_TOKEN (gh config get -h github.com oauth_token)
 
 # Atuin
