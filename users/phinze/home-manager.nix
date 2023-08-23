@@ -210,6 +210,15 @@ let sources = import ../../nix/sources.nix; in {
     maxCacheTtl = 31536000;
   };
 
+
+  xdg.configFile."ghostty/config" = lib.mkIf pkgs.stdenv.isDarwin {
+    text = ''
+      font-family = Hack
+      clipboard-read = true
+      clipboard-write = true
+    '';
+  };
+
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "22.11";
 
