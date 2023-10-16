@@ -34,6 +34,7 @@ Plug 'hrsh7th/vim-vsnip', {'commit': '9ac8044206d32bea4dba34e77b6a3b7b87f65df6'}
 " Use my fork until I can upstream subtest support
 Plug 'phinze/vim-test', { 'branch': 'support-go-subtests' }
 Plug 'juliosueiras/vim-terraform-completion'
+Plug 'junegunn/goyo.vim'
 Plug 'kchmck/vim-coffee-script'
 Plug 'neovim/nvim-lspconfig',
 Plug 'ntpeters/vim-better-whitespace'
@@ -642,3 +643,7 @@ function! VimTestForceRspec()
 endfunction
 
 command! VimTestForceRspec call VimTestForceRspec()
+
+" Wrapped line navigation
+noremap <expr> k (v:count == 0 ? 'gk' : 'k')
+noremap <expr> j (v:count == 0 ? 'gj' : 'j')
