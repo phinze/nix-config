@@ -29,6 +29,9 @@ test:
 hm-switch:
 	home-manager switch --flake ".#$(NIXUSER)@$(NIXHOST)"
 
+darwin-switch:
+	darwin-rebuild switch --flake .
+
 # bootstrap a brand new VM. The VM should have NixOS ISO on the CD drive
 # and just set the password of the root user to "root". This will install
 # NixOS. After installing NixOS, you must reboot and set the root password

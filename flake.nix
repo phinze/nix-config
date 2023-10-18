@@ -12,9 +12,12 @@
 
     # We have access to unstable nixpkgs if we want specific unstable packages.
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    nix-darwin.url = "github:LnL7/nix-darwin/master";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, home-manager, nixpkgs-unstable }: let
+  outputs = { self, nixpkgs, home-manager, nixpkgs-unstable, nix-darwin }: let
     mkVM = import ./lib/mkvm.nix;
   in {
     nixosConfigurations.vm-aarch64 = mkVM "vm-aarch64" {
@@ -45,6 +48,22 @@
       inherit nixpkgs nixpkgs-unstable home-manager;
       system = "x86_64-linux";
       user   = "phinze";
+    };
+
+    darwinConfigurations = {
+      manticore = nix-darwin.lib.darwinSystem {
+        modules = [ 
+          nix-darwin/configuration.nix
+          home-manager.darwinModules.home-manager {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.phinze = import ./users/phinze/home-manager.nix;
+          }
+        ];
+        inputs = {
+          inherit self;
+        };
+      };
     };
 
     # Standalone home-manager configuration entrypoint
