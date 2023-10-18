@@ -98,11 +98,11 @@ let sources = import ../../nix/sources.nix; in {
       gp = "git push";
       gs = "git status";
       gt = "git tag";
-
-      # Two decades of using a Mac has made this such a strong memory
-      # that I'm just going to keep it consistent.
-      pbcopy = "xclip";
-      pbpaste = "xclip -o";
+    } // lib.mkIf (! pkgs.stdenv.isDarwin) {
+        # Two decades of using a Mac has made this such a strong memory
+        # that I'm just going to keep it consistent.
+        pbcopy = "xclip";
+        pbpaste = "xclip -o";
     };
 
     plugins = map (n: {
