@@ -44,6 +44,7 @@
     "discord"
     "fantastical"
     "firefox"
+    "google-chrome"
     "raycast"
     "rectangle"
     "rocket"
