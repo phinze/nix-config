@@ -4,6 +4,10 @@
   # https://github.com/nix-community/home-manager/pull/2408
   environment.pathsToLink = [ "/share/fish" ];
 
+  # This is fully set up in home-manager but in order to set the user's shell
+  # we need this here to pass an assertion.
+  programs.fish.enable = true;
+
   users.users.phinze = {
     isNormalUser = true;
     home = "/home/phinze";
