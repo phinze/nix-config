@@ -1,4 +1,4 @@
-{ osConfig, config, lib, pkgs, ... }:
+{ inputs, osConfig, config, lib, pkgs, ... }:
 
 let sources = import ../../nix/sources.nix; in {
   # It helps to set this explicitly for hosts using standalone home manager.
@@ -115,14 +115,13 @@ let sources = import ../../nix/sources.nix; in {
     ];
 
     # Workaround from https://github.com/LnL7/nix-darwin/issues/122#issuecomment-1659465635
-    
     loginShellInit =
       let
         # This naive quoting is good enough in this case. There shouldn't be any
         # double quotes in the input string, and it needs to be double quoted in case
         # it contains a space (which is unlikely!)
         dquote = str: "\"" + str + "\"";
-  
+
         makeBinPathList = map (path: path + "/bin");
       in ''
         fish_add_path --move --prepend --path ${lib.concatMapStringsSep " " dquote (makeBinPathList osConfig.environment.profiles)}
@@ -231,6 +230,13 @@ let sources = import ../../nix/sources.nix; in {
       font-family = Hack
       clipboard-read = true
       clipboard-write = true
+    '';
+  };
+
+  xdg.configFile."atuin/config.toml" = {
+    text = ''
+      filter_mode_shell_up_key_binding = "session"
+      update_check = false
     '';
   };
 

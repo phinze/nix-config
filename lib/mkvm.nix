@@ -12,6 +12,7 @@ nixpkgs.lib.nixosSystem rec {
     home-manager.nixosModules.home-manager {
       home-manager.useGlobalPkgs = true;
       home-manager.useUserPackages = true;
+      home-manager.backupFileExtension = "nix-backup";
       home-manager.users.${user} = import ../users/${user}/home-manager.nix;
     }
 
