@@ -308,176 +308,54 @@ let g:airline_theme = 'dracula'
 
 " lsp time!
 lua << EOF
-_G.nvim_lsp = require('lspconfig')
-
-function _G.lsp_on_attach(client, bufnr)
-  local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
-  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-
-  local opts = { noremap=true, silent=true }
-
-  buf_set_keymap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
-  buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-  buf_set_keymap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
-  buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-  buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  buf_set_keymap('n', '<Leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
-  buf_set_keymap('n', '<Leader>cl', '<cmd>lua vim.lsp.codelens.refresh()<CR>', opts)
-  buf_set_keymap('n', '<Leader>cr', '<cmd>lua vim.lsp.codelens.run()<CR>', opts)
-  buf_set_keymap('n', '<Leader>cd', '<cmd>lua vim.lsp.diagnostic.show_line_diagnostics()<CR>', opts)
-
-  vim.api.nvim_command([[autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()]])
-
-  local cmp = require 'cmp'
-  local lspkind = require 'lspkind'
-
-  local has_words_before = function()
-    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-    return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
-  end
-
-  local feedkey = function(key, mode)
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(key, true, true, true), mode, true)
-  end
-
-  cmp.setup {
-    mapping = {
-      ['<C-p>'] = cmp.mapping.select_prev_item(),
-      ['<C-n>'] = cmp.mapping.select_next_item(),
-      ['<C-y>'] = cmp.mapping.confirm {
-        behavior = cmp.ConfirmBehavior.Replace,
-        select = true,
-      },
-      ['<C-X><C-O>'] = cmp.mapping.complete(),
-      ["<Tab>"] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-          cmp.select_next_item()
-        elseif vim.fn["vsnip#available"](1) == 1 then
-          feedkey("<Plug>(vsnip-expand-or-jump)", "")
-        elseif has_words_before() then
-          cmp.complete()
-        else
-          fallback() -- The fallback function sends a already mapped key. In this case, it's probably `<Tab>`.
-        end
-      end, { "i", "s" }),
-
-      ["<S-Tab>"] = cmp.mapping(function()
-        if cmp.visible() then
-          cmp.select_prev_item()
-        elseif vim.fn["vsnip#jumpable"](-1) == 1 then
-          feedkey("<Plug>(vsnip-jump-prev)", "")
-        end
-      end, { "i", "s" }),
-    },
-    snippet = {
-      expand = function(args)
-        vim.fn['vsnip#anonymous'](args.body)
-      end,
-    },
-    sources = {
-      { name = 'nvim_lsp' },
-      { name = 'buffer' },
-    },
-    formatting = {
-      format = lspkind.cmp_format({with_text = false, maxwidth = 50})
-    },
-  }
-
-  -- Use buffer source for `/` (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline('/', {
-    sources = {
-      { name = 'buffer' }
-    }
-  })
-
-  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline(':', {
-    sources = cmp.config.sources({
-      { name = 'path' }
-    }, {
-      { name = 'cmdline' }
-    })
-  })
-
-  require('lsp_signature').on_attach({
-    bind = true,
-    doc_lines = 0,
-    floating_window = false,
-    hint_scheme = 'Comment',
-  })
-end
-
--- Use (s-)tab to:
---- move to prev/next item in completion menuone
---- jump to prev/next snippet's placeholder
-_G.tab_complete = function()
-  if vim.fn.pumvisible() == 1 then
-    return t "<CR>"
-  elseif vim.fn['vsnip#available'](1) == 1 then
-    return t "<Plug>(vsnip-expand-or-jump)"
-  elseif check_back_space() then
-    return t "<Tab>"
-  else
-    return vim.fn['compe#complete']()
-  end
-end
-
-_G.s_tab_complete = function()
-  if vim.fn.pumvisible() == 1 then
-    return t "<C-p>"
-  elseif vim.fn['vsnip#jumpable'](-1) == 1 then
-    return t "<Plug>(vsnip-jump-prev)"
-  else
-    -- If <S-Tab> is not working in your terminal, change it to <C-h>
-    return t "<S-Tab>"
-  end
-end
-
-_G.lsp_capabilities = vim.lsp.protocol.make_client_capabilities()
-_G.lsp_capabilities = require('cmp_nvim_lsp').update_capabilities(_G.lsp_capabilities)
-
-local vanilla_servers = {
-  'dhall_lsp_server',
-  'elmls',
-  'gopls',
-  'intelephense',
-  'ocamllsp',
-  'rust_analyzer',
-  'tsserver',
-  'terraformls',
-  'bashls',
-  'yamlls',
-  'zls',
+-- Setup language servers.
+local lspconfig = require('lspconfig')
+lspconfig.solargraph.setup {
+  cmd = { 'bundle', 'exec', 'solargraph', 'stdio' }
 }
-
-for _, lsp in ipairs(vanilla_servers) do
-  _G.nvim_lsp[lsp].setup {
-    on_attach = _G.lsp_on_attach,
-    capabilities = _G.lsp_capabilities,
-    flags = {
-      debounce_text_changes = 150,
-    }
-  }
-end
-
-_G.nvim_lsp['solargraph'].setup {
-  cmd = {'bundle', 'exec', 'solargraph', 'stdio'},
-  on_attach = _G.lsp_on_attach,
-  capabilities = _G.lsp_capabilities,
-  flags = {
-    debounce_text_changes = 150,
-  },
-  init_options = { formatting = false },
-  settings = {
-    solargraph = {
-      -- stop rubocop from wreaking havoc on every file that gets saved
-      diganostics = true,
-      autoformat = false,
-      formatting = false,
-      logLevel = 'debug',
-    }
-  }
+lspconfig.standardrb.setup {
+  cmd = { 'bundle', 'exec', 'standardrb', '--lsp' }
 }
+lspconfig.tsserver.setup {}
+lspconfig.rust_analyzer.setup {}
+
+-- Global mappings.
+-- See `:help vim.diagnostic.*` for documentation on any of the below functions
+vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
+vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
+
+-- Use LspAttach autocommand to only map the following keys
+-- after the language server attaches to the current buffer
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+  callback = function(ev)
+    -- Enable completion triggered by <c-x><c-o>
+    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+    -- Buffer local mappings.
+    -- See `:help vim.lsp.*` for documentation on any of the below functions
+    local opts = { buffer = ev.buf }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+    vim.keymap.set('n', '<space>wl', function()
+      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    end, opts)
+    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', '<space>f', function()
+      vim.lsp.buf.format { async = true }
+    end, opts)
+  end,
+})
 
 -- code formatting ala goimports
 function organize_go_imports()
