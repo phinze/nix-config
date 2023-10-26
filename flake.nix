@@ -57,6 +57,7 @@
           home-manager.darwinModules.home-manager {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "nix-backup";
             home-manager.users.phinze = import ./users/phinze/home-manager.nix;
           }
         ];
