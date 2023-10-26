@@ -57,6 +57,7 @@
     "rectangle"
     "rocket"
     "slack"
+    "teamviewer"
     "zoom"
   ];
 
