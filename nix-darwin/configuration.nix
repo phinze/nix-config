@@ -39,6 +39,14 @@
 
   homebrew.enable = true;
 
+
+  homebrew.brews = [
+    {
+      name = "superbrothers/opener/opener";
+      start_service = true;
+    }
+  ];
+
   homebrew.casks = [
     "bartender"
     "discord"
