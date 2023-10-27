@@ -109,3 +109,9 @@ vm/switch:
 # Build an ISO image
 iso/nixos.iso:
 	cd iso; ./build.sh
+
+update-ghostty-darwin:
+	gh release --repo=mitchellh/ghostty download tip --pattern 'ghostty-macos-universal.zip' --dir /tmp/ --clobber
+	unzip -o /tmp/ghostty-macos-universal.zip -d /tmp
+	rsync -av --delete /tmp/Ghostty.app /Applications/
+	rm -rf /tmp/Ghostty.app /tmp/ghostty-macos-universal.zip
