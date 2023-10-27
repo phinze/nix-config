@@ -19,7 +19,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'b4b4r07/vim-hcl'
 Plug 'benmills/vimux'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'dracula/vim', { 'as': 'dracula' }
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 Plug 'dsawardekar/ember.vim'
 Plug 'elixir-lang/vim-elixir'
 Plug 'elzr/vim-json'
@@ -302,9 +302,9 @@ au filetype go set noexpandtab tabstop=4 softtabstop=4
 autocmd BufNewFile,BufRead *.hbs,*.hbt set filetype=html.handlebars
 
 " theme
-colorscheme dracula
+colorscheme catppuccin
 let g:airline_powerline_fonts = 1
-let g:airline_theme = 'dracula'
+let g:airline_theme = 'catppuccin'
 
 " lsp time!
 lua << EOF

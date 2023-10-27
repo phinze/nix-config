@@ -176,20 +176,15 @@ let sources = import ../../nix/sources.nix; in {
       vim-tmux-navigator
       {
         plugin = mkTmuxPlugin rec {
-          pluginName = "dracula";
-          version = "2.0.0";
+          pluginName = "catppuccin";
+          version = "89ad057ebd47a3052d55591c2dcab31be3825a49";
           src = pkgs.fetchFromGitHub {
-            owner = "dracula";
+            owner = "catppuccin";
             repo = "tmux";
-            rev = "v${version}";
-            sha256 = "ILs+GMltb2AYNUecFMyQZ/AuETB0PCFF2InSnptVBos=";
+            rev = "${version}";
+            sha256 = "sha256-4JFuX9clpPr59vnCUm6Oc5IOiIc/v706fJmkaCiY2Hc=";
           };
         };
-        extraConfig = ''
-          set -g @dracula-show-powerline true
-          set -g @dracula-show-left-icon ∞
-          set -g @dracula-plugins "time"
-        '';
       }
       {
         plugin = pain-control;
