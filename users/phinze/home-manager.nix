@@ -98,7 +98,7 @@ let sources = import ../../nix/sources.nix; in {
       gp = "git push";
       gs = "git status";
       gt = "git tag";
-    } // lib.mkIf (! pkgs.stdenv.isDarwin) {
+    } // lib.optionalAttrs (! pkgs.stdenv.isDarwin) {
         # Two decades of using a Mac has made this such a strong memory
         # that I'm just going to keep it consistent.
         pbcopy = "xclip";
@@ -114,6 +114,7 @@ let sources = import ../../nix/sources.nix; in {
       "fish-pure"
     ];
 
+  } // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
     # Workaround from https://github.com/LnL7/nix-darwin/issues/122#issuecomment-1659465635
     loginShellInit =
       let
