@@ -49,6 +49,7 @@
 
   homebrew.casks = [
     "bartender"
+    "cleanshot"
     "discord"
     "fantastical"
     "firefox"
