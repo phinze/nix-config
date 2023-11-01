@@ -64,6 +64,7 @@
 
   homebrew.masApps = {
     "Bear Notes" = 1091189122;
+    "Numbers" = 409203825;
     "Tailscale" = 1475387142;
   };
 }
