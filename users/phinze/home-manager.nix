@@ -224,8 +224,6 @@ let sources = import ../../nix/sources.nix; in {
   xdg.configFile."ghostty/config" = lib.mkIf pkgs.stdenv.isDarwin {
     text = ''
       font-family = Hack
-      clipboard-read = true
-      clipboard-write = true
 
       ## Catppuccin Mocha Theme
       background           = 1E1E2E
