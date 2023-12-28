@@ -39,6 +39,7 @@ let sources = import ../../nix/sources.nix; in {
     pkgs.ripgrep
     pkgs.tree
     pkgs.watch
+    pkgs.zoxide
 
     # lsps
     pkgs.gopls

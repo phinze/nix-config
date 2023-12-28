@@ -86,3 +86,8 @@ set -gx GITHUB_TOKEN (gh config get -h github.com oauth_token)
 if status --is-interactive
   atuin init fish | source
 end
+
+# Zoxide
+if type -q zoxide
+  zoxide init --cmd cd fish | source
+end
