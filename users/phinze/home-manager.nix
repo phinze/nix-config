@@ -155,6 +155,7 @@ let sources = import ../../nix/sources.nix; in {
       push.default = "tracking";
       init.defaultBranch = "main";
       safe.directory = "${config.home.homeDirectory}/projects/nixos-config";
+      push.autoSetupRemote = true;
     };
   };
 
