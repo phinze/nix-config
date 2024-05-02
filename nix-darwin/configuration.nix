@@ -58,6 +58,7 @@
     "raycast"
     "rectangle"
     "rocket"
+    "signal"
     "slack"
     "teamviewer"
     "zoom"
