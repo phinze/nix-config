@@ -227,6 +227,8 @@ let sources = import ../../nix/sources.nix; in {
     text = ''
       font-family = Hack
 
+      macos-option-as-alt = true
+
       ## Catppuccin Mocha Theme
       background           = 1E1E2E
       foreground           = CDD6F4
