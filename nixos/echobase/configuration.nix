@@ -68,11 +68,50 @@
     nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
   };
 
-  # FIXME: Add the rest of your current configuration
-
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Midwest ho!
+  time.timeZone = "America/Chicago";
+
+  # Don't require password for sudo
+  security.sudo.wheelNeedsPassword = false;
+
+  # Raise ulimits because we love to open files
+  security.pam.loginLimits = [
+    { domain = "*"; type = "-"; item = "nofile"; value = "65535"; }
+  ];
+
+  # Packages we want in system profile.
+  environment.systemPackages = with pkgs; [
+    gnumake
+    killall
+    docker-compose
+
+    # Fake xdg-open for opener
+    # See https://github.com/superbrothers/opener
+    (writeShellScriptBin "xdg-open" ''
+      echo "''${@}" | nc -U "$HOME/.opener.sock"
+    '')
+  ];
+
+  # Docker is a system-level install.
+  virtualisation.docker.enable = true;
+
+  # MTR is SUID wrapped so easier to have it around at the system level than
+  # mess with sudo when we need it.
+  programs.mtr.enable = true;
+
+  # Mosh is good on dicey connections
+  programs.mosh.enable = true;
+
+  # Our primary method of accessing stuff
+  services.tailscale.enable = true;
+
+  # Disable the firewall since we're in a VM and we want to make it
+  # easy to visit stuff in here. We only use NAT networking anyways.
+  networking.firewall.enable = false;
 
   networking.hostName = "echobase";
 
@@ -96,6 +135,10 @@
       PermitRootLogin = "no";
       PasswordAuthentication = false;
     };
+    extraConfig = ''
+    # For opener
+    StreamLocalBindUnlink yes
+    '';
   };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
