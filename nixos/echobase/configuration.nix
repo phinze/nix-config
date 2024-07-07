@@ -75,6 +75,9 @@
   # Midwest ho!
   time.timeZone = "America/Chicago";
 
+  # But let's be reasonable about the locale.
+  i18n.defaultLocale = "en_US.UTF-8";
+
   # Don't require password for sudo
   security.sudo.wheelNeedsPassword = false;
 
