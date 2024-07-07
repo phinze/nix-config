@@ -495,8 +495,6 @@ local symbols_outline_opts = {
 require("symbols-outline").setup(symbols_outline_opts)
 EOF
 
-autocmd BufWritePre *.tf lua vim.lsp.buf.formatting()
-
 map <leader>i <cmd>lua vim.lsp.buf.hover()<CR>
 map <leader>T <cmd>lua vim.lsp.buf.type_definition()<CR>
 map <leader>C <cmd>lua vim.lsp.buf.incoming_calls()<CR>
