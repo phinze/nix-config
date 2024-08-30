@@ -48,7 +48,6 @@
   ];
 
   homebrew.casks = [
-    "amethyst"
     "bartender"
     "cleanshot"
     "dash"
@@ -56,6 +55,7 @@
     "firefox"
     "google-chrome"
     "meetingbar"
+    "nikitabobko/tap/aerospace"
     "raycast"
     "rectangle"
     "rocket"
