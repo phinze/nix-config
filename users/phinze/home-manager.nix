@@ -264,6 +264,10 @@ let sources = import ../../nix/sources.nix; in {
     '';
   };
 
+  xdg.configFile."aerospace/aerospace.toml" = lib.mkIf pkgs.stdenv.isDarwin {
+    source = ./aerospace.toml;
+  };
+
   xdg.configFile."atuin/config.toml" = {
     text = ''
       filter_mode_shell_up_key_binding = "session"
