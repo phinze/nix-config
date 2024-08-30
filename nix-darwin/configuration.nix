@@ -48,6 +48,7 @@
   ];
 
   homebrew.casks = [
+    "amethyst"
     "bartender"
     "cleanshot"
     "dash"
