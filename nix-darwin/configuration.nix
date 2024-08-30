@@ -27,6 +27,9 @@
   # The platform the configuration will be used on.
   nixpkgs.hostPlatform = "aarch64-darwin";
 
+  # System prompt for sudo operations
+  security.pam.enableSudoTouchIdAuth = true;
+
   users.users.phinze = {
     name = "phinze";
     home = "/Users/phinze";
