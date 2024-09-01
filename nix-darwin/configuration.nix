@@ -43,7 +43,20 @@
 
   homebrew.enable = true;
 
+  # Remove homebrew things unmanaged by nix
+  homebrew.onActivation.cleanup = "uninstall";
+
+  # Autoupdate everything homebrew
+  homebrew.global.autoUpdate = true;
+
+  homebrew.taps = [
+    "homebrew/services"
+    "nikitabobko/tap"
+    "superbrothers/opener"
+  ];
+
   homebrew.brews = [
+    "gh"
     {
       name = "superbrothers/opener/opener";
       start_service = true;
@@ -51,14 +64,20 @@
   ];
 
   homebrew.casks = [
+    "1password"
     "bartender"
+    "calibre"
     "cleanshot"
     "dash"
     "discord"
+    "elgato-control-center"
     "firefox"
     "google-chrome"
+    "istat-menus"
+    "keepingyouawake"
     "meetingbar"
     "nikitabobko/tap/aerospace"
+    "obsidian"
     "raycast"
     "rectangle"
     "rocket"
