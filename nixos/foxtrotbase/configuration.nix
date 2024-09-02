@@ -78,6 +78,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Enable qemu guest agent
+  services.qemuGuest.enable = true;
+
   # Midwest ho!
   time.timeZone = "America/Chicago";
 
@@ -122,7 +125,9 @@
   # easy to visit stuff in here. We only use NAT networking anyways.
   networking.firewall.enable = false;
 
-  networking.hostName = "echobase";
+  networking.hostName = "foxtrotbase";
+
+  programs.fish.enable = true;
 
   users.users = {
     phinze = {
@@ -133,6 +138,8 @@
       ];
 
       extraGroups = ["docker" "wheel"];
+
+      shell = pkgs.fish;
     };
   };
 
