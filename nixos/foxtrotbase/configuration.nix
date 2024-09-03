@@ -92,7 +92,12 @@
 
   # Raise ulimits because we love to open files
   security.pam.loginLimits = [
-    { domain = "*"; type = "-"; item = "nofile"; value = "65535"; }
+    {
+      domain = "*";
+      type = "-";
+      item = "nofile";
+      value = "65535";
+    }
   ];
 
   # Packages we want in system profile.
@@ -152,8 +157,8 @@
       PasswordAuthentication = false;
     };
     extraConfig = ''
-    # For opener
-    StreamLocalBindUnlink yes
+      # For opener
+      StreamLocalBindUnlink yes
     '';
   };
 
