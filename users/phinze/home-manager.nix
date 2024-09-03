@@ -235,6 +235,9 @@ let sources = import ../../nix/sources.nix; in {
     text = ''
       filter_mode_shell_up_key_binding = "session"
       update_check = false
+
+      [sync]
+      records = true
     '';
   };
 
