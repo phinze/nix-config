@@ -11,3 +11,5 @@ I do most of my work SSHed into a NixOS VM running in my homelab. I use a `tmux`
 These configs are not designed for anybody else but me to use, but you're welcome to look through them and ask questions if you like.
 
 Reading other people's published configs is a major part of how I've learned Nix, and so I publish my configs in that same spirit of shared knowledge and learning.
+
+If you're looking for a starting point, I'd recommend [Misterio77's starter configs](https://github.com/Misterio77/nix-starter-configs), which is what I used as the starting point for this repo.
