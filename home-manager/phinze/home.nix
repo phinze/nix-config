@@ -1,9 +1,7 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 {
-  inputs,
   outputs,
-  lib,
   config,
   pkgs,
   ...
@@ -157,14 +155,15 @@
     enable = true;
     shortcut = "a";
     escapeTime = 0;
-    terminal = "screen-256color";
+    terminal = "tmux-256color";
     historyLimit = 100000;
     keyMode = "vi";
 
     plugins = with pkgs.tmuxPlugins; [
-      sensible
-      vim-tmux-navigator
       catppuccin
+      sensible
+      session-wizard
+      vim-tmux-navigator
       {
         plugin = pain-control;
         extraConfig = ''
@@ -181,9 +180,6 @@
     extraConfig = ''
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
-
-      # Recommended by nvim :checkhealth
-      set-option -sa terminal-features ',screen-256color:RGB'
     '';
   };
 
