@@ -20,4 +20,9 @@
       config.allowUnfree = true;
     };
   };
+
+  # My configured copy of neovim
+  nixvim = final: _prev: {
+    nixvim = inputs.nixvim-config.packages.${_prev.system}.default;
+  };
 }
