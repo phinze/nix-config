@@ -78,41 +78,43 @@
     nix-direnv.enable = true;
   };
 
-  programs.fish = {
-    enable = true;
+  programs.fish =
+    {
+      enable = true;
 
-    plugins = with pkgs.fishPlugins; [
-      {
-        name = "pure";
-        src = pure.src;
-      }
-      {
-        name = "foreign-env";
-        src = foreign-env.src;
-      }
-      {
-        name = "fzf-fish";
-        src = fzf-fish.src;
-      }
-    ];
+      plugins = with pkgs.fishPlugins; [
+        {
+          name = "pure";
+          src = pure.src;
+        }
+        {
+          name = "foreign-env";
+          src = foreign-env.src;
+        }
+        {
+          name = "fzf-fish";
+          src = fzf-fish.src;
+        }
+      ];
 
-    # any-nix-shell helps fish stick around in nix subshells
-    interactiveShellInit = ''
-      ${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source
-    '';
+      # any-nix-shell helps fish stick around in nix subshells
+      interactiveShellInit = ''
+        ${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source
+      '';
+    }
+    // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
+      loginShellInit = let
+        # This naive quoting is good enough in this case. There shouldn't be any
+        # double quotes in the input string, and it needs to be double quoted in case
+        # it contains a space (which is unlikely!)
+        dquote = str: "\"" + str + "\"";
 
-    loginShellInit = let
-      # This naive quoting is good enough in this case. There shouldn't be any
-      # double quotes in the input string, and it needs to be double quoted in case
-      # it contains a space (which is unlikely!)
-      dquote = str: "\"" + str + "\"";
-
-      makeBinPathList = map (path: path + "/bin");
-    in ''
-      fish_add_path --move --prepend --path ${lib.concatMapStringsSep " " dquote (makeBinPathList osConfig.environment.profiles)}
-      set fish_user_paths $fish_user_paths
-    '';
-  };
+        makeBinPathList = map (path: path + "/bin");
+      in ''
+        fish_add_path --move --prepend --path ${lib.concatMapStringsSep " " dquote (makeBinPathList osConfig.environment.profiles)}
+        set fish_user_paths $fish_user_paths
+      '';
+    };
 
   programs.fd.enable = true;
 
