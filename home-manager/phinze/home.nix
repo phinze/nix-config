@@ -179,7 +179,7 @@
     ];
 
     extraConfig = ''
-      # Try and get clipboard working
+      # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
 
       # Recommended by nvim :checkhealth
