@@ -60,6 +60,10 @@
     vim = "nvim";
   };
 
+  home.sessionVariables = {
+    EDITOR = "nvim";
+  };
+
   home.packages = with pkgs; [
     ghq
     nixvim
