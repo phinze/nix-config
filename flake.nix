@@ -15,12 +15,16 @@
 
     nixvim-config.url = "github:phinze/nixvim-config";
     nixvim-config.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
+    nix-darwin.url = "github:LnL7/nix-darwin/master";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
     self,
     nixpkgs,
     home-manager,
+    nix-darwin,
     ...
   } @ inputs: let
     inherit (self) outputs;
@@ -75,6 +79,25 @@
           # > Our main home-manager configuration file <
           ./home-manager/phinze/home.nix
         ];
+      };
+    };
+
+    # Darwin machines
+    darwinConfigurations = {
+      manticore = nix-darwin.lib.darwinSystem {
+        modules = [
+          nix-darwin/configuration.nix
+          home-manager.darwinModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "nix-backup";
+            home-manager.users.phinze = import ./home-manager/phinze/home.nix;
+          }
+        ];
+        inputs = {
+          inherit self;
+        };
       };
     };
   };
