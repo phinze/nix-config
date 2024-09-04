@@ -30,8 +30,17 @@
   # The platform the configuration will be used on.
   nixpkgs.hostPlatform = "aarch64-darwin";
 
-  # System prompt for sudo operations
-  security.pam.enableSudoTouchIdAuth = true;
+  # System prompt for sudo operations, preserved within tmux with pam_reattach
+  # TODO: This can be reverted to home-manager options once
+  #       https://github.com/LnL7/nix-darwin/pull/1020/ is merged in some form
+  # security.pam.enableSudoTouchIdAuth = true;
+  environment.etc."pam.d/sudo_local" = {
+    enable = true;
+    text = ''
+      auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so
+      auth       sufficient     pam_tid.so
+    '';
+  };
 
   users.users.phinze = {
     name = "phinze";
@@ -41,7 +50,7 @@
     # To workaround on system bootstrap, need to manually:
     #   - Add /etc/profiles/per-user/phinze/bin/fish to /etc/shells
     #   - chsh -s /etc/profiles/per-user/phinze/bin/fish
-    # shell = pkgs.fish;
+    shell = pkgs.fish;
   };
 
   homebrew.enable = true;

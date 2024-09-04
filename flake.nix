@@ -69,6 +69,18 @@
       };
     };
 
+    # Darwin machines
+    # Run with `darwin-rebuild --flake .`
+    darwinConfigurations = {
+      manticore = nix-darwin.lib.darwinSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          ./nix-darwin/manticore/configuration.nix
+          ./nix-darwin/manticore/home-manager.nix
+        ];
+      };
+    };
+
     # Standalone home-manager configuration entrypoint
     # Available through 'home-manager --flake .#your-username@your-hostname'
     homeConfigurations = {
@@ -79,25 +91,6 @@
           # > Our main home-manager configuration file <
           ./home-manager/phinze/home.nix
         ];
-      };
-    };
-
-    # Darwin machines
-    darwinConfigurations = {
-      manticore = nix-darwin.lib.darwinSystem {
-        modules = [
-          nix-darwin/configuration.nix
-          home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.backupFileExtension = "nix-backup";
-            home-manager.users.phinze = import ./home-manager/phinze/home.nix;
-          }
-        ];
-        inputs = {
-          inherit self;
-        };
       };
     };
   };

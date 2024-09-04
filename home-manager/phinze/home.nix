@@ -3,7 +3,9 @@
 {
   outputs,
   config,
+  osConfig,
   pkgs,
+  lib,
   ...
 }: {
   # You can import other home-manager modules here
@@ -46,7 +48,10 @@
 
   home = {
     username = "phinze";
-    homeDirectory = "/home/phinze";
+    homeDirectory =
+      if pkgs.stdenv.isDarwin
+      then "/Users/phinze"
+      else "/home/phinze";
   };
 
   home.shellAliases = {
@@ -90,6 +95,18 @@
     # any-nix-shell helps fish stick around in nix subshells
     interactiveShellInit = ''
       ${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source
+    '';
+
+    loginShellInit = let
+      # This naive quoting is good enough in this case. There shouldn't be any
+      # double quotes in the input string, and it needs to be double quoted in case
+      # it contains a space (which is unlikely!)
+      dquote = str: "\"" + str + "\"";
+
+      makeBinPathList = map (path: path + "/bin");
+    in ''
+      fish_add_path --move --prepend --path ${lib.concatMapStringsSep " " dquote (makeBinPathList osConfig.environment.profiles)}
+      set fish_user_paths $fish_user_paths
     '';
   };
 
@@ -185,8 +202,8 @@
 
   programs.zoxide.enable = true;
 
-  services.gpg-agent = {
-    enable = pkgs.stdenv.isLinux;
+  services.gpg-agent = lib.mkIf pkgs.stdenv.isLinux {
+    enable = true;
     pinentryPackage = pkgs.pinentry-tty;
 
     # cache the keys forever so we don't get asked for a password
@@ -195,7 +212,7 @@
   };
 
   # Nicely reload system units when changing configs
-  systemd.user.startServices = "sd-switch";
+  systemd.user.startServices = lib.mkIf pkgs.stdenv.isLinux "sd-switch";
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "24.05";
