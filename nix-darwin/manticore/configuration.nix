@@ -1,10 +1,13 @@
-{ inputs, pkgs, home-manager, ... }: {
+{
+  inputs,
+  pkgs,
+  ...
+}: {
   # List packages installed in system profile. To search by name, run:
   # $ nix-env -qaP | grep wget
-  environment.systemPackages =
-    [
-      pkgs.mosh
-    ];
+  environment.systemPackages = [
+    pkgs.mosh
+  ];
 
   # Auto upgrade nix package and the daemon service.
   services.nix-daemon.enable = true;
@@ -14,7 +17,7 @@
   nix.settings.experimental-features = "nix-command flakes";
 
   # Create /etc/zshrc that loads the nix-darwin environment.
-  programs.zsh.enable = true;  # default shell on catalina
+  programs.zsh.enable = true; # default shell on catalina
   # programs.fish.enable = true;
 
   # Set Git commit hash for darwin-version.
@@ -27,8 +30,17 @@
   # The platform the configuration will be used on.
   nixpkgs.hostPlatform = "aarch64-darwin";
 
-  # System prompt for sudo operations
-  security.pam.enableSudoTouchIdAuth = true;
+  # System prompt for sudo operations, preserved within tmux with pam_reattach
+  # TODO: This can be reverted to home-manager options once
+  #       https://github.com/LnL7/nix-darwin/pull/1020/ is merged in some form
+  # security.pam.enableSudoTouchIdAuth = true;
+  environment.etc."pam.d/sudo_local" = {
+    enable = true;
+    text = ''
+      auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so
+      auth       sufficient     pam_tid.so
+    '';
+  };
 
   users.users.phinze = {
     name = "phinze";
@@ -38,7 +50,7 @@
     # To workaround on system bootstrap, need to manually:
     #   - Add /etc/profiles/per-user/phinze/bin/fish to /etc/shells
     #   - chsh -s /etc/profiles/per-user/phinze/bin/fish
-    # shell = pkgs.fish;
+    shell = pkgs.fish;
   };
 
   homebrew.enable = true;
