@@ -65,11 +65,46 @@
   };
 
   home.packages = with pkgs; [
-    ghq
-    nixvim
+    ghq # Clone repos into dir structure
+    nixvim # My configured copy of neovim
   ];
 
-  programs.atuin.enable = true;
+  programs.atuin = {
+    enable = true;
+    settings = {
+      # Nix will handle updates tyvm
+      update_check = false;
+
+      # Don't intersperse global history when just pressing up arrow
+      filter_mode_shell_up_key_binding = "session";
+
+      # New default in recent versions, enter to run, tab to complete
+      enter_accept = true;
+
+      # Enable sync v2 which is the new default
+      sync = {
+        records = true;
+      };
+
+      # Suggestions from default config to make stats more interesting
+      stats = {
+        common_subcommands = [
+          "docker"
+          "git"
+          "go"
+          "nix"
+          "systemctl"
+          "tmux"
+        ];
+        ignored_commands = [
+          "cd"
+          "ls"
+          "vi"
+          "vim"
+        ];
+      };
+    };
+  };
 
   programs.bat.enable = true;
 
@@ -97,10 +132,24 @@
         }
       ];
 
-      # any-nix-shell helps fish stick around in nix subshells
-      interactiveShellInit = ''
-        ${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source
-      '';
+      functions = {
+        ghq = {
+          description = "wraps ghq utility to provide 'look' subcommand which cds to repo";
+          body = ''
+            if test "$argv[1]" = "look" -a -n "$argv[2]"
+                cd (command ghq list -e -p $argv[2])
+                return
+            end
+
+            command ghq $argv
+          '';
+        };
+      };
+
+      interactiveShellInit = lib.concatLines [
+        # any-nix-shell helps fish stick around in nix subshells
+        "${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source"
+      ];
     }
     // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
       loginShellInit = let
@@ -215,6 +264,14 @@
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
+  };
+
+  xdg.configFile."ghostty/config" = lib.mkIf pkgs.stdenv.isDarwin {
+    source = ./ghostty.config;
+  };
+
+  xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.isDarwin {
+    source = ./aerospace.toml;
   };
 
   # Nicely reload system units when changing configs
