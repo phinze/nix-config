@@ -96,6 +96,7 @@
     "signal"
     "slack"
     "teamviewer"
+    "vmware-fusion"
     "zoom"
   ];
 
