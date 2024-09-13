@@ -87,6 +87,7 @@
     "google-chrome"
     "istat-menus"
     "keepingyouawake"
+    "keymapp"
     "meetingbar"
     "nikitabobko/tap/aerospace"
     "obsidian"
