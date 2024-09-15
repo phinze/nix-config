@@ -234,7 +234,13 @@
     plugins = with pkgs.tmuxPlugins; [
       catppuccin
       sensible
-      session-wizard
+      {
+        plugin = session-wizard;
+        extraConfig = ''
+          # custom session-wizard activation key
+          set -g @session-wizard 't'
+        '';
+      }
       vim-tmux-navigator
       {
         plugin = pain-control;
