@@ -331,11 +331,11 @@
         "nixvim": "nixvim"
       },
       "locked": {
-        "lastModified": 1725461936,
-        "narHash": "sha256-8k3x3RwkD/b6A5JL0BtTXOZ+u6B7Xc1Nzu/Tt84DH3k=",
+        "lastModified": 1726433533,
+        "narHash": "sha256-wTwgw5A12lvOhT8RNXQmvJFsDWK6WBIAzQJ17sX3hKg=",
         "owner": "phinze",
         "repo": "nixvim-config",
-        "rev": "facd568b103a37b36546d2f3db2dc2fe69b64fdf",
+        "rev": "cc8f82f5b260192356a71171bdb4931f6cbdde14",
         "type": "github"
       },
       "original": {
