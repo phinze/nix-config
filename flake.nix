@@ -21,7 +21,6 @@
   outputs = {
     self,
     nixpkgs,
-    home-manager,
     nix-darwin,
     ...
   } @ inputs: let
@@ -66,19 +65,6 @@
         modules = [
           ./nix-darwin/manticore/configuration.nix
           ./nix-darwin/manticore/home-manager.nix
-        ];
-      };
-    };
-
-    # Standalone home-manager configuration entrypoint
-    # Available through 'home-manager --flake .#your-username@your-hostname'
-    homeConfigurations = {
-      "phinze@foxtrotbase" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux; # Home-manager requires 'pkgs' instance
-        extraSpecialArgs = {inherit inputs outputs;};
-        modules = [
-          # > Our main home-manager configuration file <
-          ./home-manager/phinze/home.nix
         ];
       };
     };
