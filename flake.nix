@@ -55,6 +55,16 @@
           ./nixos/foxtrotbase/home-manager.nix
         ];
       };
+
+      # A VMware Fusion VM for isolation on manticore
+      victormike = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          # > Our main nixos configuration file <
+          ./nixos/victormike/configuration.nix
+          ./nixos/victormike/home-manager.nix
+        ];
+      };
     };
 
     # Darwin machines
