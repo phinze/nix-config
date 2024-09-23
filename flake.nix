@@ -77,6 +77,13 @@
           ./nix-darwin/manticore/home-manager.nix
         ];
       };
+      phinze-ts-mbp = nix-darwin.lib.darwinSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          ./nix-darwin/phinze-ts-mbp/configuration.nix
+          ./nix-darwin/phinze-ts-mbp/home-manager.nix
+        ];
+      };
     };
   };
 }
