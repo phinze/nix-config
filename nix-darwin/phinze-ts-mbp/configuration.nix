@@ -33,6 +33,9 @@
   system.defaults.dock.wvous-tl-corner = 1;
   system.defaults.dock.wvous-tr-corner = 1;
 
+  # I'll use iStat Menus for clock
+  system.defaults.menuExtraClock.IsAnalog = true;
+
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
   system.stateVersion = 4;
