@@ -20,6 +20,26 @@
   programs.zsh.enable = true; # default shell on catalina
   # programs.fish.enable = true;
 
+  # Get dock out of the way
+  system.defaults.dock.autohide = true;
+  system.defaults.dock.static-only = true;
+
+  # Clear all hotcorner behaviors
+  system.defaults.dock.wvous-bl-corner = 1;
+  system.defaults.dock.wvous-br-corner = 1;
+  system.defaults.dock.wvous-tl-corner = 1;
+  system.defaults.dock.wvous-tr-corner = 1;
+
+  # I'll use iStat Menus for clock
+  system.defaults.menuExtraClock.IsAnalog = true;
+
+  # No natural scrolling
+  system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = false;
+
+  # Capslock -> Control on internal keyboard
+  system.keyboard.enableKeyMapping = true;
+  system.keyboard.remapCapsLockToControl = true;
+
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or "unknown-rev";
 
