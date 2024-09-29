@@ -65,6 +65,7 @@
   };
 
   home.packages = with pkgs; [
+    gh
     ghq # Clone repos into dir structure
     nixvim # My configured copy of neovim
   ];
