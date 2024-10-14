@@ -104,7 +104,6 @@
     "keymapp"
     "meetingbar"
     "obsidian"
-    "notion"
     "raycast"
     "rectangle"
     "rocket"
