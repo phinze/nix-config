@@ -108,6 +108,7 @@
     "rectangle"
     "rocket"
     "slack"
+    "tailscale"
     "vmware-fusion"
     "zoom"
   ];
