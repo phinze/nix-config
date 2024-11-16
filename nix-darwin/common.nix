@@ -102,6 +102,7 @@
     "istat-menus"
     "keepingyouawake"
     "keymapp"
+    "libreoffice"
     "meetingbar"
     "obsidian"
     "raycast"
