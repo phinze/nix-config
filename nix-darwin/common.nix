@@ -112,6 +112,7 @@
     "tailscale"
     "vmware-fusion"
     "zoom"
+    "zed"
   ];
 
   homebrew.masApps = {
