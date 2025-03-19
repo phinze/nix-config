@@ -125,6 +125,7 @@
 
   # Our primary method of accessing stuff
   services.tailscale.enable = true;
+  services.tailscale.useRoutingFeatures = "both";
 
   # Disable the firewall since we're in a VM and we want to make it
   # easy to visit stuff in here. We only use NAT networking anyways.
