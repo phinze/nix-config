@@ -242,7 +242,7 @@
         plugin = catppuccin;
         extraConfig = ''
           # Add hostname to statusbar
-          set -g @catppuccin_host "on"
+          set -g @catppuccin_status_modules_right "application session host"
         '';
       }
       sensible
