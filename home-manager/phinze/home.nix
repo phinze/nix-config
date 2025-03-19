@@ -238,7 +238,13 @@
     keyMode = "vi";
 
     plugins = with pkgs.tmuxPlugins; [
-      catppuccin
+      {
+        plugin = catppuccin;
+        extraConfig = ''
+          # Add hostname to statusbar
+          set -g @catppuccin_host "on"
+        '';
+      }
       sensible
       {
         plugin = session-wizard;
