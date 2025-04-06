@@ -147,12 +147,10 @@
         };
       };
 
-      shellAliases = {
-        # nix version of https://github.com/27medkamal/tmux-session-wizard?tab=readme-ov-file#optional-using-the-script-outside-of-tmux
-        t = "${pkgs.tmuxPlugins.session-wizard}/share/tmux-plugins/session-wizard/session-wizard.sh";
-      };
-
       interactiveShellInit = lib.concatLines [
+        # nix version of https://github.com/27medkamal/tmux-session-wizard?tab=readme-ov-file#optional-using-the-script-outside-of-tmux
+        "fish_add_path ${pkgs.tmuxPlugins.session-wizard}/share/tmux-plugins/session-wizard/bin"
+
         # any-nix-shell helps fish stick around in nix subshells
         "${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source"
       ];
