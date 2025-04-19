@@ -14,7 +14,7 @@
     nixvim-config.url = "github:phinze/nixvim-config";
     nixvim-config.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
-    nix-darwin.url = "github:LnL7/nix-darwin/master";
+    nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-24.11";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 
