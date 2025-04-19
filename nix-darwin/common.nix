@@ -35,7 +35,6 @@
 
   # Get dock out of the way
   system.defaults.dock.autohide = true;
-  system.defaults.dock.static-only = true;
 
   # Clear all hotcorner behaviors
   system.defaults.dock.wvous-bl-corner = 1;
@@ -43,28 +42,13 @@
   system.defaults.dock.wvous-tl-corner = 1;
   system.defaults.dock.wvous-tr-corner = 1;
 
+  # Clear all persistent apps from Dock
+  system.defaults.dock.persistent-apps = [];
+
   # Pin downloads folder to the dock
-  system.activationScripts.postUserActivation.text = let
-    dock = import ../modules/darwin/dock.nix {
-      dockItems = [
-        {
-          tile-data = {
-            file-data = {
-              _CFURLString = "file://${config.users.users.phinze.home}/Downloads";
-              _CFURLStringType = 15;
-            };
-            showas = 2;
-            arrangement = 2;
-            displayas = 1;
-          };
-          tile-type = "directory-tile";
-        }
-      ];
-      inherit lib config;
-    };
-  in ''
-    ${dock}
-  '';
+  # NOTE: static-only HAS to be false, or else no folder pinning works
+  system.defaults.dock.static-only = false;
+  system.defaults.dock.persistent-others = ["/${config.users.users.phinze.home}/Downloads"];
 
   # I'll use iStat Menus for clock
   system.defaults.menuExtraClock.IsAnalog = true;
