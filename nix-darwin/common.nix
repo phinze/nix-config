@@ -110,6 +110,7 @@
     "discord"
     "elgato-control-center"
     "firefox"
+    "ghostty"
     "google-chrome"
     "istat-menus"
     "keepingyouawake"
