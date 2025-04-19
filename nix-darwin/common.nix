@@ -43,6 +43,7 @@
   system.defaults.dock.wvous-tr-corner = 1;
 
   # Clear all persistent apps from Dock
+  # TODO: empty set here doesn't actively clear; maybe add this feature upstream?
   system.defaults.dock.persistent-apps = [];
 
   # Pin downloads folder to the dock
