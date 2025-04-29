@@ -130,6 +130,7 @@
   homebrew.casks = [
     "1password"
     "bartender"
+    "claude"
     "cleanshot"
     "discord"
     "elgato-control-center"
