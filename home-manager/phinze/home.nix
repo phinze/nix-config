@@ -241,6 +241,9 @@
     historyLimit = 100000;
     keyMode = "vi";
 
+    # See https://github.com/nix-community/home-manager/issues/6266
+    sensibleOnTop = false;
+
     plugins = with pkgs.tmuxPlugins; [
       {
         plugin = catppuccin;
@@ -249,7 +252,6 @@
           set -g @catppuccin_status_modules_right "application session host"
         '';
       }
-      sensible
       {
         plugin = session-wizard;
         extraConfig = ''
