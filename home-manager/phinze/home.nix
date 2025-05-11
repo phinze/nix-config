@@ -1,6 +1,7 @@
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 {
+  inputs,
   outputs,
   config,
   osConfig,
@@ -10,14 +11,9 @@
 }: {
   # You can import other home-manager modules here
   imports = [
-    # If you want to use modules your own flake exports (from modules/home-manager):
-    # outputs.homeManagerModules.example
-
-    # Or modules exported from other flakes (such as nix-colors):
-    # inputs.nix-colors.homeManagerModules.default
-
-    # You can also split up your configuration and import pieces of it here:
-    # ./nvim.nix
+    # Allows mistyped commands to suggest packages instead of displaying a
+    # command-not-found error
+    inputs.nix-index-database.hmModules.nix-index
   ];
 
   nixpkgs = {
@@ -142,7 +138,7 @@
                 return
             end
 
-            command ghq $argv
+              command ghq $argv
           '';
         };
       };
@@ -230,6 +226,9 @@
       pkgs.gh-poi
     ];
   };
+
+  # Allows quick one-off installation & usage of commands with `, <cmd>`
+  programs.nix-index-database.comma.enable = true;
 
   programs.ripgrep.enable = true;
 
