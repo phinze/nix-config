@@ -9,7 +9,10 @@
   ];
 
   home-manager = {
-    extraSpecialArgs = {inherit inputs outputs;};
+    extraSpecialArgs = {
+      inherit inputs outputs;
+      nodeConfig = {};
+    };
     users = {
       # Import your home-manager configuration
       phinze = import ../../home-manager/phinze/home.nix;
