@@ -7,6 +7,7 @@
   osConfig,
   pkgs,
   lib,
+  nodeConfig,
   ...
 }: {
   # You can import other home-manager modules here
@@ -189,8 +190,12 @@
     userName = "Paul Hinze";
     userEmail = "phinze@phinze.com";
     signing = {
-      key = "70B94C31D170FB29";
+      key = lib.mkDefault (nodeConfig.git.signing.key or "70B94C31D170FB29");
       signByDefault = true;
+
+      # TODO: when home-manager gets these first class in the next release, wire them in instead of the extraConfig
+      # format = lib.mkDefault (nodeConfig.git.signing.format or "openpgp");
+      # signer = lib.mkDefault (nodeConfig.git.signing.signer or null);
     };
     aliases = {
       co = "checkout";
@@ -199,18 +204,20 @@
     ignores = [
       ".direnv"
     ];
-    extraConfig = {
-      branch.autosetuprebase = "always";
-      color.ui = true;
-      core.askPass = ""; # needs to be empty to use terminal for ask pass
-      credential.helper = "!gh auth git-credential";
-      github.user = "phinze";
-      push.default = "tracking";
-      init.defaultBranch = "main";
-      safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
-      push.autoSetupRemote = true;
-      ghq.root = "~/src";
-    };
+    extraConfig =
+      {
+        branch.autosetuprebase = "always";
+        color.ui = true;
+        core.askPass = ""; # needs to be empty to use terminal for ask pass
+        credential.helper = "!gh auth git-credential";
+        github.user = "phinze";
+        push.default = "tracking";
+        init.defaultBranch = "main";
+        safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
+        push.autoSetupRemote = true;
+        ghq.root = "~/src";
+      }
+      // (nodeConfig.git.extraConfig or {});
   };
 
   programs.gh = {
