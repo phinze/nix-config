@@ -28,6 +28,10 @@
         extraPackages = with inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin; [
           github-mcp-server
         ];
+        # Host-specific homebrew casks for phinze-mrn-mbp
+        extraCasks = [
+          "gather"
+        ];
       };
     };
     useUserPackages = true;
