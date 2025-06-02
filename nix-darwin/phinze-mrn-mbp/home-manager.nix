@@ -33,6 +33,7 @@
         # Host-specific homebrew casks for phinze-mrn-mbp
         extraCasks = [
           "gather"
+          "linear"
         ];
       };
     };
