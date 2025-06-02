@@ -304,6 +304,7 @@
     source = ./aerospace.toml;
   };
 
+
   # Nicely reload system units when changing configs
   systemd.user.startServices = lib.mkIf pkgs.stdenv.isLinux "sd-switch";
 

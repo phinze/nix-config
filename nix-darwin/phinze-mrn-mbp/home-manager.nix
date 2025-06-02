@@ -27,6 +27,8 @@
         # Host-specific packages for phinze-mrn-mbp
         extraPackages = with inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin; [
           github-mcp-server
+        ] ++ [
+          outputs.packages.aarch64-darwin.linear-mcp-server
         ];
         # Host-specific homebrew casks for phinze-mrn-mbp
         extraCasks = [
