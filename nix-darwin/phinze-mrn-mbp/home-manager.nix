@@ -24,6 +24,10 @@
             gpg.ssh.program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
           };
         };
+        # Host-specific packages for phinze-mrn-mbp
+        extraPackages = with inputs.nixpkgs-unstable.legacyPackages.aarch64-darwin; [
+          github-mcp-server
+        ];
       };
     };
     useUserPackages = true;

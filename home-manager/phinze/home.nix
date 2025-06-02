@@ -65,7 +65,7 @@
     gh
     ghq # Clone repos into dir structure
     nixvim # My configured copy of neovim
-  ];
+  ] ++ (nodeConfig.extraPackages or []);
 
   programs.atuin = {
     enable = true;
