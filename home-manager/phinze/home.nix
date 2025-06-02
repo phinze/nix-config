@@ -65,6 +65,7 @@
     gh
     ghq # Clone repos into dir structure
     nixvim # My configured copy of neovim
+    unstable.claude-code
   ] ++ (nodeConfig.extraPackages or []);
 
   programs.atuin = {
