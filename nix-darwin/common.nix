@@ -145,8 +145,9 @@
     "slack"
     "tailscale"
     "vmware-fusion"
-    "zoom"
     "zed"
+    "zen-browser"
+    "zoom"
   ];
 
   homebrew.masApps = {
