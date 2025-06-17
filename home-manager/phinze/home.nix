@@ -150,7 +150,7 @@
         "fish_add_path ${pkgs.tmuxPlugins.session-wizard}/share/tmux-plugins/session-wizard/bin"
 
         # any-nix-shell helps fish stick around in nix subshells
-        "${pkgs.any-nix-shell}/bin/any-nix-shell fish --info-right | source"
+        "${pkgs.any-nix-shell}/bin/any-nix-shell fish | source"
       ];
     }
     // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
@@ -304,7 +304,6 @@
   xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.isDarwin {
     source = ./aerospace.toml;
   };
-
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = lib.mkIf pkgs.stdenv.isLinux "sd-switch";
