@@ -3,7 +3,10 @@
     "allow": [
       "Bash(git add:*)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:linear.app)"
+      "WebFetch(domain:linear.app)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(readlink:*)"
     ],
     "deny": []
   }
