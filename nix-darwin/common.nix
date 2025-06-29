@@ -29,6 +29,9 @@
   # Set Git commit hash for darwin-version.
   system.configurationRevision = inputs.self.rev or inputs.self.dirtyRev or "unknown-rev";
 
+  # Tell nix-darwin about primaryUser for root migration circa 25.05
+  system.primaryUser = "phinze";
+
   # Get dock out of the way
   system.defaults.dock.autohide = true;
 
@@ -47,7 +50,7 @@
   system.defaults.dock.static-only = false;
 
   # Pin downloads folder to the dock
-  system.activationScripts.postUserActivation.text = let
+  system.activationScripts.configureDock.text = let
     dock = import ../modules/darwin/dock.nix {
       dockItems = [
         {
@@ -66,8 +69,8 @@
       inherit lib config;
     };
   in ''
-    ${dock}
-    killall Dock
+    sudo -u ${config.system.primaryUser} ${dock}
+    sudo -u ${config.system.primaryUser} killall Dock
   '';
 
   # I'll use iStat Menus for clock

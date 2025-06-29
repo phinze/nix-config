@@ -22,7 +22,7 @@ This is a personal Nix configuration repository that manages multiple machines u
 - **macOS laptops**: Managed by nix-darwin with Homebrew for GUI apps
 
 ### Key Technologies
-- Nix flakes with inputs following nixpkgs stable (24.11) and unstable
+- Nix flakes with inputs following nixpkgs stable and unstable
 - Home Manager for user environment management
 - Custom nixvim configuration (external flake)
 - nix-index-database for command-not-found functionality
