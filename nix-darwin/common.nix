@@ -124,7 +124,6 @@
 
   homebrew.casks = [
     "1password"
-    "arc"
     "bartender"
     "claude"
     "cleanshot"
@@ -146,7 +145,7 @@
     "tailscale"
     "vmware-fusion"
     "zed"
-    "zen-browser"
+    "zen"
     "zoom"
   ];
 
