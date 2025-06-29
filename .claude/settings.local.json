@@ -6,7 +6,9 @@
       "WebFetch(domain:linear.app)",
       "Bash(find:*)",
       "Bash(ls:*)",
-      "Bash(readlink:*)"
+      "Bash(readlink:*)",
+      "Bash(nix flake check:*)",
+      "Bash(nix fmt:*)"
     ],
     "deny": []
   }
