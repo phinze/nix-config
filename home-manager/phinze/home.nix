@@ -67,6 +67,7 @@
     [
       gh
       ghq # Clone repos into dir structure
+      jq
       nixvim # My configured copy of neovim
       unstable.claude-code
     ]
