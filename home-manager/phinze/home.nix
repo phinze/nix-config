@@ -268,7 +268,9 @@
         plugin = session-wizard;
         extraConfig = ''
           # custom session-wizard activation key
-          set -g @session-wizard 't'
+          set -g @session-wizard "t"
+          # sometimes I edit multiple repos w/ the same name
+          set -g @session-wizard-mode "full-path"
         '';
       }
       vim-tmux-navigator
