@@ -57,16 +57,19 @@
     vim = "nvim";
   };
 
-  home.sessionVariables = {
-    EDITOR = "nvim";
-  } // lib.optionalAttrs pkgs.stdenv.isDarwin {
-    SSH_AUTH_SOCK = "${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
-  };
+  home.sessionVariables =
+    {
+      EDITOR = "nvim";
+    }
+    // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      SSH_AUTH_SOCK = "${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
+    };
 
   home.packages = with pkgs;
     [
       gh
       ghq # Clone repos into dir structure
+      gwq # Git worktree manager that works with ghq
       jq
       nixvim # My configured copy of neovim
       unstable.claude-code
@@ -148,6 +151,51 @@
               command ghq $argv
           '';
         };
+
+        wt = {
+          description = "Quick switch between ghq repos and their worktrees";
+          body = ''
+            # If we're in a ghq repo, offer to switch to a worktree
+            set -l current_path (pwd)
+            if string match -q "$HOME/src/*" $current_path
+                # Extract the repo path relative to ghq root
+                set -l repo_rel_path (string replace "$HOME/src/" "" $current_path | string split -m 2 "/")[1-3] | string join "/"
+
+                # Check if we have worktrees for this repo
+                set -l worktrees (gwq list --path | grep -E "^$HOME/worktrees/$repo_rel_path/")
+
+                if test (count $worktrees) -gt 0
+                    # Use fzf to select a worktree
+                    set -l selected (printf "%s\n" $worktrees | fzf --height=20% --reverse --header="Select worktree")
+                    if test -n "$selected"
+                        cd $selected
+                    end
+                else
+                    echo "No worktrees found for current repo. Use 'git wt' to create one."
+                end
+            # If we're in a worktree, offer to go back to the main repo
+            else if string match -q "$HOME/worktrees/*" $current_path
+                set -l repo_path (string replace "$HOME/worktrees/" "$HOME/src/" $current_path | string split -m 3 "/" | string join "/")
+                if test -d $repo_path
+                    cd $repo_path
+                else
+                    echo "Could not find main repo at $repo_path"
+                end
+            else
+                echo "Not in a ghq repo or gwq worktree"
+            end
+          '';
+        };
+
+        wtcd = {
+          description = "cd to a gwq worktree using fuzzy finder";
+          body = ''
+            set -l worktree (gwq list --path | fzf --height=40% --reverse)
+            if test -n "$worktree"
+                cd $worktree
+            end
+          '';
+        };
       };
 
       interactiveShellInit = lib.concatLines [
@@ -156,6 +204,9 @@
 
         # any-nix-shell helps fish stick around in nix subshells
         "${pkgs.any-nix-shell}/bin/any-nix-shell fish | source"
+
+        # gwq shell completion
+        "gwq completion fish | source"
       ];
     }
     // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
@@ -206,6 +257,11 @@
     aliases = {
       co = "checkout";
       st = "status";
+      wt = "!gwq";
+      wtl = "!gwq list";
+      wtc = "!gwq create";
+      wtd = "!gwq delete";
+      wts = "!gwq switch";
     };
     ignores = [
       ".direnv"
@@ -341,6 +397,25 @@
   xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.isDarwin {
     source = ./aerospace.toml;
   };
+
+  xdg.configFile."gwq/config.toml".text = ''
+    # Base directory for worktrees
+    worktree_base = "${config.home.homeDirectory}/worktrees"
+
+    # Template for worktree directory names
+    # Available variables: {{.Owner}}, {{.Repo}}, {{.Host}}, {{.BranchName}}
+    naming_template = "{{.Host}}/{{.Owner}}/{{.Repo}}/{{.BranchName}}"
+
+    # Enable tmux integration to automatically create sessions
+    enable_tmux = true
+
+    # Template for tmux session names when creating worktrees
+    # Available variables: {{.Owner}}, {{.Repo}}, {{.Host}}, {{.BranchName}}
+    tmux_session_name_template = "{{.Repo}}/{{.BranchName}}"
+
+    # Automatically switch to tmux session after creating worktree
+    tmux_switch_session = true
+  '';
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = lib.mkIf pkgs.stdenv.isLinux "sd-switch";
