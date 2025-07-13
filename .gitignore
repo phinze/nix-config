@@ -1,3 +1,6 @@
 # Nix build outputs
 result
 result-*
+
+# Local tmp dir for misc working files
+tmp/
