@@ -208,6 +208,13 @@
 
         # gwq shell completion
         "gwq completion fish | source"
+
+        # Add ~/bin to PATH if it exists
+        "fish_add_path ~/bin"
+
+        # Pure prompt settings
+        "set -g pure_shorten_window_title_current_directory_length 1"
+        "set -g pure_truncate_window_title_current_directory_keeps 2"
       ];
     }
     // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
