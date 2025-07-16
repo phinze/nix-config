@@ -70,6 +70,7 @@
       ccusage # Analyze Claude Code token usage and costs
       gh
       ghq # Clone repos into dir structure
+      google-cloud-sdk # I want to run gcloud from anywhere
       gwq # Git worktree manager that works with ghq
       jq
       nixvim # My configured copy of neovim
