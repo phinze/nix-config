@@ -164,7 +164,7 @@
                 set -l repo_rel_path (string replace "$HOME/src/" "" $current_path | string split -m 2 "/")[1-3] | string join "/"
 
                 # Check if we have worktrees for this repo
-                set -l worktrees (gwq list --path | grep -E "^$HOME/worktrees/$repo_rel_path/")
+                set -l worktrees (gwq list --json | jq -r --arg repo "$repo_rel_path" '.[] | select(.path | contains($repo)) | .path')
 
                 if test (count $worktrees) -gt 0
                     # Use fzf to select a worktree
@@ -192,7 +192,7 @@
         wtcd = {
           description = "cd to a gwq worktree using fuzzy finder";
           body = ''
-            set -l worktree (gwq list --path | fzf --height=40% --reverse)
+            set -l worktree (gwq list --json | jq -r '.[] | .path' | fzf --height=40% --reverse)
             if test -n "$worktree"
                 cd $worktree
             end
@@ -267,7 +267,7 @@
       co = "checkout";
       st = "status";
       wt = "!gwq";
-      wtl = "!gwq list";
+      wtl = "!gwq list --json | jq -r '.[] | \"\\(.branch) (\\(.path))\"'";
       wtc = "!gwq create";
       wtd = "!gwq delete";
       wts = "!gwq switch";
