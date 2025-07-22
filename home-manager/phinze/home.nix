@@ -157,46 +157,71 @@
         };
 
         wt = {
-          description = "Quick switch between ghq repos and their worktrees";
+          description = "Worktree management: fuzzy find, switch, or create";
           body = ''
-            # If we're in a ghq repo, offer to switch to a worktree
-            set -l current_path (pwd)
-            if string match -q "$HOME/src/*" $current_path
-                # Extract the repo path relative to ghq root
-                set -l repo_rel_path (string replace "$HOME/src/" "" $current_path | string split -m 2 "/")[1-3] | string join "/"
-
-                # Check if we have worktrees for this repo
-                set -l worktrees (gwq list --json | jq -r --arg repo "$repo_rel_path" '.[] | select(.path | contains($repo)) | .path')
-
-                if test (count $worktrees) -gt 0
-                    # Use fzf to select a worktree
-                    set -l selected (printf "%s\n" $worktrees | fzf --height=20% --reverse --header="Select worktree")
-                    if test -n "$selected"
-                        cd $selected
-                    end
-                else
-                    echo "No worktrees found for current repo. Use 'git wt' to create one."
-                end
-            # If we're in a worktree, offer to go back to the main repo
-            else if string match -q "$HOME/worktrees/*" $current_path
-                set -l repo_path (string replace "$HOME/worktrees/" "$HOME/src/" $current_path | string split -m 3 "/" | string join "/")
-                if test -d $repo_path
-                    cd $repo_path
-                else
-                    echo "Could not find main repo at $repo_path"
+            if test (count $argv) -eq 0
+                # No args: fuzzy find existing worktrees
+                set -l worktree (gwq list --json | jq -r '.[] | .path' | fzf --height=40% --reverse)
+                if test -n "$worktree"
+                    t $worktree
                 end
             else
-                echo "Not in a ghq repo or gwq worktree"
+                # Arg provided: check if worktree exists
+                set -l branch_name $argv[1]
+                set -l worktree_path (gwq get $branch_name 2>/dev/null)
+
+                if test -n "$worktree_path"
+                    # Worktree exists, switch to it
+                    t $worktree_path
+                else
+                    # Worktree doesn't exist, create it
+                    # Check if branch exists locally or remotely
+                    if git show-ref --verify --quiet refs/heads/$branch_name; or git ls-remote --heads origin $branch_name | grep -q .
+                        # Branch exists, use gwq add without -b
+                        gwq add $branch_name
+                    else
+                        # Branch doesn't exist, create new with -b
+                        gwq add -b $branch_name
+                    end
+
+                    if test $status -eq 0
+                        set -l new_worktree_path (gwq get $branch_name)
+                        t $new_worktree_path
+                    else
+                        echo "Failed to create worktree"
+                        return 1
+                    end
+                end
             end
           '';
         };
 
-        wtcd = {
-          description = "cd to a gwq worktree using fuzzy finder";
+        wtc = {
+          description = "Create worktree: interactive or with specified branch";
           body = ''
-            set -l worktree (gwq list --json | jq -r '.[] | .path' | fzf --height=40% --reverse)
-            if test -n "$worktree"
-                cd $worktree
+            if test (count $argv) -eq 0
+                # No args: interactive mode
+                gwq add -i
+            else
+                # Arg provided: create worktree
+                set -l branch_name $argv[1]
+
+                # Check if branch exists locally or remotely
+                if git show-ref --verify --quiet refs/heads/$branch_name; or git ls-remote --heads origin $branch_name | grep -q .
+                    # Branch exists, use gwq add without -b
+                    gwq add $branch_name
+                else
+                    # Branch doesn't exist, create new with -b
+                    gwq add -b $branch_name
+                end
+
+                if test $status -eq 0
+                    set -l worktree_path (gwq get $branch_name)
+                    t $worktree_path
+                else
+                    echo "Failed to create worktree"
+                    return 1
+                end
             end
           '';
         };
