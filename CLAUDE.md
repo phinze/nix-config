@@ -32,21 +32,34 @@ This is a personal Nix configuration repository that manages multiple machines u
 
 ### Building and Switching Configurations
 
+Using `nh` (nix-helper) for more convenient commands:
+
 For NixOS systems:
 ```bash
 # Build and switch on the current machine
-sudo nixos-rebuild switch --flake .
+nh os switch .
 
 # Build and switch a specific host
-sudo nixos-rebuild switch --flake .#foxtrotbase
+nh os switch . -- --flake .#foxtrotbase
 ```
 
 For macOS systems:
 ```bash
 # Build and switch darwin configuration
-darwin-rebuild switch --flake .
+nh darwin switch .
 
 # Build and switch specific host
+nh darwin switch . -- --flake .#phinze-mrn-mbp
+```
+
+Legacy commands (without nh):
+```bash
+# NixOS
+sudo nixos-rebuild switch --flake .
+sudo nixos-rebuild switch --flake .#foxtrotbase
+
+# macOS
+darwin-rebuild switch --flake .
 darwin-rebuild switch --flake .#phinze-mrn-mbp
 ```
 

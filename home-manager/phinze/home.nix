@@ -73,6 +73,7 @@
       google-cloud-sdk # I want to run gcloud from anywhere
       gwq # Git worktree manager that works with ghq
       jq
+      nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
       unstable.claude-code
     ]
