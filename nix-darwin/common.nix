@@ -49,29 +49,17 @@
   # NOTE: static-only HAS to be false, or else no folder pinning works
   system.defaults.dock.static-only = false;
 
-  # Pin downloads folder to the dock
-  system.activationScripts.configureDock.text = let
-    dock = import ../modules/darwin/dock.nix {
-      dockItems = [
-        {
-          tile-data = {
-            file-data = {
-              _CFURLString = "file://${config.users.users.phinze.home}/Downloads";
-              _CFURLStringType = 15;
-            };
-            showas = 1; # view content as fan
-            arrangement = 2; # sort by date added
-            displayas = 0; # display as stack
-          };
-          tile-type = "directory-tile";
-        }
-      ];
-      inherit lib config;
-    };
-  in ''
-    sudo -u ${config.system.primaryUser} ${dock}
-    sudo -u ${config.system.primaryUser} killall Dock
-  '';
+  # Use the new persistent-others configuration from PR #1431
+  system.defaults.dock.persistent-others = [
+    {
+      folder = {
+        path = "${config.users.users.phinze.home}/Downloads";
+        showas = "fan";
+        arrangement = "date-added";
+        displayas = "stack";
+      };
+    }
+  ];
 
   # I'll use iStat Menus for clock
   system.defaults.menuExtraClock.IsAnalog = true;
