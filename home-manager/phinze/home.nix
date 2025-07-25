@@ -70,6 +70,7 @@
       ccusage # Analyze Claude Code token usage and costs
       gh
       ghq # Clone repos into dir structure
+      git-trim # Smart cleanup of merged branches with worktree awareness
       google-cloud-sdk # I want to run gcloud from anywhere
       gwq # Git worktree manager that works with ghq
       jq
@@ -293,6 +294,7 @@
     aliases = {
       co = "checkout";
       st = "status";
+      trim = "!git-trim";
       wt = "!gwq";
       wtl = "!gwq list --json | jq -r '.[] | \"\\(.branch) (\\(.path))\"'";
       wtc = "!gwq create";
