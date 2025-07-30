@@ -133,7 +133,7 @@
     "discord"
     "elgato-control-center"
     "firefox"
-    "ghostty"
+    "ghostty@tip"
     "google-chrome"
     "istat-menus"
     "keepingyouawake"

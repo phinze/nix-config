@@ -436,7 +436,12 @@
   };
 
   xdg.configFile."ghostty/config" = lib.mkIf pkgs.stdenv.isDarwin {
-    source = ./ghostty.config;
+    text = builtins.readFile ./ghostty.config;
+  };
+
+  xdg.configFile."ghostty/shaders" = lib.mkIf pkgs.stdenv.isDarwin {
+    source = ./ghostty-shaders;
+    recursive = true;
   };
 
   xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.isDarwin {
