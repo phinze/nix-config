@@ -413,6 +413,10 @@
                 bind.address = "/home/phinze/.opener.sock";
                 host.address = "/Users/phinze/.opener.sock";
               }
+              {
+                bind.address = "/home/phinze/.bankshot.sock";
+                host.address = "/Users/phinze/.bankshot.sock";
+              }
             ];
           };
 
