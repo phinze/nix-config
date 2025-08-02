@@ -398,6 +398,9 @@
 
   programs.ssh = {
     enable = true;
+    controlMaster = "auto";
+    controlPath = "/tmp/ssh_mux_%h_%p_%r";
+    controlPersist = "10m";
     matchBlocks =
       {
         "foxtrotbase" =
