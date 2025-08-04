@@ -19,6 +19,9 @@
 
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
+    bankshot.url = "github:phinze/bankshot";
+    bankshot.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs = {

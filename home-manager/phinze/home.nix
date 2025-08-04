@@ -15,6 +15,8 @@
     # Allows mistyped commands to suggest packages instead of displaying a
     # command-not-found error
     inputs.nix-index-database.hmModules.nix-index
+    # Bankshot for opening files/URLs from remote systems
+    inputs.bankshot.homeManagerModules.default
   ];
 
   nixpkgs = {
@@ -391,6 +393,9 @@
     extraConfig = ''
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
+      
+      # Update environment variables when attaching to tmux
+      set -g update-environment "DISPLAY SSH_ASKPASS SSH_AGENT_PID SSH_CONNECTION WINDOWID XAUTHORITY PATH"
     '';
   };
 
@@ -473,6 +478,11 @@
     # Automatically switch to tmux session after creating worktree
     tmux_switch_session = true
   '';
+
+  programs.bankshot = {
+    enable = true;
+    enableXdgOpen = true;
+  };
 
   # Nicely reload system units when changing configs
   systemd.user.startServices = lib.mkIf pkgs.stdenv.isLinux "sd-switch";

@@ -105,12 +105,6 @@
     gnumake
     killall
     docker-compose
-
-    # Fake xdg-open for opener
-    # See https://github.com/superbrothers/opener
-    (writeShellScriptBin "xdg-open" ''
-      echo "''${@}" | nc -U "$HOME/.opener.sock"
-    '')
   ];
 
   # Docker is a system-level install.
