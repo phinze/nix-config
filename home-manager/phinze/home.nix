@@ -393,9 +393,9 @@
     extraConfig = ''
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
-      
+
       # Update environment variables when attaching to tmux
-      set -g update-environment "DISPLAY SSH_ASKPASS SSH_AGENT_PID SSH_CONNECTION WINDOWID XAUTHORITY PATH"
+      set -g update-environment "DISPLAY SSH_ASKPASS SSH_AUTH_SOCK SSH_CONNECTION PATH"
     '';
   };
 
