@@ -12,6 +12,27 @@ in
 
     export PATH="${pkgs.lib.makeBinPath runtimeDeps}:$PATH"
 
+    # Parse command line options
+    DRY_RUN=false
+    while [[ $# -gt 0 ]]; do
+      case $1 in
+        --dry-run|-n)
+          DRY_RUN=true
+          shift
+          ;;
+        --help|-h)
+          echo "Usage: git trim [--dry-run|-n]"
+          echo "  --dry-run, -n  Show what would be done without actually doing it"
+          exit 0
+          ;;
+        *)
+          echo "Unknown option: $1"
+          echo "Usage: git trim [--dry-run|-n]"
+          exit 1
+          ;;
+      esac
+    done
+
     # Colors for output
     RED='\033[0;31m'
     GREEN='\033[0;32m'
@@ -44,7 +65,11 @@ in
       fi
     fi
 
-    echo "Checking for branches merged to $MAIN_BRANCH..."
+    if [ "$DRY_RUN" = true ]; then
+      echo "DRY RUN: Checking for branches merged to $MAIN_BRANCH..."
+    else
+      echo "Checking for branches merged to $MAIN_BRANCH..."
+    fi
 
     # Get list of merged branches (excluding current branch and main/master)
     MERGED_BRANCHES=$(git branch --merged "$MAIN_BRANCH" | grep -v "^\*" | grep -v "^  $MAIN_BRANCH$" | grep -v "^  master$" || true)
@@ -64,11 +89,19 @@ in
 
       # Convert absolute path to relative path with ~ prefix
       # e.g., /home/phinze/src/github.com/foo/bar -> ~/src/github.com/foo/bar
-      local session_name="''${worktree_path/#$home_dir/~}"
+      # Use sed for the substitution since bash parameter expansion might have issues in Nix strings
+      local session_name=$(echo "$worktree_path" | sed "s|^$home_dir|~|")
+
+      # Replace dots with hyphens in session name (tmux doesn't allow dots)
+      session_name="''${session_name//./-}"
 
       if tmux has-session -t "$session_name" 2>/dev/null; then
-        echo "  Killing tmux session: $session_name"
-        tmux kill-session -t "$session_name"
+        if [ "$DRY_RUN" = true ]; then
+          echo "  Would kill tmux session: $session_name"
+        else
+          echo "  Killing tmux session: $session_name"
+          tmux kill-session -t "$session_name"
+        fi
       fi
     }
 
@@ -102,7 +135,11 @@ in
         if [ "$has_changes" = true ]; then
           echo -e "''${YELLOW}⚠''${NC}  Skipping $branch_name - working tree has uncommitted changes"
         else
-          echo -e "''${GREEN}✓''${NC}  Removing $branch_name (merged, working tree clean)"
+          if [ "$DRY_RUN" = true ]; then
+            echo -e "''${GREEN}✓''${NC}  Would remove $branch_name (merged, working tree clean)"
+          else
+            echo -e "''${GREEN}✓''${NC}  Removing $branch_name (merged, working tree clean)"
+          fi
 
           # Get the worktree path before removing it
           worktree_path=$(gwq get "$branch_name" 2>/dev/null || echo "")
@@ -113,15 +150,23 @@ in
           fi
 
           # Remove the worktree and branch
-          gwq remove -b "$branch_name"
+          if [ "$DRY_RUN" = true ]; then
+            echo "  Would run: gwq remove -b $branch_name"
+          else
+            gwq remove -b "$branch_name"
+          fi
         fi
       else
         # No working tree, safe to delete
-        echo -e "''${GREEN}✓''${NC}  Deleting $branch_name (merged, no working tree)"
-        git branch -d "$branch_name"
+        if [ "$DRY_RUN" = true ]; then
+          echo -e "''${GREEN}✓''${NC}  Would delete $branch_name (merged, no working tree)"
+          echo "  Would run: git branch -d $branch_name"
+        else
+          echo -e "''${GREEN}✓''${NC}  Deleting $branch_name (merged, no working tree)"
+          git branch -d "$branch_name"
+        fi
       fi
     done <<< "$MERGED_BRANCHES"
 
     echo "Branch cleanup complete!"
   ''
-
