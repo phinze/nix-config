@@ -115,12 +115,12 @@
   homebrew.global.autoUpdate = true;
 
   homebrew.taps = [
-    "superbrothers/opener"
+    "phinze/bankshot"
   ];
 
   homebrew.brews = [
     {
-      name = "superbrothers/opener/opener";
+      name = "phinze/bankshot/bankshot";
       start_service = true;
     }
   ];
