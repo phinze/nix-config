@@ -127,6 +127,7 @@
 
   homebrew.casks = [
     "1password"
+    "balenaetcher"
     "bartender"
     "claude"
     "cleanshot"
