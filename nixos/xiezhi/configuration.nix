@@ -48,8 +48,8 @@
 
   # Additional packages for this machine
   environment.systemPackages = with pkgs; [
-    # Ghostty terminal (check if available in your nixpkgs)
-    # ghostty  # Uncomment when available
+    # Ghostty terminal from unstable
+    unstable.ghostty
   ];
 
   # System version
