@@ -71,6 +71,15 @@
           ./nixos/victormike/home-manager.nix
         ];
       };
+
+      # Framework 12" laptop
+      xiezhi = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          ./nixos/xiezhi/configuration.nix
+          ./nixos/xiezhi/home-manager.nix
+        ];
+      };
     };
 
     # Darwin machines
