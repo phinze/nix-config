@@ -79,6 +79,8 @@
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
       unstable.claude-code
+      unstable.fabric-ai # AI framework for augmenting humans
+      yt-dlp # For fabric's video features
     ]
     ++ (nodeConfig.extraPackages or []);
 
