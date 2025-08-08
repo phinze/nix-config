@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   # Enable the X11 windowing system
   services.xserver.enable = true;
 
@@ -14,6 +17,21 @@
     variant = "";
     options = "ctrl:nocaps";
   };
+
+  # Also configure for console and GNOME/Wayland
+  console.useXkbConfig = true;
+
+  # GNOME-specific keyboard settings
+  services.gnome.core-shell.enable = true;
+
+  # Configure keyboard settings via dconf for GNOME/Wayland
+  programs.dconf.enable = true;
+
+  # Set caps lock to ctrl for GNOME
+  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+    [org.gnome.desktop.input-sources]
+    xkb-options=['ctrl:nocaps']
+  '';
 
   # Enable CUPS to print documents
   services.printing.enable = true;
@@ -38,7 +56,15 @@
   environment.systemPackages = with pkgs; [
     gnome-tweaks
     gnome-extension-manager
+    dconf-editor # For debugging GNOME settings
   ];
+
+  # Enable 1Password
+  programs._1password.enable = true;
+  programs._1password-gui = {
+    enable = true;
+    polkitPolicyOwners = ["phinze"];
+  };
 
   # Enable automatic login for convenience (optional)
   # services.xserver.displayManager.autoLogin.enable = true;
@@ -48,3 +74,4 @@
   # systemd.services."getty@tty1".enable = false;
   # systemd.services."autovt@tty1".enable = false;
 }
+

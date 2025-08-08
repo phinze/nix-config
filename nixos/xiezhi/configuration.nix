@@ -46,6 +46,12 @@
   # Framework laptop fingerprint reader (if you have one)
   # services.fprintd.enable = true;
 
+  # Additional packages for this machine
+  environment.systemPackages = with pkgs; [
+    # Ghostty terminal (check if available in your nixpkgs)
+    # ghostty  # Uncomment when available
+  ];
+
   # System version
   system.stateVersion = "25.05";
 }
