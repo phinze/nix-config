@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   ...
 }: {
   # Enable the X11 windowing system
@@ -57,6 +58,7 @@
     gnome-tweaks
     gnome-extension-manager
     dconf-editor # For debugging GNOME settings
+    inputs.zen-browser.packages.${pkgs.system}.default
   ];
 
   # Enable 1Password
@@ -64,6 +66,16 @@
   programs._1password-gui = {
     enable = true;
     polkitPolicyOwners = ["phinze"];
+  };
+
+  # Allow 1Password extension in browsers
+  environment.etc = {
+    "1password/custom_allowed_browsers" = {
+      text = ''
+        .zen-wrapped
+      '';
+      mode = "0644";
+    };
   };
 
   # Enable automatic login for convenience (optional)
@@ -74,4 +86,3 @@
   # systemd.services."getty@tty1".enable = false;
   # systemd.services."autovt@tty1".enable = false;
 }
-

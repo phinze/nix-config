@@ -344,7 +344,8 @@
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim-config": "nixvim-config",
-        "systems": "systems_3"
+        "systems": "systems_3",
+        "zen-browser": "zen-browser"
       }
     },
     "systems": {
@@ -389,6 +390,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1754532438,
+        "narHash": "sha256-mp9XXdZhZMLlb+AoNWqGKm5YaEOOZW2MCYXZrCO/q2Q=",
+        "owner": "FBIGlowie",
+        "repo": "zen-browser-flake",
+        "rev": "ffbf4a68b687b6c4867fd9a44605bc71be656630",
+        "type": "github"
+      },
+      "original": {
+        "owner": "FBIGlowie",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }

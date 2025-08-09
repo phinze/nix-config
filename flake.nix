@@ -24,6 +24,9 @@
     bankshot.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+
+    zen-browser.url = "github:FBIGlowie/zen-browser-flake";
+    zen-browser.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs = {
