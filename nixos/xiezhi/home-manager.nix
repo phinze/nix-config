@@ -9,7 +9,9 @@
     useUserPackages = true;
     extraSpecialArgs = {
       inherit inputs outputs;
-      nodeConfig = {};
+      nodeConfig = {
+        isGraphical = true;
+      };
     };
     users = {
       phinze = import ../../home-manager/phinze/home.nix;

@@ -17,6 +17,9 @@
     inputs.nix-index-database.hmModules.nix-index
     # Bankshot for opening files/URLs from remote systems
     inputs.bankshot.homeManagerModules.default
+  ] ++ lib.optionals (nodeConfig.isGraphical or false) [
+    # Graphical-specific configuration
+    ./graphical.nix
   ];
 
   nixpkgs = {
@@ -443,15 +446,6 @@
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
-  };
-
-  xdg.configFile."ghostty/config" = lib.mkIf pkgs.stdenv.isDarwin {
-    text = builtins.readFile ./ghostty.config;
-  };
-
-  xdg.configFile."ghostty/shaders" = lib.mkIf pkgs.stdenv.isDarwin {
-    source = ./ghostty-shaders;
-    recursive = true;
   };
 
   xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.isDarwin {
