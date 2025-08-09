@@ -68,6 +68,9 @@
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       SSH_AUTH_SOCK = "${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
+    }
+    // lib.optionalAttrs pkgs.stdenv.isLinux {
+      SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
     };
 
   home.packages = with pkgs;
@@ -323,6 +326,12 @@
         safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
         push.autoSetupRemote = true;
         ghq.root = "~/src";
+        gpg = {
+          format = "ssh";
+        };
+        "gpg \"ssh\"" = {
+          program = "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}";
+        };
       }
       // (nodeConfig.git.extraConfig or {});
   };
@@ -434,6 +443,13 @@
         "*" = {
           extraOptions = {
             IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
+          };
+        };
+      }
+      // lib.optionalAttrs pkgs.stdenv.isLinux {
+        "*" = {
+          extraOptions = {
+            IdentityAgent = "\"~/.1password/agent.sock\"";
           };
         };
       };
