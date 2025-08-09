@@ -22,6 +22,8 @@
 
     bankshot.url = "github:phinze/bankshot";
     bankshot.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
   outputs = {

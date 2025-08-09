@@ -1,10 +1,15 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}: {
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/baseline.nix
     ../../modules/nixos/graphical.nix
+    inputs.nixos-hardware.nixosModules.framework-12-13th-gen-intel
   ];
 
   # Hostname
@@ -14,8 +19,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Use latest kernel for Framework laptop
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Use kernel 6.15.5
+  # Needed for Ghostty performance regression on 6.15.4
+  # See https://github.com/ghostty-org/ghostty/discussions/7720
+  boot.kernelPackages = pkgs.linuxPackages_6_15;
 
   # Framework laptop specific kernel parameters
   boot.kernelParams = [
@@ -27,7 +34,7 @@
   services.fwupd.enable = true;
 
   # Power management for laptop
-  services.power-profiles-daemon.enable = false;  # Disable to avoid conflict with TLP
+  services.power-profiles-daemon.enable = false; # Disable to avoid conflict with TLP
   services.thermald.enable = true;
 
   # Battery management
@@ -48,10 +55,10 @@
 
   # Additional packages for this machine
   environment.systemPackages = with pkgs; [
-    # Ghostty terminal from unstable
-    unstable.ghostty
+    # Ghostty moved to home-manager module
   ];
 
   # System version
   system.stateVersion = "25.05";
 }
+
