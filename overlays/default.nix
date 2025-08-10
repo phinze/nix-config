@@ -10,6 +10,18 @@
     # example = prev.example.overrideAttrs (oldAttrs: rec {
     # ...
     # });
+
+    # Apply Wayland fixes from https://github.com/NixOS/nixpkgs/pull/422792
+    _1password-gui = prev._1password-gui.overrideAttrs (oldAttrs: {
+      installPhase =
+        oldAttrs.installPhase
+        + ''
+          # Add Wayland support flags to the desktop file
+          substituteInPlace $out/share/applications/1password.desktop \
+            --replace "Exec=1password %U" \
+            "Exec=1password --ozone-platform-hint=auto %U"
+        '';
+    });
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
