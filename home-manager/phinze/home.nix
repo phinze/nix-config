@@ -11,16 +11,18 @@
   ...
 }: {
   # You can import other home-manager modules here
-  imports = [
-    # Allows mistyped commands to suggest packages instead of displaying a
-    # command-not-found error
-    inputs.nix-index-database.hmModules.nix-index
-    # Bankshot for opening files/URLs from remote systems
-    inputs.bankshot.homeManagerModules.default
-  ] ++ lib.optionals (nodeConfig.isGraphical or false) [
-    # Graphical-specific configuration
-    ./graphical.nix
-  ];
+  imports =
+    [
+      # Allows mistyped commands to suggest packages instead of displaying a
+      # command-not-found error
+      inputs.nix-index-database.homeModules.nix-index
+      # Bankshot for opening files/URLs from remote systems
+      inputs.bankshot.homeManagerModules.default
+    ]
+    ++ lib.optionals (nodeConfig.isGraphical or false) [
+      # Graphical-specific configuration
+      ./graphical.nix
+    ];
 
   nixpkgs = {
     # You can add overlays here
@@ -457,7 +459,7 @@
 
   services.gpg-agent = lib.mkIf pkgs.stdenv.isLinux {
     enable = true;
-    pinentryPackage = pkgs.pinentry-tty;
+    pinentry.package = pkgs.pinentry-tty;
 
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;

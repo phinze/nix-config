@@ -1,6 +1,11 @@
-{ config, pkgs, lib, outputs, inputs, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  outputs,
+  inputs,
+  ...
+}: {
   # Nixpkgs configuration
   nixpkgs = {
     overlays = [
