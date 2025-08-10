@@ -7,6 +7,9 @@
 
     systems.url = "github:nix-systems/default";
 
+    flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.inputs.systems.follows = "systems";
+
     # Home manager
     home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
@@ -22,11 +25,16 @@
 
     bankshot.url = "github:phinze/bankshot";
     bankshot.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    bankshot.inputs.flake-utils.follows = "flake-utils";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     zen-browser.url = "github:FBIGlowie/zen-browser-flake";
     zen-browser.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
+    claude-desktop.url = "github:phinze/claude-desktop-linux-flake/fix-fhs-desktop-file";
+    claude-desktop.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    claude-desktop.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs = {

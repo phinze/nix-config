@@ -59,6 +59,7 @@
     gnome-extension-manager
     dconf-editor # For debugging GNOME settings
     inputs.zen-browser.packages.${pkgs.system}.default
+    inputs.claude-desktop.packages.${pkgs.system}.claude-desktop-with-fhs
   ];
 
   # Enable 1Password
