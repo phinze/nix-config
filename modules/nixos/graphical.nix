@@ -35,6 +35,9 @@
 
     [org.gnome.mutter]
     experimental-features=['scale-monitor-framebuffer']
+
+    [org.gnome.shell]
+    enabled-extensions=['appindicatorsupport@rgcjonas.gmail.com']
   '';
 
   # Enable CUPS to print documents
@@ -67,6 +70,7 @@
     gnome-tweaks
     gnome-extension-manager
     dconf-editor # For debugging GNOME settings
+    gnomeExtensions.appindicator # System tray support for 1Password and other apps
     inputs.zen-browser.packages.${pkgs.system}.default
     inputs.claude-desktop.packages.${pkgs.system}.claude-desktop-with-fhs
     slack
