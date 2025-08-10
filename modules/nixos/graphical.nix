@@ -28,10 +28,13 @@
   # Configure keyboard settings via dconf for GNOME/Wayland
   programs.dconf.enable = true;
 
-  # Set caps lock to ctrl for GNOME
+  # Set caps lock to ctrl for GNOME and improve XWayland scaling
   services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
     [org.gnome.desktop.input-sources]
     xkb-options=['ctrl:nocaps']
+
+    [org.gnome.mutter]
+    experimental-features=['scale-monitor-framebuffer']
   '';
 
   # Enable CUPS to print documents
@@ -50,6 +53,12 @@
   # Enable touchpad support
   services.libinput.enable = true;
 
+  # Enable Wayland support for Electron apps
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  # Qt should try Wayland first, then fall back to X11
+  environment.sessionVariables.QT_QPA_PLATFORM = "wayland;xcb";
+
   # Install firefox
   programs.firefox.enable = true;
 
@@ -60,6 +69,10 @@
     dconf-editor # For debugging GNOME settings
     inputs.zen-browser.packages.${pkgs.system}.default
     inputs.claude-desktop.packages.${pkgs.system}.claude-desktop-with-fhs
+    slack
+    discord
+    zoom-us
+    google-chrome
   ];
 
   # Enable 1Password
