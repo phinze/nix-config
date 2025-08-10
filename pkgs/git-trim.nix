@@ -1,10 +1,12 @@
-{pkgs}: let
+{
+  pkgs,
+  gwq,
+}: let
   runtimeDeps = with pkgs; [
     git
-    gwq
     jq
     tmux
-  ];
+  ] ++ [gwq];
 in
   pkgs.writeShellScriptBin "git-trim" ''
     #!/usr/bin/env bash

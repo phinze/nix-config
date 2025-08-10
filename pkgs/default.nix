@@ -1,7 +1,7 @@
 # Custom packages, that can be defined similarly to ones from nixpkgs
 # You can build them using 'nix build .#example'
-pkgs: {
+pkgs: rec {
   ccusage = pkgs.callPackage ./ccusage {};
-  git-trim = pkgs.callPackage ./git-trim.nix {};
   gwq = pkgs.callPackage ./gwq {};
+  git-trim = pkgs.callPackage ./git-trim.nix {inherit gwq;};
 }
