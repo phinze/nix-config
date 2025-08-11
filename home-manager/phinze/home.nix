@@ -342,9 +342,9 @@
           format = "ssh";
         };
         "gpg \"ssh\"" = lib.mkMerge [
-          # On macOS, use the 1Password op-ssh-sign directly
+          # On macOS, use the 1Password op-ssh-sign from homebrew installation
           (lib.mkIf pkgs.stdenv.isDarwin {
-            program = "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}";
+            program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
           })
           # On Linux, when SSH agent is forwarded, use ssh-keygen which will use the forwarded agent
           (lib.mkIf pkgs.stdenv.isLinux {
