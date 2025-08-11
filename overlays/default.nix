@@ -12,7 +12,8 @@
     # });
 
     # Apply Wayland fixes from https://github.com/NixOS/nixpkgs/pull/422792
-    _1password-gui = prev._1password-gui.overrideAttrs (oldAttrs: {
+    # Only on Linux since macOS uses homebrew cask for 1Password
+    _1password-gui = if prev.stdenv.isLinux then prev._1password-gui.overrideAttrs (oldAttrs: {
       installPhase =
         oldAttrs.installPhase
         + ''
@@ -21,7 +22,7 @@
             --replace "Exec=1password %U" \
             "Exec=1password --ozone-platform-hint=auto %U"
         '';
-    });
+    }) else prev._1password-gui;
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
