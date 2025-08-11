@@ -316,6 +316,16 @@
     ignores = [
       ".direnv"
     ];
+    includes = [
+      {
+        condition = "gitdir:~/src/github.com/mirendev/";
+        contents = {
+          user = {
+            email = "paul@miren.dev";
+          };
+        };
+      }
+    ];
     extraConfig =
       {
         branch.autosetuprebase = "always";
@@ -331,9 +341,17 @@
         gpg = {
           format = "ssh";
         };
-        "gpg \"ssh\"" = {
-          program = "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}";
-        };
+        "gpg \"ssh\"" = lib.mkMerge [
+          # On macOS, use the 1Password op-ssh-sign directly
+          (lib.mkIf pkgs.stdenv.isDarwin {
+            program = "${lib.getExe' pkgs._1password-gui "op-ssh-sign"}";
+          })
+          # On Linux, when SSH agent is forwarded, use ssh-keygen which will use the forwarded agent
+          (lib.mkIf pkgs.stdenv.isLinux {
+            program = "/run/current-system/sw/bin/ssh-keygen";
+            allowedSignersFile = "~/.ssh/allowed_signers";
+          })
+        ];
       }
       // (nodeConfig.git.extraConfig or {});
   };
@@ -416,6 +434,9 @@
   };
 
   programs.zoxide.enable = true;
+
+  # SSH allowed signers for git commit verification
+  home.file.".ssh/allowed_signers".source = ./ssh-allowed-signers;
 
   programs.ssh = {
     enable = true;
