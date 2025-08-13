@@ -71,7 +71,7 @@
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       SSH_AUTH_SOCK = "${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
     }
-    // lib.optionalAttrs pkgs.stdenv.isLinux {
+    // lib.optionalAttrs (pkgs.stdenv.isLinux && (nodeConfig.isGraphical or false)) {
       SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
     };
 
@@ -440,9 +440,9 @@
 
   programs.ssh = {
     enable = true;
-    controlMaster = "auto";
-    controlPath = "/tmp/ssh_mux_%h_%p_%r";
-    controlPersist = "10m";
+    controlMaster = lib.mkIf (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) "auto";
+    controlPath = lib.mkIf (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) "/tmp/ssh_mux_%h_%p_%r";
+    controlPersist = lib.mkIf (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) "10m";
     matchBlocks =
       {
         "foxtrotbase" =
@@ -469,7 +469,7 @@
           };
         };
       }
-      // lib.optionalAttrs pkgs.stdenv.isLinux {
+      // lib.optionalAttrs (pkgs.stdenv.isLinux && (nodeConfig.isGraphical or false)) {
         "*" = {
           extraOptions = {
             IdentityAgent = "\"~/.1password/agent.sock\"";
