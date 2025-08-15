@@ -6,6 +6,9 @@
   config,
   ...
 }: {
+  imports = [
+    ../modules/darwin/colima.nix
+  ];
   environment.systemPackages = [
     pkgs.mosh
   ];
@@ -157,5 +160,16 @@
     "Numbers" = 409203825;
     "Xcode" = 497799835;
     "Flighty" = 1358823008;
+  };
+
+  # Colima for Docker on macOS
+  services.colima = {
+    enable = true;
+    docker = true;
+    cpus = 4;
+    memory = 8;
+    disk = 100;
+    vmType = "vz"; # Using vz for better performance on newer Macs
+    arch = "aarch64"; # ARM64 for Apple Silicon
   };
 }

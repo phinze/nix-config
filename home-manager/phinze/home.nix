@@ -90,6 +90,11 @@
       unstable.fabric-ai # AI framework for augmenting humans
       yt-dlp # For fabric's video features
     ]
+    ++ lib.optionals pkgs.stdenv.isDarwin [
+      # Docker CLI tools for macOS with Colima
+      docker-client
+      docker-compose
+    ]
     ++ (nodeConfig.extraPackages or []);
 
   programs.atuin = {
