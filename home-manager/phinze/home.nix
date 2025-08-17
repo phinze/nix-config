@@ -18,8 +18,8 @@
       inputs.nix-index-database.homeModules.nix-index
       # Bankshot for opening files/URLs from remote systems
       inputs.bankshot.homeManagerModules.default
-      # Claude Code statusline configuration
-      ./claude-statusline.nix
+      # Claude Code configuration (package + statusline)
+      ./claude-code.nix
     ]
     ++ lib.optionals (nodeConfig.isGraphical or false) [
       # Graphical-specific configuration
@@ -88,7 +88,6 @@
       jq
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
-      unstable.claude-code
       unstable.fabric-ai # AI framework for augmenting humans
       yt-dlp # For fabric's video features
     ]
