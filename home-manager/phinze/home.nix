@@ -18,6 +18,8 @@
       inputs.nix-index-database.homeModules.nix-index
       # Bankshot for opening files/URLs from remote systems
       inputs.bankshot.homeManagerModules.default
+      # Claude Code statusline configuration
+      ./claude-statusline.nix
     ]
     ++ lib.optionals (nodeConfig.isGraphical or false) [
       # Graphical-specific configuration
