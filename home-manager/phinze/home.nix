@@ -18,6 +18,8 @@
       inputs.nix-index-database.homeModules.nix-index
       # Bankshot for opening files/URLs from remote systems
       inputs.bankshot.homeManagerModules.default
+      # Double-agent for resilient SSH agent proxy
+      inputs.double-agent.homeManagerModules.default
       # Claude Code configuration (package + statusline)
       ./claude-code.nix
     ]
@@ -66,16 +68,9 @@
     vim = "nvim";
   };
 
-  home.sessionVariables =
-    {
-      EDITOR = "nvim";
-    }
-    // lib.optionalAttrs pkgs.stdenv.isDarwin {
-      SSH_AUTH_SOCK = "${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
-    }
-    // lib.optionalAttrs (pkgs.stdenv.isLinux && (nodeConfig.isGraphical or false)) {
-      SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
-    };
+  home.sessionVariables = {
+    EDITOR = "nvim";
+  };
 
   home.packages = with pkgs;
     [
@@ -519,6 +514,11 @@
   programs.bankshot = {
     enable = true;
     enableXdgOpen = true;
+  };
+
+  services.double-agent = {
+    enable = true;
+    socketPath = "${config.home.homeDirectory}/.ssh/agent.sock";
   };
 
   # Nicely reload system units when changing configs

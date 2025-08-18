@@ -47,6 +47,29 @@
         "type": "github"
       }
     },
+    "double-agent": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1755474348,
+        "narHash": "sha256-VRxKkobN9McFwF4y1vHDvpbLAHE2fnXksbthHMazVMw=",
+        "owner": "phinze",
+        "repo": "double-agent",
+        "rev": "36fbc7a7f65eb3ef019f15cc67d7ca8fa8a2cc30",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phinze",
+        "repo": "double-agent",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -366,6 +389,7 @@
       "inputs": {
         "bankshot": "bankshot",
         "claude-desktop": "claude-desktop",
+        "double-agent": "double-agent",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",

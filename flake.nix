@@ -35,6 +35,10 @@
     claude-desktop.url = "github:phinze/claude-desktop-linux-flake/fix-fhs-desktop-file";
     claude-desktop.inputs.nixpkgs.follows = "nixpkgs-unstable";
     claude-desktop.inputs.flake-utils.follows = "flake-utils";
+
+    double-agent.url = "github:phinze/double-agent";
+    double-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    double-agent.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs = {
