@@ -4,7 +4,7 @@
 import type { FinickyConfig } from "/Applications/Finicky.app/Contents/Resources/finicky.d.ts";
 
 export default {
-  defaultBrowser: "Zen Browser",
+  defaultBrowser: "Zen",
 
   options: {
     // Log all URL requests to console for debugging
