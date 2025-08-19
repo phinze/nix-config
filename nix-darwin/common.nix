@@ -136,6 +136,7 @@
     "cleanshot"
     "discord"
     "elgato-control-center"
+    "finicky"
     "firefox"
     "ghostty@tip"
     "google-chrome"

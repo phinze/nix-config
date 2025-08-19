@@ -439,6 +439,11 @@
   # SSH allowed signers for git commit verification
   home.file.".ssh/allowed_signers".source = ./ssh-allowed-signers;
 
+  # Finicky configuration for URL routing (macOS only)
+  home.file.".finicky.ts" = lib.mkIf pkgs.stdenv.isDarwin {
+    source = ./finicky.ts;
+  };
+
   programs.ssh = {
     enable = true;
     controlMaster = lib.mkIf (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) "auto";
