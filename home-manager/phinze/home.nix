@@ -22,6 +22,8 @@
       inputs.double-agent.homeManagerModules.default
       # Claude Code configuration (package + statusline)
       ./claude-code.nix
+      # Karabiner-Elements configuration (macOS only)
+      ./karabiner.nix
     ]
     ++ lib.optionals (nodeConfig.isGraphical or false) [
       # Graphical-specific configuration

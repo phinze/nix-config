@@ -8,7 +8,6 @@
 }: {
   imports = [
     ../modules/darwin/colima.nix
-    ../modules/darwin/karabiner.nix
   ];
   environment.systemPackages = [
     pkgs.mosh
@@ -142,6 +141,7 @@
     "ghostty@tip"
     "google-chrome"
     "istat-menus"
+    "karabiner-elements"
     "keepingyouawake"
     "keymapp"
     "libreoffice"
