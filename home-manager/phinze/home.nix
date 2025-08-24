@@ -24,6 +24,8 @@
       ./claude-code.nix
       # Karabiner-Elements configuration (macOS only)
       ./karabiner.nix
+      # Demo recorder for terminal sessions
+      ./modules/demo-recorder.nix
     ]
     ++ lib.optionals (nodeConfig.isGraphical or false) [
       # Graphical-specific configuration

@@ -107,6 +107,12 @@
     docker-compose
   ];
 
+  # Fonts for terminal recording tools like agg
+  fonts.packages = with pkgs; [
+    jetbrains-mono
+    nerd-fonts.jetbrains-mono
+  ];
+
   # Docker is a system-level install.
   virtualisation.docker.enable = true;
 
