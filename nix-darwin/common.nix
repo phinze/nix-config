@@ -160,7 +160,7 @@
     "rectangle"
     "rocket"
     "slack"
-    "tailscale"
+    "tailscale-app"
     "vmware-fusion"
     "zed"
     "zen"
