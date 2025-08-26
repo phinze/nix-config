@@ -13,6 +13,9 @@
     pkgs.mosh
   ];
 
+  # Add Homebrew to PATH
+  environment.systemPath = ["/opt/homebrew/bin"];
+
   # Trying out Determinate Nix which means we have to turn off nix-darwin's nix mgmt.
   nix.enable = false;
 
@@ -24,6 +27,9 @@
 
   # The platform the configuration will be used on.
   nixpkgs.hostPlatform = "aarch64-darwin";
+
+  # Allow unfree packages
+  nixpkgs.config.allowUnfree = true;
 
   # Used for backwards compatibility, please read the changelog before changing.
   # $ darwin-rebuild changelog
@@ -130,6 +136,7 @@
 
   homebrew.casks = [
     "1password"
+    "1password-cli"
     "balenaetcher"
     "bartender"
     "claude"
