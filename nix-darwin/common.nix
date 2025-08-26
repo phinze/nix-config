@@ -161,7 +161,6 @@
     "rocket"
     "slack"
     "tailscale-app"
-    "vmware-fusion"
     "zed"
     "zen"
     "zoom"
