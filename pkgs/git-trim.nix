@@ -2,11 +2,13 @@
   pkgs,
   gwq,
 }: let
-  runtimeDeps = with pkgs; [
-    git
-    jq
-    tmux
-  ] ++ [gwq];
+  runtimeDeps = with pkgs;
+    [
+      git
+      jq
+      tmux
+    ]
+    ++ [gwq];
 in
   pkgs.writeShellScriptBin "git-trim" ''
     #!/usr/bin/env bash
@@ -126,21 +128,44 @@ in
       if [ "$has_worktree" = true ]; then
         # Check if working tree has changes using gwq status
         has_changes=false
+        is_stale=false
 
-        # Parse JSON to check if this branch's working tree has changes
+        # Parse JSON to check if this branch's working tree has changes or is stale
         # Check for any non-zero values in git_status (modified, added, deleted, untracked, staged, conflicts)
-        # or if status is not "clean"
-        if echo "$GWQ_STATUS" | jq -e ".worktrees[] | select(.branch == \"$branch_name\" and (.status != \"clean\" or .git_status.modified > 0 or .git_status.added > 0 or .git_status.deleted > 0 or .git_status.untracked > 0 or .git_status.staged > 0 or .git_status.conflicts > 0))" >/dev/null 2>&1; then
-          has_changes=true
+        # Also check if status is "stale" or "clean" (both are safe to remove)
+        worktree_info=$(echo "$GWQ_STATUS" | jq -r ".worktrees[] | select(.branch == \"$branch_name\") | {status, git_status} | @json" 2>/dev/null || echo "")
+
+        if [ -n "$worktree_info" ]; then
+          status=$(echo "$worktree_info" | jq -r '.status' 2>/dev/null || echo "")
+
+          # Check if status is "stale"
+          if [ "$status" = "stale" ]; then
+            is_stale=true
+          # Check if status is not "clean" and not "stale" (meaning it has changes)
+          elif [ "$status" != "clean" ]; then
+            has_changes=true
+          else
+            # For "clean" status, also verify no changes in git_status
+            if echo "$worktree_info" | jq -e '.git_status | (.modified > 0 or .added > 0 or .deleted > 0 or .untracked > 0 or .staged > 0 or .conflicts > 0)' >/dev/null 2>&1; then
+              has_changes=true
+            fi
+          fi
         fi
 
         if [ "$has_changes" = true ]; then
           echo -e "''${YELLOW}⚠''${NC}  Skipping $branch_name - working tree has uncommitted changes"
         else
-          if [ "$DRY_RUN" = true ]; then
-            echo -e "''${GREEN}✓''${NC}  Would remove $branch_name (merged, working tree clean)"
+          status_msg=""
+          if [ "$is_stale" = true ]; then
+            status_msg="merged, working tree stale"
           else
-            echo -e "''${GREEN}✓''${NC}  Removing $branch_name (merged, working tree clean)"
+            status_msg="merged, working tree clean"
+          fi
+
+          if [ "$DRY_RUN" = true ]; then
+            echo -e "''${GREEN}✓''${NC}  Would remove $branch_name ($status_msg)"
+          else
+            echo -e "''${GREEN}✓''${NC}  Removing $branch_name ($status_msg)"
           fi
 
           # Get the worktree path before removing it
