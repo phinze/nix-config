@@ -1,6 +1,9 @@
-{ config, lib, pkgs, ... }:
-
 {
+  config,
+  lib,
+  pkgs,
+  ...
+}: {
   # Claude Code package
   home.packages = with pkgs; [
     unstable.claude-code
