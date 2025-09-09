@@ -105,6 +105,7 @@
     gnumake
     killall
     docker-compose
+    pageres-cli
   ];
 
   # Fonts for terminal recording tools like agg

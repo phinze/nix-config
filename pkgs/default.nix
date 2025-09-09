@@ -5,4 +5,5 @@ pkgs: rec {
   gwq = pkgs.callPackage ./gwq {};
   git-trim = pkgs.callPackage ./git-trim.nix {inherit gwq;};
   ccometixline = pkgs.callPackage ./ccometixline.nix {};
+  pageres-cli = pkgs.callPackage ./pageres-cli {};
 }
