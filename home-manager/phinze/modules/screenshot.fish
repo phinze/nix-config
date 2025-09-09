@@ -79,19 +79,6 @@ function screenshot --description "Capture website screenshot and share via GitH
         return 1
     end
     
-    # Ask for confirmation before uploading
-    echo ""
-    echo -n "📤 Upload "(count $screenshots)" screenshot(s) to GitHub gist? [Y/n] "
-    read -l confirm
-    
-    if test -z "$confirm" -o "$confirm" = "y" -o "$confirm" = "Y"
-        # Proceed with upload
-    else
-        echo "Upload cancelled. Screenshots saved in: $temp_dir"
-        cd -
-        return 0
-    end
-    
     # Create a markdown file with screenshots
     set -l md_file "$temp_dir/README.md"
     echo "# $description" > $md_file

@@ -30,19 +30,6 @@ function demo --description "Record terminal demo and share as GIF via GitHub gi
         return 1
     end
 
-    # Ask for confirmation before uploading
-    echo ""
-    echo -n "📤 Upload this demo to GitHub gist? [Y/n] "
-    read -l confirm
-    
-    if test -z "$confirm" -o "$confirm" = "y" -o "$confirm" = "Y"
-        # Proceed with upload
-    else
-        echo "Upload cancelled. Cleaning up..."
-        rm -f $cast_file $gif_file
-        return 0
-    end
-
     # Create a markdown file with placeholder for the GIF
     echo "# Demo: $description" > $md_file
     echo "" >> $md_file
