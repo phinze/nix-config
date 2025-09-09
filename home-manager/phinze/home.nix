@@ -26,6 +26,8 @@
       ./karabiner.nix
       # Demo recorder for terminal sessions
       ./modules/demo-recorder.nix
+      # Screenshot module for website captures
+      ./modules/screenshot.nix
     ]
     ++ lib.optionals (nodeConfig.isGraphical or false) [
       # Graphical-specific configuration
