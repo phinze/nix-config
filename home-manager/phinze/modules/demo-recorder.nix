@@ -9,8 +9,8 @@
   home.packages = with pkgs; [
     asciinema # Record terminal sessions
     asciinema-agg # Convert asciinema recordings to GIF
+    
+    # Install the demo script
+    (pkgs.writeScriptBin "demo" (builtins.readFile ./demo.sh))
   ];
-
-  # Fish function for the demo command
-  xdg.configFile."fish/functions/demo.fish".source = ./demo.fish;
 }

@@ -8,8 +8,8 @@
   # Required packages
   home.packages = with pkgs; [
     pageres-cli # Capture website screenshots
+    
+    # Install the screenshot script
+    (pkgs.writeScriptBin "screenshot" (builtins.readFile ./screenshot.sh))
   ];
-
-  # Fish function for the screenshot command
-  xdg.configFile."fish/functions/screenshot.fish".source = ./screenshot.fish;
 }
