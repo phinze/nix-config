@@ -81,6 +81,7 @@
   home.packages = with pkgs;
     [
       ccusage # Analyze Claude Code token usage and costs
+      coderabbit # AI-powered code review CLI
       gh
       ghq # Clone repos into dir structure
       git-trim # Smart cleanup of merged branches with worktree awareness
