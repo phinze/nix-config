@@ -18,7 +18,7 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-uwlfiqKroyVrl5JXDlcg4nZ3OCwWKZ4ov09AJAVd0mM=";
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [makeWrapper];
 
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
@@ -29,7 +29,7 @@ buildNpmPackage rec {
 
   # No build step needed for this CLI tool
   dontNpmBuild = true;
-  
+
   # Skip npm prune as it's trying to download additional deps
   dontNpmPrune = true;
 
