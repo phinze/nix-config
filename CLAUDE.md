@@ -83,6 +83,15 @@ nix flake check
 
 The owner uses a ghq-based directory structure under `~/src` for organizing git repositories, accessible through fish shell functions and tmux session management.
 
+### Updating Package Hashes
+
+When updating packages in `pkgs/`, use this command to get the correct SRI hash format:
+```bash
+nix-prefetch-url <url> | xargs -I {} nix hash to-sri --type sha256 {}
+```
+
+This converts the base32 hash from `nix-prefetch-url` to the SRI format (`sha256-...=`) that Nix derivations expect.
+
 ## Important Notes
 
 - The repository uses Determinate Nix on macOS (nix.enable = false in darwin configs)
