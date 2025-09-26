@@ -152,6 +152,10 @@
 
       plugins = with pkgs.fishPlugins; [
         {
+          name = "async-prompt";
+          src = async-prompt.src;
+        }
+        {
           name = "pure";
           src = pure.src;
         }
