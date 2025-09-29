@@ -7,4 +7,5 @@ pkgs: rec {
   ccometixline = pkgs.callPackage ./ccometixline.nix {};
   pageres-cli = pkgs.callPackage ./pageres-cli {};
   coderabbit = pkgs.callPackage ./coderabbit {};
+  pr-review-download = pkgs.callPackage ./pr-review-download {};
 }
