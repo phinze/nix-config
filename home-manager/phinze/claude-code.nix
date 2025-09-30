@@ -6,7 +6,7 @@
 }: {
   # Claude Code package
   home.packages = with pkgs; [
-    unstable.claude-code
+    claude-code
     ccometixline
   ];
 

@@ -39,6 +39,9 @@
     double-agent.url = "github:phinze/double-agent";
     double-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
     double-agent.inputs.flake-utils.follows = "flake-utils";
+
+    claude-code-nix.url = "github:sadjow/claude-code-nix";
+    claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
   };
 
   outputs = {

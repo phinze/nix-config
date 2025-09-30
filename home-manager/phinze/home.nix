@@ -43,6 +43,9 @@
       outputs.overlays.unstable-packages
       outputs.overlays.nixvim
 
+      # Claude Code 2.0 overlay
+      inputs.claude-code-nix.overlays.default
+
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
 

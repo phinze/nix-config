@@ -35,4 +35,3 @@ stdenv.mkDerivation rec {
     mainProgram = "pr-review-download";
   };
 }
-
