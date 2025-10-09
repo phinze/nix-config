@@ -19,6 +19,9 @@
   # Trying out Determinate Nix which means we have to turn off nix-darwin's nix mgmt.
   nix.enable = false;
 
+  # Explicitly disable zsh management to avoid /etc/zshrc and /etc/zprofile conflicts
+  programs.zsh.enable = false;
+
   # This will be the main user shell
   programs.fish.enable = true;
 
