@@ -5,11 +5,12 @@
   pkgs,
   ...
 }: {
-  # Required packages
-  home.packages = with pkgs; [
-    pageres-cli # Capture website screenshots
+  # Required packages - only install on Linux since pageres-cli depends on Chromium
+  home.packages = with pkgs;
+    lib.optionals pkgs.stdenv.isLinux [
+      pageres-cli # Capture website screenshots
 
-    # Install the screenshot script
-    (pkgs.writeScriptBin "screenshot" (builtins.readFile ./screenshot.sh))
-  ];
+      # Install the screenshot script
+      (pkgs.writeScriptBin "screenshot" (builtins.readFile ./screenshot.sh))
+    ];
 }
