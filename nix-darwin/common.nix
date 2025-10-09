@@ -19,9 +19,6 @@
   # Trying out Determinate Nix which means we have to turn off nix-darwin's nix mgmt.
   nix.enable = false;
 
-  # Create /etc/zshrc that loads the nix-darwin environment.
-  programs.zsh.enable = true;
-
   # This will be the main user shell
   programs.fish.enable = true;
 
