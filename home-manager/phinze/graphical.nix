@@ -70,6 +70,9 @@
       # Cursor smear shader effect
       custom-shader = "shaders/cursor_smear_fade_tapered.glsl";
       custom-shader-animation = true;
+
+      # Keybind for shift+enter to insert newline (useful in Claude Code and other apps)
+      keybind = "shift+enter=text:\\x1b\\r";
     };
   };
 
