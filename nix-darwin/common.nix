@@ -159,6 +159,7 @@
     "raycast"
     "rectangle"
     "rocket"
+    "screenflow"
     "slack"
     "tailscale-app"
     "zed"
