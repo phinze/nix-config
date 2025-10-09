@@ -27,7 +27,7 @@
       aarch64-darwin = {
         os = "darwin";
         arch = "arm64";
-        sha256 = "sha256-NRjvRLZSA3CzGrD8mHTcz1PZ6Y8L9l2kzJ8YKRwJQ5M=";
+        sha256 = "sha256-DGyTSzF/Pn/EkRvZ9BJ5yvZtRL+q1JUoWJzzpAF9u6M=";
       };
     }.${
       system
