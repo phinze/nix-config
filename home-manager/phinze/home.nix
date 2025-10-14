@@ -535,6 +535,26 @@
   programs.bankshot = {
     enable = true;
     enableXdgOpen = true;
+
+    # Enable the bankshotd daemon
+    daemon = {
+      enable = true;
+      autoStart = true;
+      logLevel = "info";
+    };
+
+    # Monitor configuration (applies to bankshotd on remote servers)
+    monitor = {
+      portRanges = [
+        {
+          start = 3000;
+          end = 9999;
+        }
+      ];
+      ignoreProcesses = ["sshd" "systemd" "ssh-agent"];
+      pollInterval = "1s";
+      gracePeriod = "30s";
+    };
   };
 
   services.double-agent = {
