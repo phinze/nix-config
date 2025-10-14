@@ -82,6 +82,9 @@
     sudo -u ${config.system.primaryUser} killall Dock
   '';
 
+  # Hide the native menubar since we're using SketchyBar
+  system.defaults.NSGlobalDomain._HIHideMenuBar = true;
+  
   # I'll use iStat Menus for clock
   system.defaults.menuExtraClock.IsAnalog = true;
 
@@ -148,18 +151,19 @@
     "firefox"
     "ghostty@tip"
     "google-chrome"
-    "istat-menus"
+    # "istat-menus" # replaced by SketchyBar
     "karabiner-elements"
     "keepingyouawake"
     "keymapp"
     "libreoffice"
-    "meetingbar"
+    # "meetingbar" # replaced by SketchyBar calendar
     "obs"
     "obsidian"
     "raycast"
     "rectangle"
     "rocket"
     "screenflow"
+    "sf-symbols"
     "slack"
     "tailscale-app"
     "zed"
@@ -182,5 +186,151 @@
     disk = 100;
     vmType = "vz"; # Using vz for better performance on newer Macs
     arch = "aarch64"; # ARM64 for Apple Silicon
+  };
+
+  # SketchyBar for custom menubar
+  services.sketchybar = {
+    enable = true;
+    package = pkgs.sketchybar;
+    extraPackages = with pkgs; [
+      jq
+      coreutils
+    ];
+    config = ''
+      #!/usr/bin/env bash
+
+      # Color palette
+      WHITE=0xffc5c9c5
+      GREEN=0xff96dcb8
+      BLUE=0xff8da1ea
+      ORANGE=0xfff7b87f
+      BG0=0xdd0e1620
+      BG1=0x60232434
+
+      # General bar settings
+      sketchybar --bar position=top \
+                      height=40 \
+                      blur_radius=30 \
+                      color=$BG0 \
+                      padding_left=10 \
+                      padding_right=10
+
+      # Default values for items
+      sketchybar --default icon.font="SF Pro:Semibold:14.0" \
+                          icon.color=$WHITE \
+                          icon.padding_right=4 \
+                          label.font="SF Pro:Regular:14.0" \
+                          label.color=$WHITE \
+                          padding_left=5 \
+                          padding_right=5
+
+      # Clock with popup for system stats
+      sketchybar --add item clock right \
+                 --set clock update_freq=10 \
+                            icon=􀐬 \
+                            script='sketchybar --set clock label="$(date +"%a %d %b %H:%M")"' \
+                            click_script='sketchybar --set clock popup.drawing=toggle' \
+                 --add item clock.cpu popup.clock \
+                 --set clock.cpu icon=􀧓 \
+                                icon.color=$ORANGE \
+                                label="CPU: Loading..." \
+                                background.color=$BG1 \
+                                background.corner_radius=5 \
+                                background.padding_left=5 \
+                                background.padding_right=5 \
+                 --add item clock.memory popup.clock \
+                 --set clock.memory icon=􀫦 \
+                                   icon.color=$BLUE \
+                                   label="Memory: Loading..." \
+                                   background.color=$BG1 \
+                                   background.corner_radius=5 \
+                                   background.padding_left=5 \
+                                   background.padding_right=5 \
+                 --add item clock.network popup.clock \
+                 --set clock.network icon=􀤆 \
+                                    icon.color=$GREEN \
+                                    label="Network: Loading..." \
+                                    background.color=$BG1 \
+                                    background.corner_radius=5 \
+                                    background.padding_left=5 \
+                                    background.padding_right=5 \
+                 --add item clock.disk popup.clock \
+                 --set clock.disk icon=􀨭 \
+                                 icon.color=$WHITE \
+                                 label="Disk: Loading..." \
+                                 background.color=$BG1 \
+                                 background.corner_radius=5 \
+                                 background.padding_left=5 \
+                                 background.padding_right=5
+
+      # Calendar
+      sketchybar --add item calendar right \
+                 --set calendar icon=􀉉 \
+                               icon.color=$BLUE \
+                               label="Calendar" \
+                               click_script="open -a Calendar"
+
+      # Spaces for AeroSpace (1-5)
+      for i in 1 2 3 4 5; do
+        sketchybar --add space space.$i left \
+                   --set space.$i space=$i \
+                                  icon="$i" \
+                                  icon.padding_left=7 \
+                                  icon.padding_right=7 \
+                                  background.color=$BG1 \
+                                  background.corner_radius=5 \
+                                  background.height=25 \
+                                  label.drawing=off \
+                                  click_script="aerospace workspace $i"
+      done
+
+      # Space separator
+      sketchybar --add item space_separator left \
+                 --set space_separator icon="│" \
+                                      icon.padding_left=10 \
+                                      label.drawing=off
+
+      # Front app
+      sketchybar --add item front_app left \
+                 --set front_app icon.drawing=off \
+                                label.color=$WHITE \
+                                label.font="SF Pro:Bold:14.0" \
+                                script='sketchybar --set front_app label="$INFO"' \
+                 --subscribe front_app front_app_switched
+
+      # System stats updater (runs in background)
+      (
+        while true; do
+          # CPU Usage
+          CPU_USAGE=$(ps -A -o %cpu | awk '{s+=$1} END {printf "%.1f%%", s}')
+
+          # Memory Usage
+          MEM_PRESSURE=$(memory_pressure | grep "System-wide memory free percentage" | awk '{print $5}' | tr -d '%')
+          MEM_USED=$((100 - MEM_PRESSURE))
+
+          # Disk Usage
+          DISK_USAGE=$(df -h / | awk 'NR==2 {print $5}')
+
+          # Network (simple check if connected)
+          NETWORK_STATUS=$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | grep -o "SSID: .*" | sed 's/^SSID: //' || echo "Disconnected")
+          if [ "$NETWORK_STATUS" = "Disconnected" ] || [ -z "$NETWORK_STATUS" ]; then
+            NETWORK_LABEL="Not Connected"
+          else
+            NETWORK_LABEL="$NETWORK_STATUS"
+          fi
+
+          # Update popup items
+          sketchybar --set clock.cpu label="CPU: $CPU_USAGE" \
+                     --set clock.memory label="Memory: ''${MEM_USED}%" \
+                     --set clock.network label="WiFi: $NETWORK_LABEL" \
+                     --set clock.disk label="Disk: $DISK_USAGE used"
+
+          sleep 5
+        done
+      ) &
+
+      # Initialize
+      sketchybar --update
+    '';
   };
 }
