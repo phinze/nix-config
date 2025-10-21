@@ -103,6 +103,11 @@
       docker-client
       docker-compose
     ]
+    # Private packages that require gh authentication
+    # Note: Include by default; bootstrap users can set SKIP_PRIVATE_PACKAGES=1
+    ++ lib.optionals ((builtins.getEnv "SKIP_PRIVATE_PACKAGES") != "1") [
+      inputs.iso.packages.${pkgs.system}.default # Isolated Docker environment
+    ]
     ++ (nodeConfig.extraPackages or []);
 
   programs.atuin = {
