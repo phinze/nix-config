@@ -5,29 +5,29 @@
   unzip,
   buildFHSEnv,
 }: let
-  version = "0.3.3";
+  version = "0.3.4";
 
   selectSystem = system:
     {
       x86_64-linux = {
         os = "linux";
         arch = "x64";
-        sha256 = "sha256-xiNSGPmwDvge38Q7OXOLQZBNa1CbryNvJA+0mCXNLks=";
+        sha256 = "sha256-pppu5Ej5ZbNqSWtO9zqcvYeYIKLZPGEyOfMY9mnVIEs=";
       };
       aarch64-linux = {
         os = "linux";
         arch = "arm64";
-        sha256 = "sha256-fZQzxZ54xJl5AkTu+PLzIgup3h/ze2EwvPiLJjbehZg=";
+        sha256 = "sha256-tJc1BQ/gr9e8o80RA66h2D9av5daPjB97BWA4teOmfA=";
       };
       x86_64-darwin = {
         os = "darwin";
         arch = "x64";
-        sha256 = "sha256-WVunR7wsxOlBog27dzMAARBpgcuVbspS1OTzajhCdyM=";
+        sha256 = "sha256-ivxgbTAX6RAjvl275cWgg8crwCkZV5kijldtEhHzkqw=";
       };
       aarch64-darwin = {
         os = "darwin";
         arch = "arm64";
-        sha256 = "sha256-DGyTSzF/Pn/EkRvZ9BJ5yvZtRL+q1JUoWJzzpAF9u6M=";
+        sha256 = "sha256-6D8Lh+vLxH6vK9ebVMgaZm6iATSO23VcdXQ/yieoXE8=";
       };
     }.${
       system
