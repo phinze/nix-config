@@ -218,11 +218,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1761086630,
-        "narHash": "sha256-71IdSIG9PZkALmI0pnkRLkVblsK5zFN8VDlTJ5o3QXA=",
+        "lastModified": 1761155098,
+        "narHash": "sha256-2SOoficn8Cp0f1z4tsPXaCKDa/IDlMypn+nfHqSUNys=",
         "ref": "refs/heads/main",
-        "rev": "30a2e606cf11dde7fe425351f252cd4ed093a0ce",
-        "revCount": 29,
+        "rev": "3b72bf5661cf4c2afb788d659fa20915264e3916",
+        "revCount": 30,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
