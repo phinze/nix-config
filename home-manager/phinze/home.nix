@@ -85,7 +85,6 @@
     [
       ccusage # Analyze Claude Code token usage and costs
       coderabbit # AI-powered code review CLI
-      gh
       ghq # Clone repos into dir structure
       git-trim # Smart cleanup of merged branches with worktree awareness
       google-cloud-sdk # I want to run gcloud from anywhere
@@ -380,6 +379,7 @@
 
   programs.gh = {
     enable = true;
+    package = pkgs.unstable.gh;
     settings = {
       aliases = {
         cl = "repo clone";
