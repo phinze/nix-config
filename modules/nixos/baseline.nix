@@ -30,7 +30,7 @@
         "root"
         "@wheel"
       ];
-      download-buffer-size = 268435456; # 256MB (default is 64MB)
+      download-buffer-size = 1073741824; # 1GB (default is 64MB)
     };
     channel.enable = false;
     registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
