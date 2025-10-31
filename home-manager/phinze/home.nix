@@ -90,6 +90,7 @@
       google-cloud-sdk # I want to run gcloud from anywhere
       gwq # Git worktree manager that works with ghq
       jq
+      linearis # CLI tool for Linear.app with JSON output
       mtr
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
