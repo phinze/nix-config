@@ -215,14 +215,15 @@
         ],
         "nixpkgs": [
           "nixpkgs-unstable"
-        ]
+        ],
+        "quake": "quake"
       },
       "locked": {
-        "lastModified": 1761926931,
-        "narHash": "sha256-pElUsd8VANmqIOHJ705WraQbV/UkTczN5vGINAjQ964=",
+        "lastModified": 1762196337,
+        "narHash": "sha256-5e/PDui7L9cvSNXDGLnOrSsuSL7iRqAQa8qZwC1MVF4=",
         "ref": "refs/heads/main",
-        "rev": "000a63f89f3a786a197c02a764db1b40f7bda312",
-        "revCount": 43,
+        "rev": "47161e0b723b970e5adaca9e9c2090a5eda8e419",
+        "revCount": 48,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
@@ -445,6 +446,31 @@
       "original": {
         "owner": "NuschtOS",
         "repo": "search",
+        "type": "github"
+      }
+    },
+    "quake": {
+      "inputs": {
+        "flake-utils": [
+          "iso",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "iso",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1762192513,
+        "narHash": "sha256-3DlNs3ZTd7XuGL6U5SuvQVI6eYDESAMQeF0d+0hmgxk=",
+        "owner": "mirendev",
+        "repo": "quake",
+        "rev": "f40fd00e066b6561b7058dcb4f3443d3a28e4442",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mirendev",
+        "repo": "quake",
         "type": "github"
       }
     },
