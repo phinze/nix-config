@@ -219,11 +219,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1762196337,
-        "narHash": "sha256-5e/PDui7L9cvSNXDGLnOrSsuSL7iRqAQa8qZwC1MVF4=",
+        "lastModified": 1762368294,
+        "narHash": "sha256-NlhTvnehxeTUjrptlW14QeID/1JX3aRn+2sZUg2ZMXo=",
         "ref": "refs/heads/main",
-        "rev": "47161e0b723b970e5adaca9e9c2090a5eda8e419",
-        "revCount": 48,
+        "rev": "59edd70c143dee87dc5788f41a15f88dbc30f9c1",
+        "revCount": 52,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
@@ -412,11 +412,11 @@
         "nixvim": "nixvim"
       },
       "locked": {
-        "lastModified": 1761087778,
-        "narHash": "sha256-GIUl63rh+24jpdRmFMnKx0Kk/o0hBUaLYC3uDhOHtR4=",
+        "lastModified": 1762368660,
+        "narHash": "sha256-RGTlGSSepmtyfGyf4I72feET+SuJFdddUdwjs+BFTi8=",
         "owner": "phinze",
         "repo": "nixvim-config",
-        "rev": "de1f05452673d2ce0aa7fb082d0a272427dbaace",
+        "rev": "ceb77f0bc4220e5a992b2f2a38e2257bcae974cc",
         "type": "github"
       },
       "original": {
