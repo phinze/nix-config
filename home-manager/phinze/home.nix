@@ -451,6 +451,9 @@
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
 
+      # Enable focus events for autoread functionality in Neovim
+      set -g focus-events on
+
       # Update environment variables when attaching to tmux
       set -g update-environment "DISPLAY SSH_ASKPASS SSH_AUTH_SOCK SSH_CONNECTION PATH"
     '';
