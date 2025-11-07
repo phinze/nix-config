@@ -124,6 +124,13 @@
   # Mosh is good on dicey connections
   programs.mosh.enable = true;
 
+  # nh helper with automatic cleanup
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--nogcroots --keep 3";
+  };
+
   # Our primary method of accessing stuff
   services.tailscale.enable = true;
   services.tailscale.useRoutingFeatures = "both";
