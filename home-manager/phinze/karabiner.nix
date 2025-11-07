@@ -76,28 +76,7 @@
             };
             rules = [
               {
-                description = "Left Cmd + Tab triggers Raycast's Switch Windows extension";
-                manipulators = [
-                  {
-                    type = "basic";
-                    from = {
-                      key_code = "tab";
-                      modifiers = {
-                        mandatory = ["left_command"];
-                        optional = ["any"];
-                      };
-                    };
-                    to = [
-                      {
-                        key_code = "w";
-                        modifiers = ["left_control" "left_option" "left_shift" "left_command"];
-                      }
-                    ];
-                  }
-                ];
-              }
-              {
-                description = "Caps Lock → Escape on tap, Control on hold";
+                description = "Caps Lock → Escape on tap, Control on hold (built-in keyboard only)";
                 manipulators = [
                   {
                     type = "basic";
@@ -118,11 +97,21 @@
                         key_code = "escape";
                       }
                     ];
+                    conditions = [
+                      {
+                        type = "device_if";
+                        identifiers = [
+                          {
+                            is_built_in_keyboard = true;
+                          }
+                        ];
+                      }
+                    ];
                   }
                 ];
               }
               {
-                description = "Hold semicolon for vim navigation layer (hjkl → arrows)";
+                description = "Hold semicolon for vim navigation layer (hjkl → arrows, built-in keyboard only)";
                 manipulators = [
                   {
                     type = "basic";
@@ -142,6 +131,14 @@
                         type = "variable_if";
                         name = "semicolon_layer";
                         value = 1;
+                      }
+                      {
+                        type = "device_if";
+                        identifiers = [
+                          {
+                            is_built_in_keyboard = true;
+                          }
+                        ];
                       }
                     ];
                   }
@@ -164,6 +161,14 @@
                         name = "semicolon_layer";
                         value = 1;
                       }
+                      {
+                        type = "device_if";
+                        identifiers = [
+                          {
+                            is_built_in_keyboard = true;
+                          }
+                        ];
+                      }
                     ];
                   }
                   {
@@ -185,6 +190,14 @@
                         name = "semicolon_layer";
                         value = 1;
                       }
+                      {
+                        type = "device_if";
+                        identifiers = [
+                          {
+                            is_built_in_keyboard = true;
+                          }
+                        ];
+                      }
                     ];
                   }
                   {
@@ -205,6 +218,14 @@
                         type = "variable_if";
                         name = "semicolon_layer";
                         value = 1;
+                      }
+                      {
+                        type = "device_if";
+                        identifiers = [
+                          {
+                            is_built_in_keyboard = true;
+                          }
+                        ];
                       }
                     ];
                   }
@@ -235,6 +256,16 @@
                     to_if_alone = [
                       {
                         key_code = "semicolon";
+                      }
+                    ];
+                    conditions = [
+                      {
+                        type = "device_if";
+                        identifiers = [
+                          {
+                            is_built_in_keyboard = true;
+                          }
+                        ];
                       }
                     ];
                   }

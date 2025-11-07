@@ -161,6 +161,7 @@
     "rocket"
     "screenflow"
     "slack"
+    "tabtab"
     "tailscale-app"
     "zed"
     "zen"
