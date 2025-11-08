@@ -207,11 +207,14 @@
   };
 
   # Ensure the target directory exists with proper permissions
+  # Using /Users/phinze to match macOS path structure for consistency
   systemd.tmpfiles.rules = [
-    "d /home/phinze/Library 0755 phinze users -"
-    "d '/home/phinze/Library/Application Support' 0755 phinze users -"
-    "d '/home/phinze/Library/Application Support/CleanShot' 0755 phinze users -"
-    "d '/home/phinze/Library/Application Support/CleanShot/media' 0755 phinze users -"
+    "d /Users 0755 root root -"
+    "d /Users/phinze 0755 phinze users -"
+    "d /Users/phinze/Library 0755 phinze users -"
+    "d '/Users/phinze/Library/Application Support' 0755 phinze users -"
+    "d '/Users/phinze/Library/Application Support/CleanShot' 0755 phinze users -"
+    "d '/Users/phinze/Library/Application Support/CleanShot/media' 0755 phinze users -"
   ];
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
