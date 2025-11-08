@@ -173,6 +173,42 @@
     '';
   };
 
+  # Syncthing service for receiving CleanShot screenshots from Mac
+  services.syncthing = {
+    enable = true;
+    user = "phinze";
+    dataDir = "/home/phinze";
+    configDir = "/home/phinze/.config/syncthing";
+    # Don't override - let Syncthing manage devices/folders in its database
+    # This avoids the device ID chicken-and-egg problem
+    overrideDevices = false;
+    overrideFolders = false;
+
+    settings = {
+      options = {
+        # Use local discovery - Tailscale makes all devices appear local!
+        localAnnounceEnabled = true;
+        # Disable global discovery - we don't need public discovery servers
+        # since Tailscale handles device discovery and connectivity
+        globalAnnounceEnabled = false;
+        # Disable public relays - direct Tailscale connection is faster
+        relaysEnabled = false;
+        # NAT traversal not needed with Tailscale's mesh network
+        natEnabled = false;
+        # Optionally reduce announcement interval since Tailscale is reliable
+        localAnnounceIntervalS = 21600; # 6 hours instead of default
+      };
+    };
+  };
+
+  # Ensure the target directory exists with proper permissions
+  systemd.tmpfiles.rules = [
+    "d /home/phinze/Library 0755 phinze users -"
+    "d '/home/phinze/Library/Application Support' 0755 phinze users -"
+    "d '/home/phinze/Library/Application Support/CleanShot' 0755 phinze users -"
+    "d '/home/phinze/Library/Application Support/CleanShot/media' 0755 phinze users -"
+  ];
+
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";
 }
