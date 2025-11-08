@@ -185,6 +185,11 @@
     overrideFolders = false;
 
     settings = {
+      # Allow access to web UI from Tailscale network
+      gui = {
+        address = "0.0.0.0:8384";
+      };
+
       options = {
         # Use local discovery - Tailscale makes all devices appear local!
         localAnnounceEnabled = true;
