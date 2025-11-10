@@ -487,6 +487,10 @@
                 host.address = "/Users/phinze/.bankshot.sock";
               }
             ];
+            extraOptions = {
+              RemoteCommand = "bankshot daemon reconcile 2>/dev/null || true; exec \\$SHELL -l";
+              RequestTTY = "yes";
+            };
           };
 
         "pixiu" = {
