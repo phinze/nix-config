@@ -153,6 +153,20 @@
     enable = true;
     nix-direnv.enable = true;
     silent = true;
+
+    # Auto-allow direnv for trusted organizations (repos and worktrees)
+    config = {
+      whitelist = {
+        prefix = [
+          # Main repository directories
+          "${config.home.homeDirectory}/src/github.com/phinze"
+          "${config.home.homeDirectory}/src/github.com/mirendev"
+          # Worktree directories managed by gwq
+          "${config.home.homeDirectory}/worktrees/github.com/phinze"
+          "${config.home.homeDirectory}/worktrees/github.com/mirendev"
+        ];
+      };
+    };
   };
 
   programs.fish =
