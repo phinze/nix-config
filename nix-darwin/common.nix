@@ -5,7 +5,12 @@
   lib,
   config,
   ...
-}: {
+}: let
+  pkgs-unstable = import inputs.nixpkgs-unstable {
+    system = pkgs.stdenv.system;
+    config.allowUnfree = true;
+  };
+in {
   imports = [
     ../modules/darwin/colima.nix
   ];
@@ -176,6 +181,7 @@
   # Colima for Docker on macOS
   services.colima = {
     enable = true;
+    package = pkgs-unstable.colima; # Use newer version from unstable
     docker = true;
     cpus = 4;
     memory = 8;
