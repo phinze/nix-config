@@ -76,6 +76,27 @@
             };
             rules = [
               {
+                description = "Left Cmd + Tab triggers Raycast's Switch Windows extension";
+                manipulators = [
+                  {
+                    type = "basic";
+                    from = {
+                      key_code = "tab";
+                      modifiers = {
+                        mandatory = ["left_command"];
+                        optional = ["any"];
+                      };
+                    };
+                    to = [
+                      {
+                        key_code = "w";
+                        modifiers = ["left_control" "left_option" "left_shift" "left_command"];
+                      }
+                    ];
+                  }
+                ];
+              }
+              {
                 description = "Caps Lock → Escape on tap, Control on hold (built-in keyboard only)";
                 manipulators = [
                   {
