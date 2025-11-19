@@ -21,6 +21,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Load nbd kernel module for Miren development
+  boot.kernelModules = ["nbd"];
+
   # Enable qemu guest agent
   services.qemuGuest.enable = true;
 
