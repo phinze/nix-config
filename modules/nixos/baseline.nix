@@ -73,6 +73,7 @@
     vim
     wget
     curl
+    bind.dnsutils # provides dig for DNS lookups
   ];
 
   # Enable fish shell
@@ -110,10 +111,8 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEu+8Why8CmSWV5FHEeIsaAgYTN156U3kpCa/QMxdnaC phinze@phinze-mrn-mbp"
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKri4aveRRo7osskk6Wg8urqRm1RuAZK0bksJvKiHcKUk55kQoES/aPIr+vC5tVETE+2AHrFmIuZfGf2PHeruwM= phinze@delevingne"
     ];
-    extraGroups = ["wheel" "networkmanager"];
+    extraGroups = ["wheel"];
     shell = pkgs.fish;
   };
-
-  # Enable NetworkManager for graphical environments (overridden in server configs)
-  networking.networkmanager.enable = true;
 }
+

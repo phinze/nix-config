@@ -12,6 +12,9 @@
     inputs.nixos-hardware.nixosModules.framework-12-13th-gen-intel
   ];
 
+  # Add networkmanager group for graphical environment
+  users.users.phinze.extraGroups = ["networkmanager"];
+
   # Hostname
   networking.hostName = "xiezhi";
 
@@ -19,10 +22,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Use kernel 6.15.5
-  # Needed for Ghostty performance regression on 6.15.4
-  # See https://github.com/ghostty-org/ghostty/discussions/7720
-  boot.kernelPackages = pkgs.linuxPackages_6_15;
+  # Use latest kernel
+  # Previous: 6.15.5 for Ghostty performance (https://github.com/ghostty-org/ghostty/discussions/7720)
+  # but 6.15 reached EOL
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Framework laptop specific kernel parameters
   boot.kernelParams = [
