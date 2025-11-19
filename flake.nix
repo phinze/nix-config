@@ -44,8 +44,6 @@
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     iso.url = "git+https://github.com/mirendev/iso.git";
-    iso.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    iso.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs = {
