@@ -18,20 +18,26 @@ in
 
     # Parse command line options
     DRY_RUN=false
+    INTERACTIVE=false
     while [[ $# -gt 0 ]]; do
       case $1 in
         --dry-run|-n)
           DRY_RUN=true
           shift
           ;;
+        --interactive|-i)
+          INTERACTIVE=true
+          shift
+          ;;
         --help|-h)
-          echo "Usage: git trim [--dry-run|-n]"
-          echo "  --dry-run, -n  Show what would be done without actually doing it"
+          echo "Usage: git trim [--dry-run|-n] [--interactive|-i]"
+          echo "  --dry-run, -n       Show what would be done without actually doing it"
+          echo "  --interactive, -i   Prompt before removing worktrees with uncommitted changes"
           exit 0
           ;;
         *)
           echo "Unknown option: $1"
-          echo "Usage: git trim [--dry-run|-n]"
+          echo "Usage: git trim [--dry-run|-n] [--interactive|-i]"
           exit 1
           ;;
       esac
@@ -62,7 +68,7 @@ in
     if [ "$current_branch" != "$MAIN_BRANCH" ]; then
       echo -e "''${YELLOW}Warning:''${NC} You are on branch '$current_branch', not '$MAIN_BRANCH'."
       echo "It's recommended to run this command from the main branch."
-      read -p "Continue anyway? (y/N) " -n 1 -r
+      read -p "Continue anyway? (y/N) " -n 1 -r </dev/tty
       echo
       if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         exit 0
@@ -109,9 +115,32 @@ in
       fi
     }
 
+    # Function to clean up iso containers, volumes, and networks for a worktree
+    cleanup_iso_resources() {
+      local worktree_path="$1"
+
+      # Check if iso command is available
+      if ! command -v iso &> /dev/null; then
+        return 0
+      fi
+
+      # Check if the worktree has a .iso directory
+      if [ ! -d "$worktree_path/.iso" ]; then
+        return 0
+      fi
+
+      # Run iso stop --all-sessions from within the worktree to clean up all sessions
+      if [ "$DRY_RUN" = true ]; then
+        echo "  Would run: (cd $worktree_path && iso stop --all-sessions)"
+      else
+        echo "  Stopping iso sessions in worktree"
+        (cd "$worktree_path" && iso stop --all-sessions 2>/dev/null) || true
+      fi
+    }
+
     # Process each merged branch
     while IFS= read -r branch_line; do
-      # Check if branch has a working tree (indicated by + prefix)
+      # Check if branch has a working tree (indicated by + prefix from git branch --merged)
       if [[ "$branch_line" =~ ^\+[[:space:]]*(.*) ]]; then
         branch_name="''${BASH_REMATCH[1]}"
         has_worktree=true
@@ -154,6 +183,49 @@ in
 
         if [ "$has_changes" = true ]; then
           echo -e "''${YELLOW}⚠''${NC}  Skipping $branch_name - working tree has uncommitted changes"
+
+          # If interactive mode, show diff and ask to override
+          if [ "$INTERACTIVE" = true ]; then
+            # Get the worktree path to show diff
+            worktree_path=$(gwq get "$branch_name" 2>/dev/null || echo "")
+
+            if [ -n "$worktree_path" ] && [ -d "$worktree_path" ]; then
+              echo ""
+              echo "Outstanding changes:"
+              echo "---"
+              # Show git status and diff in the worktree
+              (cd "$worktree_path" && git status --short)
+              echo ""
+              (cd "$worktree_path" && git diff HEAD)
+              echo "---"
+              echo ""
+
+              # Prompt to override (default to no)
+              read -p "Remove anyway? (y/N) " -n 1 -r </dev/tty
+              echo
+
+              if [[ $REPLY =~ ^[Yy]$ ]]; then
+                # User wants to remove despite changes
+                echo -e "''${GREEN}✓''${NC}  Removing $branch_name (forced removal)"
+
+                # Get the worktree path before removing it (already have it)
+                # Kill tmux session if it exists
+                kill_tmux_session "$worktree_path"
+
+                # Clean up iso resources
+                cleanup_iso_resources "$worktree_path"
+
+                # Remove the worktree and branch with --force since user confirmed
+                if [ "$DRY_RUN" = true ]; then
+                  echo "  Would run: gwq remove -b --force $branch_name"
+                else
+                  gwq remove -b --force "$branch_name"
+                fi
+              else
+                echo "Skipped."
+              fi
+            fi
+          fi
         else
           status_msg=""
           if [ "$is_stale" = true ]; then
@@ -174,6 +246,11 @@ in
           # Kill tmux session if it exists
           if [ -n "$worktree_path" ]; then
             kill_tmux_session "$worktree_path"
+          fi
+
+          # Clean up iso resources if worktree exists
+          if [ -n "$worktree_path" ]; then
+            cleanup_iso_resources "$worktree_path"
           fi
 
           # Remove the worktree and branch
