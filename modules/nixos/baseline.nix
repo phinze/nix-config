@@ -76,6 +76,11 @@
     bind.dnsutils # provides dig for DNS lookups
   ];
 
+  # Environment variables
+  environment.variables = {
+    EDITOR = "vim";
+  };
+
   # Enable fish shell
   programs.fish.enable = true;
 
