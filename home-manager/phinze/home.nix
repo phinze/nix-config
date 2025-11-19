@@ -502,7 +502,7 @@
               }
             ];
             extraOptions = {
-              RemoteCommand = "bankshot daemon reconcile 2>/dev/null || true; exec \\$SHELL -l";
+              RemoteCommand = "bankshot daemon reconcile 2>/dev/null || true; exec \$SHELL -l";
               RequestTTY = "yes";
             };
           };
