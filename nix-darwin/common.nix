@@ -151,7 +151,7 @@ in {
     "elgato-control-center"
     "finicky"
     "firefox"
-    "ghostty@tip"
+    "ghostty"
     "google-chrome"
     "istat-menus"
     "karabiner-elements"
