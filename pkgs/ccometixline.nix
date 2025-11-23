@@ -5,16 +5,16 @@
 }:
 rustPlatform.buildRustPackage rec {
   pname = "ccometixline";
-  version = "1.0.2";
+  version = "1.0.8";
 
   src = fetchFromGitHub {
     owner = "Haleclipse";
     repo = "CCometixLine";
     rev = "v${version}";
-    hash = "sha256-F7QsWqGc4uj0cLWOAzSTQP9fxWUxG04DV0aDFiwmMhQ=";
+    hash = "sha256-OcK0UZDHAJTQOVqBUZbI9g7Q/ChYJ5Ukc+hdDUi6tPM=";
   };
 
-  cargoHash = "sha256-5mTuZzCsmlwsoRf2EkZRBeFXff8GKD39bkrrSa6sd4k=";
+  cargoHash = "sha256-PMmyJhbeXgxncXZh/RV0uyuWl9TmCeJAICxWXn0uB0o=";
 
   buildFeatures = ["tui" "self-update"];
 
