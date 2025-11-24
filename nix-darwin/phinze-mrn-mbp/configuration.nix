@@ -1,10 +1,16 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: {
   imports = [
     ../common.nix
+  ];
+
+  # Syncthing CLI for manually triggering scans
+  environment.systemPackages = [
+    pkgs.syncthing
   ];
 
   # Add host-specific homebrew casks

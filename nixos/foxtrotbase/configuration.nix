@@ -31,6 +31,8 @@
   environment.systemPackages = with pkgs; [
     docker-compose
     pageres-cli
+    syncthing # CLI for debugging syncthing
+    synckick # Quick command to trigger syncthing scans
   ];
 
   # Fonts for terminal recording tools like agg

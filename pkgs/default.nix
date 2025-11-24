@@ -9,4 +9,5 @@ pkgs: rec {
   coderabbit = pkgs.callPackage ./coderabbit {};
   pr-review-download = pkgs.callPackage ./pr-review-download {};
   linearis = pkgs.callPackage ./linearis {};
+  synckick = pkgs.callPackage ./synckick.nix {};
 }
