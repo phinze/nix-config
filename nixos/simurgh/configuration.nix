@@ -1,4 +1,14 @@
 # Simurgh - NAS server (Supermicro 2U with ZFS storage)
+#
+# Hardware: Supermicro PIO-628U-TR4T+ (X10DRU-i+ motherboard)
+# - CPU: Xeon E5-2640 v4, 64GB RAM
+# - Boot: 1TB WD_BLACK NVMe via ASUS Hyper M.2 X16 PCIe adapter
+# - Storage: 2x 12TB HGST HUH721212ALE600 in ZFS mirror (tank)
+#
+# BIOS Note: The X10DRU-i+ doesn't have native NVMe boot support.
+# We're running a modded BIOS (X10DRU2.427 with NvmExpressDxe driver)
+# from: https://winraid.level1techs.com/t/offer-supermicro-x10dru-i-bios-427-mod-for-nvme-boot/98550
+# Original BIOS backup recommended before flashing.
 {
   inputs,
   outputs,
