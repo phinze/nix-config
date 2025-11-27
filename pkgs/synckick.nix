@@ -3,6 +3,7 @@
     curl
     jq
     gnugrep
+    openssh
   ];
 in
   pkgs.writeShellScriptBin "synckick" ''
@@ -55,8 +56,27 @@ in
       done
     fi
 
-    # Trigger the scan
+    # Trigger scan on remote Mac first (so it advertises new files)
+    echo -n "Kicking remote (phinze-mrn-mbp)..."
+    REMOTE_APIKEY=$(ssh -o ConnectTimeout=5 phinze-mrn-mbp \
+      "grep -oP '(?<=<apikey>)[^<]+' ~/Library/Application\ Support/Syncthing/config.xml" 2>/dev/null || echo "")
+    if [ -n "$REMOTE_APIKEY" ]; then
+      ssh phinze-mrn-mbp \
+        "curl -s -X POST -H 'X-API-Key: $REMOTE_APIKEY' 'http://127.0.0.1:8384/rest/db/scan?folder=$FOLDER'" 2>/dev/null || true
+      echo " done"
+      # Give it a moment to scan and advertise
+      sleep 2
+    else
+      echo " failed (couldn't get API key)"
+    fi
+
+    # Trigger the local scan
+    echo -n "Kicking local..."
     curl -s -X POST -H "X-API-Key: $APIKEY" "$API/rest/db/scan?folder=$FOLDER"
+    echo " done"
+
+    # Wait a moment for sync to start
+    sleep 1
 
     # Show current status
     status=$(curl -s -H "X-API-Key: $APIKEY" "$API/rest/db/status?folder=$FOLDER")
@@ -65,12 +85,11 @@ in
     local_files=$(echo "$status" | jq -r '.localFiles')
     global_files=$(echo "$status" | jq -r '.globalFiles')
 
-    echo "✓ Scan triggered for folder: $FOLDER"
-    echo "  State: $state | Local: $local_files | Global: $global_files | Need: $need"
+    echo "Status: $state | Local: $local_files | Global: $global_files | Need: $need"
 
     # If there are files needed, wait and show progress
     if [ "$need" -gt 0 ]; then
-      echo -n "  Syncing"
+      echo -n "Syncing"
       for i in {1..30}; do
         sleep 1
         echo -n "."
@@ -79,12 +98,14 @@ in
         if [ "$need" -eq 0 ]; then
           echo " done!"
           local_files=$(echo "$status" | jq -r '.localFiles')
-          echo "  ✓ Synced! Local files: $local_files"
+          echo "✓ Synced! Local files: $local_files"
           break
         fi
       done
       if [ "$need" -gt 0 ]; then
         echo " still syncing ($need files remaining)"
       fi
+    else
+      echo "✓ Already in sync!"
     fi
   ''
