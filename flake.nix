@@ -102,6 +102,15 @@
           ./nixos/xiezhi/home-manager.nix
         ];
       };
+
+      # Supermicro NAS server with ZFS
+      simurgh = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs outputs;};
+        modules = [
+          ./nixos/simurgh/configuration.nix
+          ./nixos/simurgh/home-manager.nix
+        ];
+      };
     };
 
     # Darwin machines
