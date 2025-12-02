@@ -56,6 +56,10 @@ in
       done
     fi
 
+    # Capture local file count before we start
+    initial_status=$(curl -s -H "X-API-Key: $APIKEY" "$API/rest/db/status?folder=$FOLDER")
+    initial_local=$(echo "$initial_status" | jq -r '.localFiles')
+
     # Trigger scan on remote Mac first (so it advertises new files)
     echo -n "Kicking remote (phinze-mrn-mbp)..."
     REMOTE_APIKEY=$(ssh -o ConnectTimeout=5 phinze-mrn-mbp \
@@ -98,7 +102,12 @@ in
         if [ "$need" -eq 0 ]; then
           echo " done!"
           local_files=$(echo "$status" | jq -r '.localFiles')
-          echo "✓ Synced! Local files: $local_files"
+          new_files=$((local_files - initial_local))
+          if [ "$new_files" -gt 0 ]; then
+            echo "✓ Synced $new_files new file(s)! Total: $local_files"
+          else
+            echo "✓ Synced! Local files: $local_files"
+          fi
           break
         fi
       done
@@ -106,6 +115,12 @@ in
         echo " still syncing ($need files remaining)"
       fi
     else
-      echo "✓ Already in sync!"
+      # Check if files were added (sync completed before we checked)
+      new_files=$((local_files - initial_local))
+      if [ "$new_files" -gt 0 ]; then
+        echo "✓ Synced $new_files new file(s)! Total: $local_files"
+      else
+        echo "✓ Already in sync!"
+      fi
     fi
   ''
