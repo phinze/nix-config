@@ -33,6 +33,7 @@
     pageres-cli
     syncthing # CLI for debugging syncthing
     synckick # Quick command to trigger syncthing scans
+    whoson # Show process info for a port
   ];
 
   # Fonts for terminal recording tools like agg

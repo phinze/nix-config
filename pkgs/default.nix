@@ -10,4 +10,5 @@ pkgs: rec {
   pr-review-download = pkgs.callPackage ./pr-review-download {};
   linearis = pkgs.callPackage ./linearis {};
   synckick = pkgs.callPackage ./synckick.nix {};
+  whoson = pkgs.callPackage ./whoson.nix {};
 }
