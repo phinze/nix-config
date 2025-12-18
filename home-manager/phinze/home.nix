@@ -369,7 +369,7 @@
         core.askPass = ""; # needs to be empty to use terminal for ask pass
         credential.helper = "!gh auth git-credential";
         github.user = "phinze";
-        push.default = "tracking";
+        push.default = "current";
         init.defaultBranch = "main";
         safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
         push.autoSetupRemote = true;
