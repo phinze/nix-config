@@ -15,6 +15,9 @@
 
     # Import baseline NixOS configuration
     ../../modules/nixos/baseline.nix
+
+    # Shutdown safety for NBD device hangs
+    ../../modules/nixos/shutdown-safety.nix
   ];
 
   # Use the systemd-boot EFI boot loader.
