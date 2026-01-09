@@ -19,6 +19,18 @@
         padding = 0;
       };
       includeCoAuthoredBy = false;
+      hooks = {
+        SessionStart = [
+          {
+            hooks = [
+              {
+                type = "command";
+                command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true'';
+              }
+            ];
+          }
+        ];
+      };
     };
     force = true;
   };
