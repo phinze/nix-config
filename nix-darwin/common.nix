@@ -153,6 +153,7 @@ in {
     "firefox"
     "ghostty"
     "google-chrome"
+    "granola"
     "istat-menus"
     "karabiner-elements"
     "keepingyouawake"
