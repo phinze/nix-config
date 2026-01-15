@@ -502,7 +502,10 @@
               }
             ];
             extraOptions = {
-              RemoteCommand = "bankshot daemon reconcile 2>/dev/null || true; exec \$SHELL -l";
+              # Disable terminal focus reporting during connection (printf '\e[?1004l')
+              # to prevent ^[[I/^[[O escape sequences from appearing as noise.
+              # tmux will re-enable focus events when it starts.
+              RemoteCommand = "printf '\\e[?1004l'; bankshot daemon reconcile 2>/dev/null || true; exec \$SHELL -l";
               RequestTTY = "yes";
             };
           };
