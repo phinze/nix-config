@@ -78,11 +78,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1755615235,
-        "narHash": "sha256-VGGVRJfL/Xk/7xwJT+Ant8T8DrUhEL0+28mOu/IqNOU=",
+        "lastModified": 1768259313,
+        "narHash": "sha256-3zHn/KnTI0oaBzhbhqtny9pnDT+/f2xsVDdWglsQse4=",
         "owner": "phinze",
         "repo": "double-agent",
-        "rev": "d37da6bdbd94c34162f176681db6e891169fc372",
+        "rev": "539c4c3d402404cc0ac6118d3ced7cd5fbecd832",
         "type": "github"
       },
       "original": {
