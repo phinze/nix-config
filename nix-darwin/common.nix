@@ -143,6 +143,7 @@ in {
     "1password"
     "1password-cli"
     "balenaetcher"
+    "bambu-studio"
     "bartender"
     "blackhole-2ch"
     "claude"
