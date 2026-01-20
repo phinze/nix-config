@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Update a flake input and commit with version info
+# Usage: update-flake-input [-y] <input-name>
+
+auto_commit=false
+if [[ "${1:-}" == "-y" ]]; then
+  auto_commit=true
+  shift
+fi
+
+input="${1:-}"
+
+if [[ -z "$input" ]]; then
+  echo "Usage: update-flake-input [-y] <input-name>" >&2
+  echo "  -y: Auto-commit without prompting" >&2
+  echo "Available inputs with packages: iso, double-agent, bankshot, claude-code-nix, zen-browser, claude-desktop" >&2
+  exit 1
+fi
+
+# Systems to try when looking for package versions
+systems=("aarch64-darwin" "x86_64-linux" "aarch64-linux" "x86_64-darwin")
+
+# Get the flake URL from flake.nix
+flake_url=$(grep -E "^\s*${input}\.url\s*=" flake.nix | sed 's/.*=\s*"\(.*\)";/\1/')
+if [[ -z "$flake_url" ]]; then
+  echo "Error: Could not find input '$input' in flake.nix" >&2
+  exit 1
+fi
+
+# Convert to a fetchable URL format
+# Handle git+https:// format
+flake_url="${flake_url#git+}"
+
+# Get old revision from flake.lock
+old_rev=$(jq -r ".nodes[\"$input\"].locked.rev // empty" flake.lock)
+if [[ -z "$old_rev" ]]; then
+  echo "Error: Could not find locked revision for '$input' in flake.lock" >&2
+  exit 1
+fi
+
+# Try to get version, trying multiple systems
+get_version() {
+  local url="$1"
+
+  for sys in "${systems[@]}"; do
+    # Try common package paths
+    for pkg_path in "packages.${sys}.default.version" "packages.${sys}.${input//-/_}.version" "packages.${sys}.${input}.version"; do
+      if version=$(nix eval --raw "${url}#${pkg_path}" 2>/dev/null); then
+        echo "$version"
+        return 0
+      fi
+    done
+
+    # Special cases for known inputs
+    case "$input" in
+      claude-code-nix)
+        if version=$(nix eval --raw "${url}#packages.${sys}.claude-code.version" 2>/dev/null); then
+          echo "$version"
+          return 0
+        fi
+        ;;
+    esac
+  done
+
+  echo "unknown"
+}
+
+echo "Fetching old version..."
+old_version=$(get_version "${flake_url}/${old_rev}")
+
+echo "Updating flake input '$input'..."
+nix flake update "$input" 2>&1 | grep -v "^warning:" || true
+
+# Get new revision from flake.lock
+new_rev=$(jq -r ".nodes[\"$input\"].locked.rev // empty" flake.lock)
+
+if [[ "$old_rev" == "$new_rev" ]]; then
+  echo "No update available - already at latest revision"
+  exit 0
+fi
+
+echo "Fetching new version..."
+new_version=$(get_version "${flake_url}/${new_rev}")
+
+# Build commit message
+if [[ "$old_version" != "unknown" && "$new_version" != "unknown" ]]; then
+  commit_msg="update ${input}: ${old_version} → ${new_version}"
+else
+  commit_msg="update ${input}"
+fi
+
+echo ""
+echo "Old revision: ${old_rev:0:7}"
+echo "New revision: ${new_rev:0:7}"
+echo "Old version: $old_version"
+echo "New version: $new_version"
+echo ""
+echo "Commit message: $commit_msg"
+echo ""
+
+if [[ "$auto_commit" == "true" ]]; then
+  git add flake.lock
+  git commit -m "$commit_msg"
+  echo "Committed!"
+else
+  read -p "Commit this update? [y/N] " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    git add flake.lock
+    git commit -m "$commit_msg"
+    echo "Committed!"
+  else
+    echo "Skipped commit. Changes are in flake.lock"
+  fi
+fi
