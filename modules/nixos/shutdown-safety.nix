@@ -40,26 +40,24 @@
     description = "Disconnect NBD devices on shutdown";
     documentation = ["man:nbd-client(8)"];
 
-    # Start early, stay resident, run disconnect on stop
+    # Stay resident, run disconnect on stop
     wantedBy = ["multi-user.target"];
 
-    # Run disconnect BEFORE most services stop
-    # This ordering ensures NBD devices are disconnected while we still have
-    # a functioning system, rather than fighting with hung processes later
-    before = [
-      "shutdown.target"
-      "reboot.target"
-      "halt.target"
-      "poweroff.target"
+    # ORDERING FOR STOP (which is what matters here):
+    # systemd stops services in REVERSE start order.
+    # We want NBD disconnect to happen BEFORE docker/containerd stop.
+    # Therefore we must START this service AFTER docker/containerd.
+    after = [
       "docker.service"
       "containerd.service"
     ];
 
-    # Don't pull in default dependencies - we want explicit control
+    # Stop this service when shutdown begins, before shutdown.target completes
+    conflicts = ["shutdown.target"];
+    before = ["shutdown.target"];
+
     unitConfig = {
       DefaultDependencies = false;
-      # Ensure this runs during shutdown
-      RefuseManualStop = false;
     };
 
     serviceConfig = {
@@ -69,9 +67,48 @@
       # Start is a no-op
       ExecStart = "${pkgs.coreutils}/bin/true";
 
-      # Stop disconnects all NBD devices
-      # -d flag disconnects, returns 0 even if device wasn't connected
+      # Stop unmounts NBD filesystems and disconnects NBD devices
       ExecStop = pkgs.writeShellScript "nbd-disconnect-all" ''
+        set +e  # Don't exit on errors
+
+        echo "=== NBD Shutdown Cleanup ==="
+
+        # Step 1: Find and kill processes using NBD mounts
+        echo "Killing processes using NBD devices..."
+        for dev in /dev/nbd*; do
+          if [ -b "$dev" ]; then
+            # Kill any processes using this device or its partitions
+            ${pkgs.util-linux}/bin/fuser -km "$dev" 2>/dev/null || true
+            for part in "$dev"p*; do
+              [ -b "$part" ] && ${pkgs.util-linux}/bin/fuser -km "$part" 2>/dev/null || true
+            done
+          fi
+        done
+
+        # Step 2: Unmount NBD-backed filesystems
+        echo "Unmounting NBD filesystems..."
+        for dev in /dev/nbd*; do
+          if [ -b "$dev" ]; then
+            # Check for mounts on the device or its partitions
+            for mnt in $(${pkgs.util-linux}/bin/findmnt -rno TARGET -S "$dev" 2>/dev/null); do
+              echo "Unmounting $mnt (lazy)..."
+              ${pkgs.util-linux}/bin/umount -l "$mnt" 2>/dev/null || true
+            done
+            for part in "$dev"p*; do
+              if [ -b "$part" ]; then
+                for mnt in $(${pkgs.util-linux}/bin/findmnt -rno TARGET -S "$part" 2>/dev/null); do
+                  echo "Unmounting $mnt (lazy)..."
+                  ${pkgs.util-linux}/bin/umount -l "$mnt" 2>/dev/null || true
+                done
+              fi
+            done
+          fi
+        done
+
+        # Brief pause for unmounts to process
+        sleep 1
+
+        # Step 3: Disconnect NBD devices
         echo "Disconnecting NBD devices..."
         for dev in /dev/nbd*; do
           if [ -b "$dev" ]; then
@@ -79,11 +116,12 @@
             ${pkgs.nbd}/bin/nbd-client -d "$dev" 2>/dev/null || true
           fi
         done
-        echo "NBD disconnect complete"
+
+        echo "=== NBD Shutdown Cleanup Complete ==="
       '';
 
-      # Give it time to disconnect all devices
-      TimeoutStopSec = "20s";
+      # Give it time for kill, unmount, and disconnect
+      TimeoutStopSec = "30s";
     };
   };
 }
