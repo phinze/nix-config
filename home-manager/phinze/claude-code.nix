@@ -10,6 +10,10 @@
     ccometixline
   ];
 
+  # Ignore SWT (Simple Work Tracker) directories globally
+  # SWT is a task tracker designed for AI agents that creates .swt/ dirs
+  programs.git.ignores = [".swt"];
+
   # Claude Code settings with CCometixLine statusline
   home.file.".claude/settings.json" = {
     text = builtins.toJSON {
