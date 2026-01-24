@@ -133,6 +133,7 @@ in {
   ];
 
   homebrew.brews = [
+    "media-control"
     {
       name = "phinze/bankshot/bankshot";
       start_service = true;
@@ -150,7 +151,6 @@ in {
     "cleanshot"
     "discord"
     "elgato-control-center"
-    "elgato-stream-deck"
     "finicky"
     "firefox"
     "ghostty"
