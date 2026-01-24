@@ -150,6 +150,7 @@ in {
     "cleanshot"
     "discord"
     "elgato-control-center"
+    "elgato-stream-deck"
     "finicky"
     "firefox"
     "ghostty"
