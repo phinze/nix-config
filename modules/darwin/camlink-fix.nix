@@ -6,7 +6,10 @@
 # Requirements:
 # - Cam Link must be connected through a uhubctl-compatible USB hub
 #   (e.g., VIA Labs 2109:0813 chipset - common in Anker, Plugable, Amazon Basics hubs)
-# - The hub location and port must be configured correctly
+#
+# The hub location and port are discovered dynamically by parsing uhubctl output,
+# so the Cam Link can be moved between ports or the USB tree can enumerate
+# differently without breaking the fix.
 {
   config,
   lib,
@@ -21,8 +24,6 @@ with lib; let
     set -uo pipefail
 
     DEVICE_NAME="${cfg.deviceName}"
-    HUB_LOCATION="${cfg.usbHub}"
-    PORT="${toString cfg.usbPort}"
     TIMEOUT_SECS=3
 
     log() {
@@ -32,6 +33,32 @@ with lib; let
 
     notify() {
       osascript -e "display notification \"$1\" with title \"Cam Link Fix\""
+    }
+
+    # Discover Cam Link's USB hub location and port dynamically
+    # Returns "hub_location:port" or empty if not found
+    find_camlink() {
+      local uhubctl_output
+      uhubctl_output=$(${pkgs.uhubctl}/bin/uhubctl 2>/dev/null)
+
+      local current_hub=""
+      local port=""
+      while IFS= read -r line; do
+        # Match hub header lines like: "Current status for hub 1-2.1.4 [2109:0813 VIA Labs..."
+        if [[ "$line" =~ ^Current\ status\ for\ hub\ ([0-9.-]+) ]]; then
+          current_hub="''${BASH_REMATCH[1]}"
+        fi
+        # Match port lines containing Cam Link like: "  Port 4: 0203 power ... [0fd9:007b Elgato Cam Link 4K..."
+        if [[ "$line" =~ ^[[:space:]]+Port\ ([0-9]+): ]]; then
+          port="''${BASH_REMATCH[1]}"
+          if [[ "$line" == *"Cam Link"* ]] && [[ -n "$current_hub" ]]; then
+            echo "$current_hub:$port"
+            return 0
+          fi
+        fi
+      done <<< "$uhubctl_output"
+
+      return 1
     }
 
     check_camera() {
@@ -58,8 +85,20 @@ with lib; let
     }
 
     reset_camera() {
-      log "Power cycling USB port $HUB_LOCATION:$PORT..."
-      ${pkgs.uhubctl}/bin/uhubctl -l "$HUB_LOCATION" -p "$PORT" -a cycle >/dev/null 2>&1
+      local location
+      location=$(find_camlink)
+      if [[ -z "$location" ]]; then
+        log "ERROR: Could not find Cam Link in USB hub tree"
+        return 1
+      fi
+
+      local hub_location port
+      hub_location="''${location%:*}"
+      port="''${location#*:}"
+
+      log "Found Cam Link at hub $hub_location port $port"
+      log "Power cycling USB port..."
+      ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a cycle >/dev/null 2>&1
       sleep 3
     }
 
@@ -100,21 +139,6 @@ in {
       type = types.str;
       default = "Cam Link 4K";
       description = "Name of the camera device as it appears in system_profiler.";
-    };
-
-    usbHub = mkOption {
-      type = types.str;
-      example = "0-2.1.4";
-      description = ''
-        USB hub location for uhubctl. Find this by running:
-        sudo uhubctl | grep -B5 "Cam Link"
-      '';
-    };
-
-    usbPort = mkOption {
-      type = types.int;
-      example = 4;
-      description = "USB port number on the hub where the Cam Link is connected.";
     };
 
     user = mkOption {

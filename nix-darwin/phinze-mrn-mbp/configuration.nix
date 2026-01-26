@@ -11,12 +11,11 @@
 
   # Cam Link 4K auto-fix on wake
   # Automatically resets the camera via USB power cycle when it becomes
-  # unresponsive after sleep. Requires Cam Link to be plugged into the
-  # Inland USB hub (VIA Labs chipset) for uhubctl compatibility.
+  # unresponsive after sleep. Requires Cam Link to be plugged into a
+  # uhubctl-compatible USB hub (VIA Labs chipset). Hub location and port
+  # are discovered dynamically at runtime.
   services.camlink-fix = {
     enable = true;
-    usbHub = "0-2.1.4";  # VIA Labs hub (Inland)
-    usbPort = 4;
     notify = true;
   };
 
