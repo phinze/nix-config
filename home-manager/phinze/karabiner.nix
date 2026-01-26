@@ -3,6 +3,14 @@
   lib,
   ...
 }: {
+  # Clean up old karabiner backup before activation to prevent conflicts
+  # Karabiner-Elements modifies its config directly, breaking symlinks
+  home.activation.cleanKarabinerBackup = lib.mkIf pkgs.stdenv.isDarwin (
+    lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+      rm -f "$HOME/.config/karabiner/karabiner.json.nix-backup"
+    ''
+  );
+
   # Only configure Karabiner on Darwin systems
   xdg.configFile."karabiner/karabiner.json" = lib.mkIf pkgs.stdenv.isDarwin {
     text = builtins.toJSON {
