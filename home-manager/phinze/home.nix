@@ -462,6 +462,10 @@
     ];
 
     extraConfig = ''
+      # Set terminal/tab title to "session · hostname" (last 2 path segments of session name)
+      set-option -g set-titles on
+      set-option -g set-titles-string "#(echo '#{session_name}' | rev | cut -d'/' -f1-2 | rev) · #h"
+
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
 
