@@ -102,8 +102,10 @@ in {
       # Enable LSP plugins: official ones + custom nix-lsp
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
-        "swift-lsp@claude-plugins-official" = true;
         "nix-lsp" = true; # Custom plugin defined below
+      } // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        # sourcekit-lsp comes from Xcode, only available on macOS
+        "swift-lsp@claude-plugins-official" = true;
       };
       hooks = {
         SessionStart = [
