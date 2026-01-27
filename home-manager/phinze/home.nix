@@ -85,6 +85,7 @@
     [
       ccusage # Analyze Claude Code token usage and costs
       coderabbit # AI-powered code review CLI
+      delta # Syntax-highlighting pager for git
       ghq # Clone repos into dir structure
       git-trim # Smart cleanup of merged branches with worktree awareness
       google-cloud-sdk # I want to run gcloud from anywhere
@@ -398,6 +399,17 @@
         branch.autosetuprebase = "always";
         color.ui = true;
         core.askPass = ""; # needs to be empty to use terminal for ask pass
+        core.pager = "env COLORTERM=truecolor delta";
+        interactive.diffFilter = "env COLORTERM=truecolor delta --color-only";
+        delta = {
+          navigate = true;
+          dark = true;
+          syntax-theme = "Dracula";
+          minus-style = "syntax #3b1d2b";
+          minus-emph-style = "syntax #5c2a3f";
+          plus-style = "syntax #1d3b2b";
+          plus-emph-style = "syntax #2a5c3f";
+        };
         credential.helper = "!gh auth git-credential";
         github.user = "phinze";
         push.default = "current";
