@@ -274,6 +274,37 @@
             end
           '';
         };
+
+        link-in = {
+          description = "Link a ghq repo into ./tmp/ for LLM context";
+          body = ''
+            set -l ghq_root (ghq root)
+
+            if test (count $argv) -eq 0
+                # No args: fuzzy find from ghq list
+                set -l selection (ghq list | fzf --height=40% --reverse --prompt="Link repo: ")
+                if test -z "$selection"
+                    return 0
+                end
+                set repo_path "$ghq_root/$selection"
+                set repo_name (basename $selection)
+            else
+                # Arg provided: treat as path relative to github.com
+                set -l relative_path $argv[1]
+                set repo_path "$ghq_root/github.com/$relative_path"
+                set repo_name (basename $relative_path)
+
+                if not test -d "$repo_path"
+                    echo "Repository not found: $repo_path"
+                    return 1
+                end
+            end
+
+            mkdir -p tmp/
+            ln -sfn (realpath $repo_path) "./tmp/$repo_name"
+            echo "Linked $repo_name -> $repo_path"
+          '';
+        };
       };
 
       interactiveShellInit = lib.concatLines [
