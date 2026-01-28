@@ -162,6 +162,101 @@ in {
   };
 
   # Claude Code slash commands
+  home.file.".claude/commands/whatsup.md" = {
+    text = ''
+      # Morning Context Rebuild
+
+      You are helping me rebuild context after being away from my computer.
+
+      ## Environment Context
+      - I use ghq/gwq for git repo organization
+      - **Main repos**: ~/src/github.com/<owner>/<repo> (e.g. ~/src/github.com/mirendev/runtime)
+      - **Worktrees**: ~/worktrees/github.com/<owner>/<repo>/<branch> for feature branches (e.g. ~/worktrees/github.com/mirendev/runtime/saga-genesis)
+      - Tmux session names show "github-com" but filesystem uses "github.com"
+      - Worktree sessions indicate active feature branch work - these are often the most relevant context
+      - Atuin tracks shell history with timestamps
+      - Claude Code sessions are stored in ~/.claude/projects/
+
+      ## Work vs Personal
+      - **Work**: anything in the `mirendev` org (in ~/src/ or ~/worktrees/)
+      - **Personal**: everything else (phinze, chicago-tool-library, etc.)
+      - Focus ~80% on work context, mention personal only briefly if recently active
+
+      ## Your Task
+      Analyze my active work context and give me a concise summary of what I was working on. This is a ONE-SHOT summary - do not ask follow-up questions or prompt for what to do next.
+
+      ## Commands to Run
+      1. **Tmux sessions**: `tmux list-sessions -F '#{session_name} (#{session_windows} windows, #{?session_attached,attached,detached}) - last activity: #{t:session_activity}'`
+      2. **Recent shell history**: `atuin history list --format '{time} | {command}' | tail -50`
+      3. **Recent Claude sessions**: `find ~/.claude/projects -name 'sessions-index.json' -exec cat {} \; 2>/dev/null | jq -s '[.[].entries[]] | sort_by(.modified) | reverse | .[:15] | .[] | "\(.modified) | \(.projectPath | split("/")[-1]) | \(.firstPrompt | .[0:80])..."' -r`
+      4. **Git status in active repos**: For 2-3 most recently active tmux sessions, check git status (remember: "github-com" in session name = "github.com" on disk)
+
+      ## Output Format
+      Give me a concise morning-briefing style summary (no emojis):
+
+      ### Work (mirendev)
+      1. **Active Sessions**: Which mirendev repos have tmux sessions open
+      2. **Recent Activity**: What work tasks was I doing based on shell history
+      3. **Claude Conversations**: Recent Claude sessions in mirendev repos
+      4. **Uncommitted Work**: Any mirendev repos with uncommitted changes
+      5. **Suggested Starting Points**: 2-3 work items to pick up
+
+      ### Personal (brief)
+      - One-liner on any recently active personal projects (if any)
+
+      End with the summary - do not ask questions or prompt for next steps.
+    '';
+  };
+
+  home.file.".claude/commands/pr-time.md" = {
+    text = ''
+      # Ship a PR
+
+      Let's get this work shipped! Create a commit and PR for the current changes.
+
+      ## Style Guide
+      - **Concise, informal, casual, narrative** - like explaining to a coworker
+      - No need to restate the diff in detail
+      - No test plan section
+      - Focus on the "why" and the story, not the "what"
+
+      ## Steps
+
+      1. **Check the state**: Run `git status` and `git diff` to see what we're working with
+
+      2. **Draft the commit message**:
+         - First line: short summary (imperative mood)
+         - Body: brief narrative of what was wrong and how we fixed it
+
+      3. **Draft the PR**:
+         - **Title**: Same as commit first line (or slightly more descriptive)
+         - **Description**: Casual narrative - what happened, why it was a problem, what we did about it
+
+      4. **Show me the draft** and ask "Look good?" - wait for approval before proceeding
+
+      5. **After approval**: Commit, push, and create the PR with `gh pr create`
+
+      ## Example Output Format
+
+      ```
+      Commit message:
+      Fix the thing that was broken
+
+      Found that X was causing Y. Fixed by doing Z instead.
+
+      PR title:
+      Fix the thing that was broken
+
+      PR description:
+      Noticed this morning that X wasn't working right. Turns out Y was
+      happening because of Z. Switched to A approach which handles this
+      better.
+
+      Look good?
+      ```
+    '';
+  };
+
   home.file.".claude/commands/review-pr.md" = {
     text = ''
       # PR Review Skill

@@ -306,6 +306,13 @@
             echo "Linked $repo_name -> $repo_path"
           '';
         };
+
+        whatsup = {
+          description = "Get Claude to summarize your active work context";
+          body = ''
+            claude --dangerously-skip-permissions -p /whatsup
+          '';
+        };
       };
 
       interactiveShellInit = lib.concatLines [
