@@ -15,7 +15,7 @@ input="${1:-}"
 if [[ -z "$input" ]]; then
   echo "Usage: update-flake-input [-y] <input-name>" >&2
   echo "  -y: Auto-commit without prompting" >&2
-  echo "Available inputs with packages: iso, double-agent, bankshot, claude-code-nix, zen-browser, claude-desktop" >&2
+  echo "Available inputs: nixvim-config, iso, double-agent, bankshot, claude-code-nix, zen-browser, claude-desktop" >&2
   exit 1
 fi
 
