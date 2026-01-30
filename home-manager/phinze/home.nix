@@ -290,10 +290,27 @@
                 set repo_path "$ghq_root/$selection"
                 set repo_name (basename $selection)
             else
-                # Arg provided: treat as path relative to github.com
                 set -l relative_path $argv[1]
-                set repo_path "$ghq_root/github.com/$relative_path"
                 set repo_name (basename $relative_path)
+
+                # If no slash in arg, try to infer org from current directory
+                if not string match -q '*/*' $relative_path
+                    # Extract org from cwd - works for both ~/src/github.com/ORG/... and ~/worktrees/github.com/ORG/...
+                    set -l current_org (pwd | string match -r 'github\.com/([^/]+)' | tail -n1)
+
+                    if test -n "$current_org"
+                        # Try org/repo first
+                        set -l org_repo_path "$ghq_root/github.com/$current_org/$relative_path"
+                        if test -d "$org_repo_path"
+                            set repo_path "$org_repo_path"
+                        end
+                    end
+                end
+
+                # Fall back to treating arg as full path relative to github.com
+                if not set -q repo_path
+                    set repo_path "$ghq_root/github.com/$relative_path"
+                end
 
                 if not test -d "$repo_path"
                     echo "Repository not found: $repo_path"
