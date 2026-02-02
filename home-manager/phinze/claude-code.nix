@@ -102,6 +102,7 @@ in {
       # Enable LSP plugins: official ones + custom nix-lsp
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
+        "frontend-design@claude-plugins-official" = true;
         "nix-lsp" = true; # Custom plugin defined below
       } // lib.optionalAttrs pkgs.stdenv.isDarwin {
         # sourcekit-lsp comes from Xcode, only available on macOS
@@ -350,16 +351,33 @@ in {
          - Ask if I have questions or want to dive deeper into any area
          - We'll discuss before drafting comments
 
-      5. **Draft PR comments**:
-         - When I'm ready, draft individual comments in raw markdown
-         - Use fenced code blocks so the markdown is visible (not rendered)
-         - Format each comment like:
+      5. **Draft the review**:
+         - Draft a short **top-level comment** summarizing the review
+         - Draft **inline comments** for specific lines, formatted as:
 
       ~~~markdown
-      **File**: `path/to/file.ts` (lines 42-45)
+      **File**: `path/to/file.go` (line 74)
 
       Your comment text here...
       ~~~
+
+         - Use a single line number (not ranges) - this is what the API needs
+
+      6. **Post when ready**:
+         - When I say to post, use `gh api` to submit:
+
+      ```bash
+      gh api repos/{owner}/{repo}/pulls/{number}/reviews \
+        --method POST --input - << 'EOF'
+      {
+        "body": "Top-level comment here",
+        "event": "APPROVE",  # or "COMMENT" or "REQUEST_CHANGES"
+        "comments": [
+          {"path": "path/to/file.go", "line": 74, "body": "Inline comment..."}
+        ]
+      }
+      EOF
+      ```
 
       **Tone**: Concise, informal, and friendly. Use "we" pronouns in the spirit of collective code ownership (e.g., "we might want to handle..." not "you should...").
 
