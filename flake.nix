@@ -46,90 +46,92 @@
     iso.url = "git+https://github.com/mirendev/iso.git";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    nix-darwin,
-    ...
-  } @ inputs: let
-    inherit (self) outputs;
+  outputs =
+    {
+      self,
+      nixpkgs,
+      nix-darwin,
+      ...
+    }@inputs:
+    let
+      inherit (self) outputs;
 
-    eachSystem = nixpkgs.lib.genAttrs (import inputs.systems);
-  in {
-    # Your custom packages
-    # Accessible through 'nix build', 'nix shell', etc
-    packages = eachSystem (system: import ./pkgs nixpkgs.legacyPackages.${system});
-    # Formatter for your nix files, available through 'nix fmt'
-    # Other options beside 'alejandra' include 'nixpkgs-fmt'
-    formatter = eachSystem (system: nixpkgs.legacyPackages.${system}.alejandra);
+      eachSystem = nixpkgs.lib.genAttrs (import inputs.systems);
+    in
+    {
+      # Your custom packages
+      # Accessible through 'nix build', 'nix shell', etc
+      packages = eachSystem (system: import ./pkgs nixpkgs.legacyPackages.${system});
+      # Formatter for your nix files, available through 'nix fmt'
+      formatter = eachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
-    # Your custom packages and modifications, exported as overlays
-    overlays = import ./overlays {inherit inputs;};
-    # Reusable nixos modules you might want to export
-    # These are usually stuff you would upstream into nixpkgs
-    nixosModules = import ./modules/nixos;
-    # Reusable home-manager modules you might want to export
-    # These are usually stuff you would upstream into home-manager
-    # homeManagerModules = import ./modules/home-manager;
+      # Your custom packages and modifications, exported as overlays
+      overlays = import ./overlays { inherit inputs; };
+      # Reusable nixos modules you might want to export
+      # These are usually stuff you would upstream into nixpkgs
+      nixosModules = import ./modules/nixos;
+      # Reusable home-manager modules you might want to export
+      # These are usually stuff you would upstream into home-manager
+      # homeManagerModules = import ./modules/home-manager;
 
-    # NixOS configuration entrypoint
-    # Available through 'nixos-rebuild --flake .#your-hostname'
-    nixosConfigurations = {
-      foxtrotbase = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          # > Our main nixos configuration file <
-          ./nixos/foxtrotbase/configuration.nix
-          ./nixos/foxtrotbase/home-manager.nix
-        ];
+      # NixOS configuration entrypoint
+      # Available through 'nixos-rebuild --flake .#your-hostname'
+      nixosConfigurations = {
+        foxtrotbase = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            # > Our main nixos configuration file <
+            ./nixos/foxtrotbase/configuration.nix
+            ./nixos/foxtrotbase/home-manager.nix
+          ];
+        };
+
+        # A VMware Fusion VM for isolation on manticore
+        victormike = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            # > Our main nixos configuration file <
+            ./nixos/victormike/configuration.nix
+            ./nixos/victormike/home-manager.nix
+          ];
+        };
+
+        # Framework 12" laptop
+        xiezhi = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            ./nixos/xiezhi/configuration.nix
+            ./nixos/xiezhi/home-manager.nix
+          ];
+        };
+
+        # Supermicro NAS server with ZFS
+        simurgh = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            ./nixos/simurgh/configuration.nix
+            ./nixos/simurgh/home-manager.nix
+          ];
+        };
       };
 
-      # A VMware Fusion VM for isolation on manticore
-      victormike = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          # > Our main nixos configuration file <
-          ./nixos/victormike/configuration.nix
-          ./nixos/victormike/home-manager.nix
-        ];
-      };
-
-      # Framework 12" laptop
-      xiezhi = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          ./nixos/xiezhi/configuration.nix
-          ./nixos/xiezhi/home-manager.nix
-        ];
-      };
-
-      # Supermicro NAS server with ZFS
-      simurgh = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          ./nixos/simurgh/configuration.nix
-          ./nixos/simurgh/home-manager.nix
-        ];
+      # Darwin machines
+      # Run with `darwin-rebuild --flake .`
+      darwinConfigurations = {
+        manticore = nix-darwin.lib.darwinSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            ./nix-darwin/manticore/configuration.nix
+            ./nix-darwin/manticore/home-manager.nix
+          ];
+        };
+        phinze-mrn-mbp = nix-darwin.lib.darwinSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            ./nix-darwin/phinze-mrn-mbp/configuration.nix
+            ./nix-darwin/phinze-mrn-mbp/home-manager.nix
+          ];
+        };
       };
     };
-
-    # Darwin machines
-    # Run with `darwin-rebuild --flake .`
-    darwinConfigurations = {
-      manticore = nix-darwin.lib.darwinSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          ./nix-darwin/manticore/configuration.nix
-          ./nix-darwin/manticore/home-manager.nix
-        ];
-      };
-      phinze-mrn-mbp = nix-darwin.lib.darwinSystem {
-        specialArgs = {inherit inputs outputs;};
-        modules = [
-          ./nix-darwin/phinze-mrn-mbp/configuration.nix
-          ./nix-darwin/phinze-mrn-mbp/home-manager.nix
-        ];
-      };
-    };
-  };
 }
