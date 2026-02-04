@@ -23,26 +23,10 @@ spoon.ControlEscape:start()
 -- spoon.SemicolonNav:start()
 
 --------------------------------------------------------------------------------
--- Cmd+Tab -> Hyper+W (for Raycast Switch Windows)
+-- Window/App Switching
 --------------------------------------------------------------------------------
--- Intercept left-cmd+tab and send Ctrl+Option+Shift+Cmd+W instead
-
-local cmdTabWatcher = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(event)
-    local flags = event:getFlags()
-    local keyCode = event:getKeyCode()
-
-    -- Tab key = keycode 48
-    -- Check for left-cmd only (not right-cmd)
-    if keyCode == 48 and flags:containExactly({'cmd'}) then
-        -- Send Hyper+W (Ctrl+Option+Shift+Cmd+W)
-        hs.eventtap.keyStroke({'ctrl', 'alt', 'shift', 'cmd'}, 'w', 0)
-        return true  -- consume the original event
-    end
-
-    return false  -- pass through other events
-end)
-
-cmdTabWatcher:start()
+-- Using rcmd (Mac App Store) instead of eventtap hacks
+-- Right-Cmd + letter to switch apps
 
 --------------------------------------------------------------------------------
 -- Reload config automatically when files change

@@ -180,6 +180,7 @@ in {
     "Numbers" = 409203825;
     "Xcode" = 497799835;
     "Flighty" = 1358823008;
+    # rcmd = 1596283165; # install manually from https://lowtechguys.com/rcmd/
   };
 
   # Colima for Docker on macOS
