@@ -93,7 +93,8 @@ in {
   # No natural scrolling
   system.defaults.NSGlobalDomain."com.apple.swipescrolldirection" = false;
 
-  # Capslock -> Control on internal keyboard
+  # Native macOS: Caps Lock → Control
+  # Hammerspoon handles: Control tap → Escape, Cmd+Tab → Hyper+W
   system.keyboard.enableKeyMapping = true;
   system.keyboard.remapCapsLockToControl = true;
 
@@ -157,7 +158,7 @@ in {
     "google-chrome"
     "granola"
     "istat-menus"
-    "karabiner-elements"
+    "hammerspoon"
     "keepingyouawake"
     "keymapp"
     "libreoffice"

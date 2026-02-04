@@ -22,8 +22,8 @@
     inputs.double-agent.homeManagerModules.default
     # Claude Code configuration (package + statusline)
     ./claude-code.nix
-    # Karabiner-Elements configuration (macOS only)
-    ./karabiner.nix
+    # Hammerspoon for keyboard remapping (replaces Karabiner-Elements)
+    ./hammerspoon.nix
     # Demo recorder for terminal sessions
     ./modules/demo-recorder.nix
     # Screenshot module for website captures
