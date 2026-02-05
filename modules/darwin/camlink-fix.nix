@@ -14,6 +14,11 @@
 # Note: The Cam Link can get stuck in USB 2.0 fallback mode after sleep, which
 # limits bandwidth and causes capture failures. This script cycles both USB 2.0
 # and USB 3.0 companion ports to force a full speed renegotiation.
+#
+# Reset strategy (escalating):
+# 1. Quick cycle (2s) - single port, handles most transient issues
+# 2. Full reset (10s) - both USB 2.0/3.0 ports, forces speed renegotiation
+# 3. Extended reset (30s) - both ports, fully drains capacitors
 {
   config,
   lib,
@@ -123,54 +128,6 @@ with lib; let
       return 1
     }
 
-    # Power cycle a single hub:port
-    cycle_port() {
-      local hub="$1"
-      local port="$2"
-      local off_duration="''${3:-2}"
-
-      ${pkgs.uhubctl}/bin/uhubctl -l "$hub" -p "$port" -a off >/dev/null 2>&1
-      sleep "$off_duration"
-      ${pkgs.uhubctl}/bin/uhubctl -l "$hub" -p "$port" -a on >/dev/null 2>&1
-    }
-
-    reset_camera() {
-      local location
-      location=$(find_camlink)
-      if [[ -z "$location" ]]; then
-        log "ERROR: Could not find Cam Link in USB hub tree"
-        return 1
-      fi
-
-      local hub_location port
-      hub_location="''${location%:*}"
-      port="''${location#*:}"
-
-      log "Found Cam Link at hub $hub_location port $port"
-
-      # Find the USB 2.0/3.0 companion hub
-      local companion_hub
-      companion_hub=$(find_companion_hub "$hub_location" "$port")
-
-      if [[ -n "$companion_hub" ]]; then
-        log "Found companion hub at $companion_hub"
-        log "Power cycling both USB 2.0 and USB 3.0 ports (10s off)..."
-        # Cycle both ports simultaneously with longer off duration
-        # to force full USB speed renegotiation
-        ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a off >/dev/null 2>&1
-        ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a off >/dev/null 2>&1
-        sleep 10
-        ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a on >/dev/null 2>&1
-        ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a on >/dev/null 2>&1
-      else
-        log "No companion hub found, cycling single port (10s off)..."
-        cycle_port "$hub_location" "$port" 10
-      fi
-
-      # Wait for device to re-enumerate
-      sleep 5
-    }
-
     # Main
     log "Checking $DEVICE_NAME..."
 
@@ -182,30 +139,54 @@ with lib; let
     log "Camera not responding, attempting reset..."
     ${if cfg.notify then ''notify "Camera not responding, resetting..."'' else ""}
 
-    # First attempt: standard reset with companion hub cycling
-    reset_camera
+    # Find the Cam Link
+    location=$(find_camlink)
+    if [[ -z "$location" ]]; then
+      log "ERROR: Could not find Cam Link in USB hub tree"
+      exit 1
+    fi
+
+    hub_location="''${location%:*}"
+    port="''${location#*:}"
+    companion_hub=$(find_companion_hub "$hub_location" "$port")
+
+    log "Found Cam Link at hub $hub_location port $port"
+    [[ -n "$companion_hub" ]] && log "Found companion hub at $companion_hub"
+
+    # First attempt: quick cycle (2s off via uhubctl default)
+    log "Trying quick port cycle..."
+    ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a cycle >/dev/null 2>&1
+    sleep 3
 
     if check_camera; then
-      log "OK: Camera recovered after first reset"
+      log "OK: Camera recovered after quick cycle"
       ${if cfg.notify then ''notify "Camera recovered successfully"'' else ""}
       exit 0
     fi
 
-    # Second attempt: longer off duration (30s) to fully drain capacitors
-    log "First reset failed, trying extended power-off (30s)..."
-    location=$(find_camlink)
-    if [[ -n "$location" ]]; then
-      hub_location="''${location%:*}"
-      port="''${location#*:}"
-      companion_hub=$(find_companion_hub "$hub_location" "$port")
+    # Second attempt: cycle both USB 2.0/3.0 ports with 10s off
+    log "Quick cycle failed, trying full reset (10s)..."
+    ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a off >/dev/null 2>&1
+    [[ -n "$companion_hub" ]] && ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a off >/dev/null 2>&1
+    sleep 10
+    ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a on >/dev/null 2>&1
+    [[ -n "$companion_hub" ]] && ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a on >/dev/null 2>&1
+    sleep 5
 
-      ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a off >/dev/null 2>&1
-      [[ -n "$companion_hub" ]] && ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a off >/dev/null 2>&1
-      sleep 30
-      ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a on >/dev/null 2>&1
-      [[ -n "$companion_hub" ]] && ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a on >/dev/null 2>&1
-      sleep 8
+    if check_camera; then
+      log "OK: Camera recovered after full reset"
+      ${if cfg.notify then ''notify "Camera recovered successfully"'' else ""}
+      exit 0
     fi
+
+    # Third attempt: extended 30s off to fully drain capacitors
+    log "Full reset failed, trying extended reset (30s)..."
+    ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a off >/dev/null 2>&1
+    [[ -n "$companion_hub" ]] && ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a off >/dev/null 2>&1
+    sleep 30
+    ${pkgs.uhubctl}/bin/uhubctl -l "$hub_location" -p "$port" -a on >/dev/null 2>&1
+    [[ -n "$companion_hub" ]] && ${pkgs.uhubctl}/bin/uhubctl -l "$companion_hub" -p "$port" -a on >/dev/null 2>&1
+    sleep 5
 
     if check_camera; then
       log "OK: Camera recovered after extended reset"
