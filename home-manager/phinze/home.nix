@@ -324,6 +324,85 @@
         '';
       };
 
+      pickup = {
+        description = "Pick up a Linear issue: create worktree, tmux session, and start Claude";
+        body = ''
+          # Step 1: Resolve issue identifier
+          set -l identifier
+
+          if test (count $argv) -eq 0
+              # No args: list recent issues via fzf
+              set -l selection (linearis issues list --limit 25 2>/dev/null | jq -r '.[] | "\(.identifier)\t\(.state.name)\t\(.title)"' | fzf --height=40% --reverse --with-nth=1,2,3 --delimiter='\t' --prompt="Pick issue: ")
+              if test -z "$selection"
+                  return 0
+              end
+              set identifier (echo "$selection" | cut -f1)
+          else if string match -qr '^[A-Z]+-[0-9]+$' $argv[1]
+              # Direct issue identifier (e.g. MIR-664)
+              set identifier $argv[1]
+          else
+              # Search query
+              set -l selection (linearis issues search "$argv" 2>/dev/null | jq -r '.[] | "\(.identifier)\t\(.state.name)\t\(.title)"' | fzf --height=40% --reverse --with-nth=1,2,3 --delimiter='\t' --prompt="Pick issue: ")
+              if test -z "$selection"
+                  return 0
+              end
+              set identifier (echo "$selection" | cut -f1)
+          end
+
+          # Step 2: Get branch name from Linear
+          set -l branch_name (linearis issues read $identifier 2>/dev/null | jq -r '.branchName // empty')
+          if test -z "$branch_name"
+              echo "No branch name found for $identifier"
+              return 1
+          end
+
+          # Step 3: Create or find worktree
+          set -l worktree_path (gwq get $branch_name 2>/dev/null)
+
+          if test -z "$worktree_path"
+              # Worktree doesn't exist, create it
+              if git show-ref --verify --quiet refs/heads/$branch_name 2>/dev/null; or git ls-remote --heads origin $branch_name 2>/dev/null | grep -q .
+                  gwq add $branch_name 2>/dev/null
+              else
+                  gwq add -b $branch_name 2>/dev/null
+              end
+
+              if test $status -ne 0
+                  echo "Failed to create worktree for $branch_name"
+                  return 1
+              end
+
+              set worktree_path (gwq get $branch_name 2>/dev/null)
+          end
+
+          # Step 4: Compute tmux session name (matches session-wizard --full-path)
+          set -l session_name (string replace "$HOME" "~" "$worktree_path")
+          set session_name (string replace -a " " "-" $session_name)
+          set session_name (string replace -a "." "-" $session_name)
+          set session_name (string replace -a ":" "-" $session_name)
+          set session_name (string lower $session_name)
+
+          # Step 5: Create tmux session if it doesn't exist
+          set -l is_new_session 0
+          if not tmux has-session -t "$session_name" 2>/dev/null
+              tmux new-session -d -s "$session_name" -c "$worktree_path"
+              set is_new_session 1
+          end
+
+          # Step 6: Launch Claude only for new sessions
+          if test $is_new_session -eq 1
+              tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP to read the issue and help me plan.'" Enter
+          end
+
+          # Step 7: Switch to session
+          if test -n "$TMUX"
+              tmux switch-client -t "$session_name"
+          else
+              tmux attach -t "$session_name"
+          end
+        '';
+      };
+
       whatsup = {
         description = "Get Claude to summarize your active work context";
         body = ''

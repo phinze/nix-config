@@ -6,16 +6,16 @@
 }:
 buildNpmPackage rec {
   pname = "linearis";
-  version = "1.1.0";
+  version = "2025.12.3";
 
   src = fetchFromGitHub {
     owner = "czottmann";
     repo = "linearis";
-    rev = version;
-    hash = "sha256-qLN3uGER8Et5IVxoODfEHj2AI8QhWgmkMlhcwWIISZQ=";
+    rev = "v${version}";
+    hash = "sha256-8Sz1RQJKbimPsGKUpHvqbkXnxxoUHppl4EA2+BjzryM=";
   };
 
-  npmDepsHash = "sha256-AlXkX4sc2jdXqr4qwmoXl6lRFVMUM5YSwtywTtPM4xU=";
+  npmDepsHash = "sha256-PUXLphH82leQLHj5+BIxezKSpRiK/S9WevzK0duwo28=";
 
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
