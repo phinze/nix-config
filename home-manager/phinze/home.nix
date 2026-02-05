@@ -436,6 +436,9 @@
         minus-emph-style = "syntax #5c2a3f";
         plus-style = "syntax #1d3b2b";
         plus-emph-style = "syntax #2a5c3f";
+        # Make filenames stand out
+        file-style = "bold yellow";
+        file-decoration-style = "yellow ul ol";
       };
       credential.helper = "!gh auth git-credential";
       github.user = "phinze";
