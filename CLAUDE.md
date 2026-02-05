@@ -101,6 +101,15 @@ cat file.txt | pbcopy
 ```
 This works on both macOS (native) and NixOS (via OSC 52 through SSH/tmux).
 
+For multi-line content or text with quotes/special characters, use a heredoc:
+```bash
+pbcopy << 'EOF'
+Multi-line content here
+With "quotes" and 'apostrophes'
+No escaping needed!
+EOF
+```
+
 ## Important Notes
 
 - The repository uses Determinate Nix on macOS (nix.enable = false in darwin configs)

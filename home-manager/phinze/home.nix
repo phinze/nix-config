@@ -536,11 +536,11 @@
       set-option -g set-titles on
       set-option -g set-titles-string "【 #h 】#(echo '#{session_name}' | rev | cut -d'/' -f1-2 | rev)"
 
-      # Allow programs inside tmux (Neovim specifically) to set clipboard contents
-      set -s set-clipboard on
-
       # Allow passthrough of escape sequences (needed for OSC 52 clipboard from subprocesses)
       set -g allow-passthrough on
+
+      # Allow programs inside tmux (Neovim specifically) to set clipboard contents
+      set -s set-clipboard on
 
       # Enable focus events for autoread functionality in Neovim
       set -g focus-events on
