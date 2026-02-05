@@ -92,6 +92,15 @@ nix-prefetch-url <url> | xargs -I {} nix hash to-sri --type sha256 {}
 
 This converts the base32 hash from `nix-prefetch-url` to the SRI format (`sha256-...=`) that Nix derivations expect.
 
+## Clipboard Access
+
+Use `pbcopy` to copy text to the user's system clipboard:
+```bash
+echo "text" | pbcopy
+cat file.txt | pbcopy
+```
+This works on both macOS (native) and NixOS (via OSC 52 through SSH/tmux).
+
 ## Important Notes
 
 - The repository uses Determinate Nix on macOS (nix.enable = false in darwin configs)
