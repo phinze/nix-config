@@ -539,6 +539,9 @@
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
 
+      # Allow passthrough of escape sequences (needed for OSC 52 clipboard from subprocesses)
+      set -g allow-passthrough on
+
       # Enable focus events for autoread functionality in Neovim
       set -g focus-events on
 
