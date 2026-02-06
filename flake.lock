@@ -68,6 +68,38 @@
         "type": "github"
       }
     },
+    "claude-plugin-coderabbit": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770200314,
+        "narHash": "sha256-GRjokMfLW2HGGHXiS8EjIOoPaAoHJXNUBppW9dun6H8=",
+        "owner": "coderabbitai",
+        "repo": "claude-plugin",
+        "rev": "51651e86d8d71e150e13313f43298f212abb47db",
+        "type": "github"
+      },
+      "original": {
+        "owner": "coderabbitai",
+        "repo": "claude-plugin",
+        "type": "github"
+      }
+    },
+    "claude-plugins-official": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1770411596,
+        "narHash": "sha256-n/FxQMp1a26YwZgIdd0uglJa68PCycrztdqVqAjplIo=",
+        "owner": "anthropics",
+        "repo": "claude-plugins-official",
+        "rev": "92ece101568162e6383f92f7c34f4116915375e4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "claude-plugins-official",
+        "type": "github"
+      }
+    },
     "double-agent": {
       "inputs": {
         "flake-utils": [
@@ -509,6 +541,8 @@
         "bankshot": "bankshot",
         "claude-code-nix": "claude-code-nix",
         "claude-desktop": "claude-desktop",
+        "claude-plugin-coderabbit": "claude-plugin-coderabbit",
+        "claude-plugins-official": "claude-plugins-official",
         "double-agent": "double-agent",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",

@@ -43,6 +43,15 @@
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
+    claude-plugins-official = {
+      url = "github:anthropics/claude-plugins-official";
+      flake = false;
+    };
+    claude-plugin-coderabbit = {
+      url = "github:coderabbitai/claude-plugin";
+      flake = false;
+    };
+
     iso.url = "git+https://github.com/mirendev/iso.git";
   };
 
