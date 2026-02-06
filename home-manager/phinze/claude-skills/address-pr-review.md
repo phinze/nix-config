@@ -129,10 +129,16 @@ gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/comments" \
   -f body="Response text" \
   -F in_reply_to=$COMMENT_ID
 
+# Edit an existing reply (use when revising an approach after already posting)
+gh api -X PATCH "repos/$OWNER/$REPO/pulls/comments/$COMMENT_ID" \
+  -f body="Updated response text"
+
 # Post a general PR comment
 gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" \
   -f body="Response text"
 ```
+
+**Editing vs. appending:** `in_reply_to` always creates a new comment — it does not replace an existing one. If you need to revise a reply you already posted, use the PATCH endpoint to edit it in place. If appending a follow-up instead, word it as an update (e.g., "Update: we ended up going with X instead") so the thread reads naturally.
 
 Post one at a time, confirming as we go.
 
