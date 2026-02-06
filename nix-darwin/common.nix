@@ -5,12 +5,14 @@
   lib,
   config,
   ...
-}: let
+}:
+let
   pkgs-unstable = import inputs.nixpkgs-unstable {
     system = pkgs.stdenv.system;
     config.allowUnfree = true;
   };
-in {
+in
+{
   imports = [
     ../modules/darwin/colima.nix
   ];
@@ -19,7 +21,7 @@ in {
   ];
 
   # Add Homebrew to PATH
-  environment.systemPath = ["/opt/homebrew/bin"];
+  environment.systemPath = [ "/opt/homebrew/bin" ];
 
   # Trying out Determinate Nix which means we have to turn off nix-darwin's nix mgmt.
   nix.enable = false;
@@ -57,35 +59,37 @@ in {
 
   # Clear all persistent apps from Dock
   # TODO: empty set here doesn't actively clear; maybe add this feature upstream?
-  system.defaults.dock.persistent-apps = [];
+  system.defaults.dock.persistent-apps = [ ];
 
   # Pin downloads folder to the dock
   # NOTE: static-only HAS to be false, or else no folder pinning works
   system.defaults.dock.static-only = false;
 
   # Pin downloads folder to the dock
-  system.activationScripts.configureDock.text = let
-    dock = import ../modules/darwin/dock.nix {
-      dockItems = [
-        {
-          tile-data = {
-            file-data = {
-              _CFURLString = "file://${config.users.users.phinze.home}/Downloads";
-              _CFURLStringType = 15;
+  system.activationScripts.configureDock.text =
+    let
+      dock = import ../modules/darwin/dock.nix {
+        dockItems = [
+          {
+            tile-data = {
+              file-data = {
+                _CFURLString = "file://${config.users.users.phinze.home}/Downloads";
+                _CFURLStringType = 15;
+              };
+              showas = 1; # view content as fan
+              arrangement = 2; # sort by date added
+              displayas = 0; # display as stack
             };
-            showas = 1; # view content as fan
-            arrangement = 2; # sort by date added
-            displayas = 0; # display as stack
-          };
-          tile-type = "directory-tile";
-        }
-      ];
-      inherit lib config;
-    };
-  in ''
-    sudo -u ${config.system.primaryUser} ${dock}
-    sudo -u ${config.system.primaryUser} killall Dock
-  '';
+            tile-type = "directory-tile";
+          }
+        ];
+        inherit lib config;
+      };
+    in
+    ''
+      sudo -u ${config.system.primaryUser} ${dock}
+      sudo -u ${config.system.primaryUser} killall Dock
+    '';
 
   # I'll use iStat Menus for clock
   system.defaults.menuExtraClock.IsAnalog = true;

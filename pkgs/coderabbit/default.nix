@@ -4,10 +4,12 @@
   fetchurl,
   unzip,
   buildFHSEnv,
-}: let
+}:
+let
   version = "0.3.4";
 
-  selectSystem = system:
+  selectSystem =
+    system:
     {
       x86_64-linux = {
         os = "linux";
@@ -29,9 +31,8 @@
         arch = "arm64";
         sha256 = "sha256-6D8Lh+vLxH6vK9ebVMgaZm6iATSO23VcdXQ/yieoXE8=";
       };
-    }.${
-      system
-    } or (throw "Unsupported system: ${system}");
+    }
+    .${system} or (throw "Unsupported system: ${system}");
 
   systemInfo = selectSystem stdenv.hostPlatform.system;
 
@@ -45,7 +46,7 @@
       sha256 = systemInfo.sha256;
     };
 
-    nativeBuildInputs = [unzip];
+    nativeBuildInputs = [ unzip ];
 
     # Disable all patching
     dontPatchELF = true;
@@ -64,62 +65,67 @@
     '';
   };
 in
-  if stdenv.isLinux
-  then
-    # On Linux, wrap the unpatched binary in an FHS environment
-    buildFHSEnv {
-      name = "coderabbit";
-      targetPkgs = pkgs: [
-        # The unpatched binary
-        coderabbit-binary
-        # Runtime dependencies
-        pkgs.glibc
-        pkgs.gcc.cc.lib
+if stdenv.isLinux then
+  # On Linux, wrap the unpatched binary in an FHS environment
+  buildFHSEnv {
+    name = "coderabbit";
+    targetPkgs = pkgs: [
+      # The unpatched binary
+      coderabbit-binary
+      # Runtime dependencies
+      pkgs.glibc
+      pkgs.gcc.cc.lib
+    ];
+    runScript = "${coderabbit-binary}/bin/coderabbit";
+
+    # Also create 'cr' alias
+    extraInstallCommands = ''
+      ln -s $out/bin/coderabbit $out/bin/cr
+    '';
+
+    meta = with lib; {
+      description = "CodeRabbit CLI - AI-powered code review and analysis tool";
+      homepage = "https://coderabbit.ai";
+      license = licenses.unfreeRedistributable;
+      maintainers = [ ];
+      platforms = [
+        "x86_64-linux"
+        "aarch64-linux"
       ];
-      runScript = "${coderabbit-binary}/bin/coderabbit";
+      mainProgram = "coderabbit";
+    };
+  }
+else
+  # On macOS, use the binary directly since it should work
+  stdenv.mkDerivation {
+    pname = "coderabbit";
+    inherit version;
 
-      # Also create 'cr' alias
-      extraInstallCommands = ''
-        ln -s $out/bin/coderabbit $out/bin/cr
-      '';
+    src = fetchurl {
+      url = "https://cli.coderabbit.ai/releases/${version}/coderabbit-${systemInfo.os}-${systemInfo.arch}.zip";
+      sha256 = systemInfo.sha256;
+    };
 
-      meta = with lib; {
-        description = "CodeRabbit CLI - AI-powered code review and analysis tool";
-        homepage = "https://coderabbit.ai";
-        license = licenses.unfreeRedistributable;
-        maintainers = [];
-        platforms = ["x86_64-linux" "aarch64-linux"];
-        mainProgram = "coderabbit";
-      };
-    }
-  else
-    # On macOS, use the binary directly since it should work
-    stdenv.mkDerivation {
-      pname = "coderabbit";
-      inherit version;
+    nativeBuildInputs = [ unzip ];
+    sourceRoot = ".";
 
-      src = fetchurl {
-        url = "https://cli.coderabbit.ai/releases/${version}/coderabbit-${systemInfo.os}-${systemInfo.arch}.zip";
-        sha256 = systemInfo.sha256;
-      };
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/bin
+      install -m755 coderabbit $out/bin/coderabbit
+      ln -s $out/bin/coderabbit $out/bin/cr
+      runHook postInstall
+    '';
 
-      nativeBuildInputs = [unzip];
-      sourceRoot = ".";
-
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/bin
-        install -m755 coderabbit $out/bin/coderabbit
-        ln -s $out/bin/coderabbit $out/bin/cr
-        runHook postInstall
-      '';
-
-      meta = with lib; {
-        description = "CodeRabbit CLI - AI-powered code review and analysis tool";
-        homepage = "https://coderabbit.ai";
-        license = licenses.unfreeRedistributable;
-        maintainers = [];
-        platforms = ["x86_64-darwin" "aarch64-darwin"];
-        mainProgram = "coderabbit";
-      };
-    }
+    meta = with lib; {
+      description = "CodeRabbit CLI - AI-powered code review and analysis tool";
+      homepage = "https://coderabbit.ai";
+      license = licenses.unfreeRedistributable;
+      maintainers = [ ];
+      platforms = [
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      mainProgram = "coderabbit";
+    };
+  }

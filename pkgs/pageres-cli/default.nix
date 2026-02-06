@@ -18,7 +18,7 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-uwlfiqKroyVrl5JXDlcg4nZ3OCwWKZ4ov09AJAVd0mM=";
 
-  nativeBuildInputs = [makeWrapper];
+  nativeBuildInputs = [ makeWrapper ];
 
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
@@ -43,7 +43,7 @@ buildNpmPackage rec {
     description = "Capture screenshots of websites in various resolutions";
     homepage = "https://github.com/sindresorhus/pageres-cli";
     license = licenses.mit;
-    maintainers = [];
+    maintainers = [ ];
     mainProgram = "pageres";
   };
 }

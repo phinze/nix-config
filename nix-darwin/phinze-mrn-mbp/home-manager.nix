@@ -2,7 +2,8 @@
   inputs,
   outputs,
   ...
-}: {
+}:
+{
   imports = [
     # Import home-manager's Darwin module
     inputs.home-manager.darwinModules.home-manager
@@ -25,7 +26,7 @@
           };
         };
         # Host-specific packages for phinze-mrn-mbp
-        extraPackages = [];
+        extraPackages = [ ];
         # Host-specific homebrew casks for phinze-mrn-mbp
         extraCasks = [
           "gather"

@@ -28,7 +28,7 @@ buildNpmPackage rec {
     description = "CLI tool for Linear.app with JSON output, smart ID resolution, and optimized GraphQL queries";
     homepage = "https://github.com/czottmann/linearis";
     license = licenses.mit;
-    maintainers = [];
+    maintainers = [ ];
     mainProgram = "linearis";
     platforms = platforms.all;
   };

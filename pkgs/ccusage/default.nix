@@ -11,8 +11,8 @@ stdenv.mkDerivation rec {
   src = null;
   dontUnpack = true;
 
-  nativeBuildInputs = [makeWrapper];
-  buildInputs = [nodejs];
+  nativeBuildInputs = [ makeWrapper ];
+  buildInputs = [ nodejs ];
 
   installPhase = ''
     runHook preInstall
@@ -30,7 +30,7 @@ stdenv.mkDerivation rec {
     description = "Analyze your Claude Code token usage and costs from local JSONL files";
     homepage = "https://github.com/ryoppippi/ccusage";
     license = licenses.mit;
-    maintainers = [];
+    maintainers = [ ];
     mainProgram = "ccusage";
   };
 }

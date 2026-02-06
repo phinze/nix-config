@@ -3,7 +3,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ../common.nix
     ../../modules/darwin/camlink-fix.nix
@@ -25,7 +26,7 @@
   ];
 
   # Add host-specific homebrew casks
-  homebrew.casks = lib.mkAfter (config.home-manager.extraSpecialArgs.nodeConfig.extraCasks or []);
+  homebrew.casks = lib.mkAfter (config.home-manager.extraSpecialArgs.nodeConfig.extraCasks or [ ]);
 
   # Syncthing for syncing CleanShot screenshots to NixOS VM
   # Using Homebrew since nix-darwin doesn't have services.syncthing

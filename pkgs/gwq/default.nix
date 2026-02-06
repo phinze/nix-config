@@ -24,13 +24,13 @@ buildGoModule rec {
     "-X github.com/d-kuro/gwq/internal/cmd.date=unknown"
   ];
 
-  subPackages = ["cmd/gwq"];
+  subPackages = [ "cmd/gwq" ];
 
   meta = with lib; {
     description = "A CLI tool for efficiently managing Git worktrees";
     homepage = "https://github.com/d-kuro/gwq";
     license = licenses.asl20;
-    maintainers = [];
+    maintainers = [ ];
     mainProgram = "gwq";
   };
 }

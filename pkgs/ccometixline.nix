@@ -16,13 +16,16 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-PMmyJhbeXgxncXZh/RV0uyuWl9TmCeJAICxWXn0uB0o=";
 
-  buildFeatures = ["tui" "self-update"];
+  buildFeatures = [
+    "tui"
+    "self-update"
+  ];
 
   meta = with lib; {
     description = "High-performance Claude Code StatusLine tool written in Rust";
     homepage = "https://github.com/Haleclipse/CCometixLine";
     license = licenses.mit;
-    maintainers = [];
+    maintainers = [ ];
     mainProgram = "ccometixline";
   };
 }
