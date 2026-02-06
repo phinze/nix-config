@@ -162,6 +162,9 @@ in {
     '';
   };
 
+  # Global CLAUDE.md (personal preferences and policies applied to all sessions)
+  home.file.".claude/CLAUDE.md".source = ./claude-global.md;
+
   # Claude Code slash commands (skills stored in separate files for easier editing)
   home.file.".claude/commands/whatsup.md".source = ./claude-skills/whatsup.md;
   home.file.".claude/commands/pr-time.md".source = ./claude-skills/pr-time.md;

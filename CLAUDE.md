@@ -110,6 +110,14 @@ No escaping needed!
 EOF
 ```
 
+## Claude Code Configuration
+
+This repo is the source of truth for Claude Code configuration. Skills, CLAUDE.md files, and settings are managed declaratively via home-manager in `home-manager/phinze/claude-code.nix` and deployed as symlinks.
+
+- **Global CLAUDE.md** → `home-manager/phinze/claude-global.md`
+- **Skills** → `home-manager/phinze/claude-skills/*.md`
+- **Settings, plugins, wiring** → `home-manager/phinze/claude-code.nix`
+
 ## Important Notes
 
 - The repository uses Determinate Nix on macOS (nix.enable = false in darwin configs)
