@@ -93,7 +93,6 @@
       mtr
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
-      pr-review-download # Download and organize GitHub PR reviews
       unstable.fabric-ai # AI framework for augmenting humans
       yt-dlp # For fabric's video features
     ]
