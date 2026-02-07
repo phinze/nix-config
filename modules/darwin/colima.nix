@@ -47,6 +47,18 @@ in {
       description = "VM type to use. VZ requires macOS 13+.";
     };
 
+    vzRosetta = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable Rosetta for amd64 emulation. Only works with vmType = vz.";
+    };
+
+    mountType = mkOption {
+      type = types.enum ["sshfs" "9p" "virtiofs"];
+      default = "sshfs";
+      description = "Mount type for the VM. virtiofs requires vmType = vz.";
+    };
+
     arch = mkOption {
       type = types.enum ["x86_64" "aarch64"];
       default =
@@ -84,9 +96,12 @@ in {
             (toString cfg.disk)
             "--vm-type"
             cfg.vmType
+            "--mount-type"
+            cfg.mountType
             "--arch"
             cfg.arch
           ]
+          ++ optionals cfg.vzRosetta ["--vz-rosetta"]
           ++ optionals cfg.docker ["--runtime" "docker"];
         KeepAlive = true;
         RunAtLoad = true;

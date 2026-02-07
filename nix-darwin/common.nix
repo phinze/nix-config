@@ -191,7 +191,9 @@ in {
     cpus = 4;
     memory = 8;
     disk = 100;
-    vmType = "vz"; # Using vz for better performance on newer Macs
-    arch = "aarch64"; # ARM64 for Apple Silicon
+    vmType = "vz";
+    vzRosetta = true; # Rosetta for fast amd64 translation (5x faster than QEMU)
+    mountType = "virtiofs"; # Best mount performance with vz
+    arch = "aarch64";
   };
 }
