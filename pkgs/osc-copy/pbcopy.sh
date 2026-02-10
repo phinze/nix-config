@@ -4,7 +4,9 @@
 
 # Debug mode: set PBCOPY_DEBUG=1 to see diagnostics
 debug() {
-  [[ -n "$PBCOPY_DEBUG" ]] && echo "[pbcopy] $*" >&2
+  if [[ -n "$PBCOPY_DEBUG" ]]; then
+    echo "[pbcopy] $*" >&2
+  fi
 }
 
 encoded=$(base64 | tr -d '\n')
