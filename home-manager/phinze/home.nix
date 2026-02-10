@@ -360,10 +360,12 @@
 
           if test -z "$worktree_path"
               # Worktree doesn't exist, create it
+              git fetch origin main --quiet 2>/dev/null
               if git show-ref --verify --quiet refs/heads/$branch_name 2>/dev/null; or git ls-remote --heads origin $branch_name 2>/dev/null | grep -q .
                   gwq add $branch_name 2>/dev/null
               else
-                  gwq add -b $branch_name 2>/dev/null
+                  git branch $branch_name origin/main 2>/dev/null
+                  gwq add $branch_name 2>/dev/null
               end
 
               if test $status -ne 0
