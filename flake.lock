@@ -265,11 +265,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1768504221,
-        "narHash": "sha256-v9YjZOc2fAQg0mESDjcc/3PkQMfk72jIg8m+sXmqYI0=",
+        "lastModified": 1770168027,
+        "narHash": "sha256-FSfCPAGatPrqgshS/SvhYoLK2OQcZCuVzrZAen/C0t0=",
         "ref": "refs/heads/main",
-        "rev": "5866fc5327ce7aadcc48ee81e5fcc9b00c9eb179",
-        "revCount": 63,
+        "rev": "c3fd9418b1b8506fb2f61a1a7d9a196d2897dca4",
+        "revCount": 65,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
