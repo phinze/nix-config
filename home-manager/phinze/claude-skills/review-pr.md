@@ -27,9 +27,24 @@ Think hard and carefully about the code changes.
 
 4. **Pause for discussion**:
    - Ask if I have questions or want to dive deeper into any area
+   - If we find fixable issues (docs gaps, small bugs, missing test cases),
+     discuss whether to contribute a commit to the branch rather than just
+     commenting. If so, pause the review, do the work, then resume.
+   - When the review references our own contributed commits, frame them as
+     "we contributed" not as feedback on the author's code.
    - We'll discuss before drafting comments
 
-5. **Draft the review**:
+5. **Check automated review comments for overlap**:
+   - Run `gh api repos/{owner}/{repo}/pulls/{number}/comments` to fetch existing review comments
+   - Identify comments from automated code review tools (e.g., bot usernames)
+   - Note which of our findings overlap with automated reviewers' findings
+   - For overlapping findings, reference agreement in the top-level summary rather than restating inline
+   - Keep our inline comments focused on things the automated tools didn't catch
+
+6. **Draft the review**:
+   - Start the top-level comment with a brief co-author intro:
+     "Paul & Claude here from a review session where we [1-sentence summary of what we did]. Here's where we landed:"
+   - This sets context that the review was collaborative, not a drive-by
    - Draft a short **top-level comment** summarizing the review
    - Draft **inline comments** for specific lines, formatted as:
 
@@ -41,7 +56,7 @@ Your comment text here...
 
    - Use a single line number (not ranges) - this is what the API needs
 
-6. **Post when ready**:
+7. **Post when ready**:
    - When I say to post, use `gh api` to submit:
 
 ```bash
