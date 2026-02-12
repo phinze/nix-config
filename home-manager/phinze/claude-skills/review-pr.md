@@ -6,14 +6,19 @@ Think hard and carefully about the code changes.
 
 ## Instructions
 
-0. **If no PR specified** (empty $ARGUMENTS):
-   - Run `gh pr list` to show open PRs
-   - Ask which one I'd like to review
-   - Continue with the selected PR number
+0. **Determine which PR to review**:
+   - If a PR number is given in $ARGUMENTS, use that
+   - If no PR specified (empty $ARGUMENTS), assume the current branch's PR:
+     run `gh pr view --json number,title` to find it
+   - If that fails (no PR for current branch), run `gh pr list` and ask
 
-1. **Fetch PR metadata and diff**:
-   - Run `gh pr view $ARGUMENTS --json number,title,body,author,baseRefName,headRefName,url`
-   - Run `gh pr diff $ARGUMENTS`
+1. **Fetch PR metadata and ensure the branch is local**:
+   - Run `gh pr view <number> --json number,title,body,author,baseRefName,headRefName,url`
+   - Run `gh pr diff <number>`
+   - **Check out the branch locally** if not already on it (`git switch` or
+     `gh pr checkout`). Reading the full source files locally — not just the
+     diff — is essential for understanding context, tracing call chains, and
+     exploring how changes interact with surrounding code.
 
 2. **Summarize the PR**:
    - What is this PR trying to accomplish?
@@ -23,7 +28,16 @@ Think hard and carefully about the code changes.
 3. **Walk through the changes**:
    - Group changes logically (by feature, by file, or by layer)
    - Explain what each change does
-   - **Flag areas of concern**: complexity, edge cases, security issues, missing tests, unclear intent, potential bugs
+   - **Flag areas to discuss**: things that need clarification, look surprising,
+     or where you're not yet sure if something is a concern or just unfamiliar.
+     Be honest about confidence level — "I want to understand this better" is
+     different from "this looks wrong." Initial impressions often change after
+     discussion.
+   - **For behavioral/semantic changes** (not just additions): trace through
+     the key workflows and scenarios affected. Read the code paths end-to-end,
+     not just the diff hunks. This is where the real understanding happens —
+     changes that look risky in isolation often compose into a coherent design
+     when you see the full flow.
 
 4. **Pause for discussion**:
    - Ask if I have questions or want to dive deeper into any area
@@ -42,9 +56,10 @@ Think hard and carefully about the code changes.
    - Keep our inline comments focused on things the automated tools didn't catch
 
 6. **Draft the review**:
-   - Start the top-level comment with a brief co-author intro:
-     "Paul & Claude here from a review session where we [1-sentence summary of what we did]. Here's where we landed:"
-   - This sets context that the review was collaborative, not a drive-by
+   - Open with a brief line that signals this was a collaborative review, not
+     a drive-by. Mention what we focused on or how deep we went. The vibe is
+     "two people sat down and thought about this together" — but don't use a
+     canned template. Let the phrasing fit the review naturally.
    - Draft a short **top-level comment** summarizing the review
    - Draft **inline comments** for specific lines, formatted as:
 
