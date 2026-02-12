@@ -53,6 +53,11 @@
     };
 
     iso.url = "git+https://github.com/mirendev/iso.git";
+
+    multipass-src = {
+      url = "git+https://github.com/mirendev/multipass.git";
+      flake = false;
+    };
   };
 
   outputs =
