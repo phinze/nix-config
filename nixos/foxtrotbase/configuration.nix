@@ -7,7 +7,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   # You can import other NixOS modules here
   imports = [
     # Import your generated (nixos-generate-config) hardware configuration
@@ -25,7 +26,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Load nbd kernel module for Miren development
-  boot.kernelModules = ["nbd"];
+  boot.kernelModules = [ "nbd" ];
 
   # Enable qemu guest agent
   services.qemuGuest.enable = true;
@@ -62,7 +63,7 @@
   networking.hostName = "foxtrotbase";
 
   # Add docker group to user (baseline provides wheel group)
-  users.users.phinze.extraGroups = ["docker"];
+  users.users.phinze.extraGroups = [ "docker" ];
 
   # Syncthing service for receiving CleanShot screenshots from Mac
   services.syncthing = {
@@ -107,6 +108,16 @@
     "d '/Users/phinze/Library/Application Support/CleanShot' 0755 phinze users -"
     "d '/Users/phinze/Library/Application Support/CleanShot/media' 0755 phinze users -"
   ];
+
+  # ntfy push notification server for Claude Code hooks
+  # Accessible over Tailscale at http://foxtrotbase:2586/claude
+  services.ntfy-sh = {
+    enable = true;
+    settings = {
+      base-url = "http://foxtrotbase:2586";
+      listen-http = ":2586";
+    };
+  };
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";
