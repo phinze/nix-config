@@ -6,6 +6,9 @@
   inputs,
   ...
 }: {
+  imports = [
+    inputs.bankshot.nixosModules.default
+  ];
   # Nixpkgs configuration
   nixpkgs = {
     overlays = [
@@ -89,6 +92,13 @@
 
   # Enable mosh for remote connections
   programs.mosh.enable = true;
+
+  # Bankshot eBPF port monitoring
+  services.bankshot.ebpf.enable = true;
+
+  # Raise memlock limit for user services so eBPF map allocation works.
+  # The default 8MB is too low and cilium/ebpf's RemoveMemlock() fails.
+  systemd.services."user@".serviceConfig.LimitMEMLOCK = "infinity";
 
   # Tailscale for networking
   services.tailscale.enable = true;

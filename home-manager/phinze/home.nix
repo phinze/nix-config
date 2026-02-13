@@ -733,6 +733,8 @@
       enable = true;
       autoStart = true;
       logLevel = "info";
+      # Use capability-wrapped binary for eBPF port monitoring on NixOS
+      executablePath = lib.mkIf pkgs.stdenv.isLinux "/run/wrappers/bin/bankshot";
     };
 
     # Monitor configuration (applies to bankshotd on remote servers)
