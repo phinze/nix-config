@@ -406,6 +406,11 @@
         '';
       };
 
+      review = {
+        description = "Review a GitHub PR: create worktree, tmux session, and start Claude";
+        body = builtins.readFile ./fish-functions/review.fish;
+      };
+
       whatsup = {
         description = "Get Claude to summarize your active work context";
         body = ''
