@@ -110,14 +110,24 @@
   ];
 
   # ntfy push notification server for Claude Code hooks
-  # Accessible over Tailscale at http://foxtrotbase:2586/claude
+  # Accessible over Tailscale at https://foxtrotbase.swallow-galaxy.ts.net/claude
   services.ntfy-sh = {
     enable = true;
     settings = {
-      base-url = "http://foxtrotbase:2586";
+      base-url = "https://foxtrotbase.swallow-galaxy.ts.net";
       listen-http = ":2586";
+      behind-proxy = true;
     };
   };
+
+  # Caddy reverse proxy for ntfy with automatic Tailscale HTTPS certs
+  services.caddy = {
+    enable = true;
+    virtualHosts."foxtrotbase.swallow-galaxy.ts.net" = {
+      extraConfig = "reverse_proxy localhost:2586";
+    };
+  };
+  services.tailscale.permitCertUid = "caddy";
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";
