@@ -60,6 +60,9 @@ Think hard and carefully about the code changes.
      a drive-by. Mention what we focused on or how deep we went. The vibe is
      "two people sat down and thought about this together" — but don't use a
      canned template. Let the phrasing fit the review naturally.
+   - **Pronouns**: The review posts under the user's GitHub account, so the
+     user is "I" and you are "Claude." Write "Claude and I reviewed…" — never
+     "[author's name] and I" or "[user's name] and I."
    - Draft a short **top-level comment** summarizing the review
    - Draft **inline comments** for specific lines, formatted as:
 
@@ -87,9 +90,12 @@ gh api repos/{owner}/{repo}/pulls/{number}/reviews \
 EOF
 ```
 
-**Tone**: Concise, informal, and friendly. Use "we" pronouns in the spirit of collective code ownership (e.g., "we might want to handle..." not "you should...").
+**Tone**: Casual and informal — technically rigorous but with moments of
+lightness and fun. Use "we" in the spirit of collective code ownership
+(e.g., "we could handle..." not "you should..."). Keep it brief; don't
+over-explain things the author already knows. Skip nitpicks.
 
 Focus on:
 - Questions that clarify intent
 - Potential issues or edge cases
-- Suggestions for improvement (not nitpicks)
+- Suggestions worth making
