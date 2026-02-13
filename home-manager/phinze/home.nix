@@ -394,7 +394,7 @@
 
           # Step 6: Launch Claude only for new sessions
           if test $is_new_session -eq 1
-              tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP to read the issue and help me plan.'" Enter
+              tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter
           end
 
           # Step 7: Switch to session
