@@ -79,7 +79,7 @@ end
 
 # Step 7: Launch Claude only for new sessions
 if test $is_new_session -eq 1
-    tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions '/review-pr $pr_number'" Enter
+    tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated worktree; skip branch verification'" Enter
 end
 
 # Step 8: Switch to session
