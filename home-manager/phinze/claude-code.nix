@@ -14,9 +14,8 @@ let
     # sourcekit-lsp comes from Xcode on macOS, no need for fallback
   ];
 
-  # ntfy push notification hook for Claude Code (built directly, not via overlay,
-  # so it works on both NixOS and darwin without nixpkgs.overlays)
-  claude-ntfy-hook = pkgs.callPackage ../../pkgs/claude-ntfy-hook.nix { };
+  # Sophon hook for Claude Code notifications + response relay
+  sophon = inputs.sophon.packages.${pkgs.system}.default;
 
   # Wrap claude-code with fallback LSPs in PATH (suffix = lower priority than devShell)
   claude-code-wrapped = pkgs.symlinkJoin {
@@ -127,7 +126,7 @@ in
               }
               {
                 type = "command";
-                command = "${claude-ntfy-hook}/bin/claude-ntfy-hook";
+                command = "${sophon}/bin/sophon hook";
               }
             ];
           }
@@ -137,7 +136,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "${claude-ntfy-hook}/bin/claude-ntfy-hook";
+                command = "${sophon}/bin/sophon hook";
               }
             ];
           }
@@ -147,7 +146,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "${claude-ntfy-hook}/bin/claude-ntfy-hook";
+                command = "${sophon}/bin/sophon hook";
               }
             ];
           }

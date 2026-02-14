@@ -40,6 +40,10 @@
     double-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";
     double-agent.inputs.flake-utils.follows = "flake-utils";
 
+    sophon.url = "github:phinze/sophon";
+    sophon.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    sophon.inputs.flake-utils.follows = "flake-utils";
+
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 

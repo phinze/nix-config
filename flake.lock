@@ -570,8 +570,32 @@
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim-config": "nixvim-config",
+        "sophon": "sophon",
         "systems": "systems_5",
         "zen-browser": "zen-browser"
+      }
+    },
+    "sophon": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1771029120,
+        "narHash": "sha256-iN7ev35TwkVYpewYiUMmyUAl/Hym+WSQOYSOGo0Qzkk=",
+        "owner": "phinze",
+        "repo": "sophon",
+        "rev": "2c148d6438e2488fac1bf526021b51fe7f67e145",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phinze",
+        "repo": "sophon",
+        "type": "github"
       }
     },
     "systems": {

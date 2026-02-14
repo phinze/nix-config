@@ -120,11 +120,22 @@
     };
   };
 
-  # Caddy reverse proxy for ntfy with automatic Tailscale HTTPS certs
+  # Caddy reverse proxy with automatic Tailscale HTTPS certs
+  # Routes: /sophon/* → sophon daemon, everything else → ntfy
   services.caddy = {
     enable = true;
     virtualHosts."foxtrotbase.swallow-galaxy.ts.net" = {
-      extraConfig = "reverse_proxy localhost:2586";
+      extraConfig = ''
+        handle /sophon/* {
+          reverse_proxy localhost:2587
+        }
+        handle /api/* {
+          reverse_proxy localhost:2587
+        }
+        handle {
+          reverse_proxy localhost:2586
+        }
+      '';
     };
   };
   services.tailscale.permitCertUid = "caddy";

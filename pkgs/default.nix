@@ -11,5 +11,4 @@ pkgs: rec {
   osc-copy = pkgs.callPackage ./osc-copy { };
   synckick = pkgs.callPackage ./synckick.nix { };
   whoson = pkgs.callPackage ./whoson.nix { };
-  claude-ntfy-hook = pkgs.callPackage ./claude-ntfy-hook.nix { };
 }

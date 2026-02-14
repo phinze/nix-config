@@ -20,6 +20,8 @@
     inputs.bankshot.homeManagerModules.default
     # Double-agent for resilient SSH agent proxy
     inputs.double-agent.homeManagerModules.default
+    # Sophon for Claude Code notification + response relay
+    inputs.sophon.homeManagerModules.default
     # Claude Code configuration (package + statusline)
     ./claude-code.nix
     # Hammerspoon for keyboard remapping (replaces Karabiner-Elements)
@@ -758,6 +760,12 @@
       pollInterval = "1s";
       gracePeriod = "30s";
     };
+  };
+
+  services.sophon = {
+    enable = true;
+    ntfyUrl = "https://foxtrotbase.swallow-galaxy.ts.net/claude";
+    baseUrl = "https://foxtrotbase.swallow-galaxy.ts.net";
   };
 
   services.double-agent = {
