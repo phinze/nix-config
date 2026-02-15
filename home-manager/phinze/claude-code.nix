@@ -14,9 +14,6 @@ let
     # sourcekit-lsp comes from Xcode on macOS, no need for fallback
   ];
 
-  # Sophon hook for Claude Code notifications + response relay
-  sophon = inputs.sophon.packages.${pkgs.system}.default;
-
   # Wrap claude-code with fallback LSPs in PATH (suffix = lower priority than devShell)
   claude-code-wrapped = pkgs.symlinkJoin {
     name = "claude-code-wrapped";
@@ -126,7 +123,7 @@ in
               }
               {
                 type = "command";
-                command = "${sophon}/bin/sophon hook";
+                command = config.services.sophon.hookCommand;
               }
             ];
           }
@@ -136,7 +133,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "${sophon}/bin/sophon hook";
+                command = config.services.sophon.hookCommand;
               }
             ];
           }
@@ -146,7 +143,7 @@ in
             hooks = [
               {
                 type = "command";
-                command = "${sophon}/bin/sophon hook";
+                command = config.services.sophon.hookCommand;
               }
             ];
           }

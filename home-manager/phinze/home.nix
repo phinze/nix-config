@@ -766,6 +766,8 @@
     enable = true;
     ntfyUrl = "https://foxtrotbase.swallow-galaxy.ts.net/claude";
     baseUrl = "https://foxtrotbase.swallow-galaxy.ts.net";
+    daemon.enable = pkgs.stdenv.isLinux; # foxtrotbase runs the daemon
+    daemonUrl = "https://foxtrotbase.swallow-galaxy.ts.net"; # all hosts use the public URL
   };
 
   services.double-agent = {
