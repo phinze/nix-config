@@ -674,7 +674,7 @@
           # Disable terminal focus reporting during connection (printf '\e[?1004l')
           # to prevent ^[[I/^[[O escape sequences from appearing as noise.
           # tmux will re-enable focus events when it starts.
-          RemoteCommand = "printf '\\e[?1004l'; bankshot daemon reconcile 2>/dev/null || true; exec \$SHELL -l";
+          RemoteCommand = "printf '\\e[?1004l'; bankshot monitor reconcile 2>/dev/null || true; exec \$SHELL -l";
           RequestTTY = "yes";
         };
       };
@@ -735,7 +735,7 @@
     enable = true;
     enableXdgOpen = true;
 
-    # Enable the bankshotd daemon
+    # Enable the bankshot monitor
     daemon = {
       enable = true;
       autoStart = true;
@@ -744,7 +744,7 @@
       executablePath = lib.mkIf pkgs.stdenv.isLinux "/run/wrappers/bin/bankshot";
     };
 
-    # Monitor configuration (applies to bankshotd on remote servers)
+    # Monitor configuration (applies to bankshot monitor on remote servers)
     monitor = {
       portRanges = [
         {
