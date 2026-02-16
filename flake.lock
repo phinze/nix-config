@@ -585,11 +585,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1771097648,
-        "narHash": "sha256-3bVjFq4nV5piWn0PRDWP1MBWx2lnV623FBDI9tQJC+I=",
+        "lastModified": 1771192718,
+        "narHash": "sha256-uHScwPrHBxFODwjRjPf+nKT+hoFxd+OYI1cuX86A6ps=",
         "owner": "phinze",
         "repo": "sophon",
-        "rev": "97472751e05b861e7912fe692ffa816a9e9eaea3",
+        "rev": "f7eb6c83d06065433010ecbe943bd7a786a67675",
         "type": "github"
       },
       "original": {
