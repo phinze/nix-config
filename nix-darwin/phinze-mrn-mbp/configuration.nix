@@ -10,6 +10,8 @@
     ../../modules/darwin/camlink-fix.nix
   ];
 
+  networking.hostName = "phinze-mrn-mbp";
+
   # Cam Link 4K auto-fix on wake
   # Automatically resets the camera via USB power cycle when it becomes
   # unresponsive after sleep. Requires Cam Link to be plugged into a
