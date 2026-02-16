@@ -768,7 +768,7 @@
     baseUrl = "https://foxtrotbase.swallow-galaxy.ts.net";
     nodeName = osConfig.networking.hostName;
     daemon.enable = pkgs.stdenv.isLinux; # foxtrotbase runs the daemon
-    agent.enable = pkgs.stdenv.isLinux; # agents run on Linux nodes
+    agent.enable = true;
     daemonUrl = "https://foxtrotbase.swallow-galaxy.ts.net"; # all hosts use the public URL
   };
 
