@@ -129,8 +129,6 @@ in
         "PermissionRequest"
         "SubagentStart"
         "SubagentStop"
-        "TeammateIdle"
-        "TaskCompleted"
         "PreCompact"
       ]) // {
         # SessionStart has additional hooks beyond sophon
