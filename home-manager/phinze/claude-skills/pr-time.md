@@ -19,10 +19,12 @@ Let's get this work shipped! Create a commit and PR for the current changes.
 3. **Draft the commit(s)**:
    - Each commit: short summary line (imperative mood) + brief narrative body
    - If multiple commits, they should read as a logical sequence
+   - **Formatting**: Hard-wrap body text at 72 characters — this is standard git convention and ensures readability in `git log`, terminals, and email patches
 
 4. **Draft the PR**:
    - **Title**: High-level summary of the whole change
    - **Description**: Casual narrative - what happened, why it was a problem, what we did about it. If there are multiple commits, the PR description can reference the progression.
+   - **Formatting**: Do NOT hard-wrap lines. PR descriptions are rendered as markdown, so write flowing paragraphs that reflow naturally in the browser. Hard line breaks in the middle of sentences look broken on GitHub.
 
 5. **Show me the draft** and ask "Look good?" - wait for approval before proceeding
 
@@ -43,15 +45,10 @@ go through the same flow now.
 PR title:
 Fix the thing that was broken
 
-PR description:
-We had this annoying gap where X would work fine in one context but
-fall over in another. The root cause was that the two code paths had
-diverged — one got the nice treatment and the other was still doing
-things the old way.
+PR description (note: flowing paragraphs, no hard line breaks):
+We had this annoying gap where X would work fine in one context but fall over in another. The root cause was that the two code paths had diverged — one got the nice treatment and the other was still doing things the old way.
 
-Pulled the common logic into a shared helper so they both behave
-consistently now. The end result is that users get the same
-experience regardless of which path they come through.
+Pulled the common logic into a shared helper so they both behave consistently now. The end result is that users get the same experience regardless of which path they come through.
 
 Closes PROJ-123
 ```
@@ -77,15 +74,10 @@ just like deploy and rollback already do.
 PR title:
 Route env set/delete through deployment service for post-deploy UX
 
-PR description:
-`env set` and `env delete` were the odd ones out — they'd create a
-new version and bail immediately, while `deploy` and `rollback` both
-watch activation and print routes. Felt like a gap worth closing.
+PR description (note: flowing paragraphs, no hard line breaks):
+`env set` and `env delete` were the odd ones out — they'd create a new version and bail immediately, while `deploy` and `rollback` both watch activation and print routes. Felt like a gap worth closing.
 
-First commit pulls the shared env var mutation logic into its own
-helper, then the second commit uses that to wire up new RPCs on the
-deployment service. End result is all four commands give you the
-same "watch it roll out and show you the routes" experience.
+First commit pulls the shared env var mutation logic into its own helper, then the second commit uses that to wire up new RPCs on the deployment service. End result is all four commands give you the same "watch it roll out and show you the routes" experience.
 
 Closes PROJ-123
 ```
