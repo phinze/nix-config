@@ -769,6 +769,8 @@
     nodeName = osConfig.networking.hostName;
     daemon.enable = pkgs.stdenv.isLinux; # foxtrotbase runs the daemon
     agent.enable = true;
+    agent.advertiseUrl = lib.mkIf (!pkgs.stdenv.isLinux)
+      "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
     daemonUrl = "https://foxtrotbase.swallow-galaxy.ts.net"; # all hosts use the public URL
   };
 
