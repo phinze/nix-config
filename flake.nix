@@ -44,6 +44,10 @@
     sophon.inputs.nixpkgs.follows = "nixpkgs-unstable";
     sophon.inputs.flake-utils.follows = "flake-utils";
 
+    camlink-fix.url = "github:phinze/camlink-fix";
+    camlink-fix.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    camlink-fix.inputs.flake-utils.follows = "flake-utils";
+
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 

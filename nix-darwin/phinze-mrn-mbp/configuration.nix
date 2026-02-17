@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -7,7 +8,7 @@
 {
   imports = [
     ../common.nix
-    ../../modules/darwin/camlink-fix.nix
+    inputs.camlink-fix.darwinModules.default
   ];
 
   networking.hostName = "phinze-mrn-mbp";

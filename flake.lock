@@ -23,6 +23,29 @@
         "type": "github"
       }
     },
+    "camlink-fix": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1771348226,
+        "narHash": "sha256-2YI3Ir/dgwAXF9hCOSfarfN9GiHIPghk6sl3iyhA4Lk=",
+        "owner": "phinze",
+        "repo": "camlink-fix",
+        "rev": "4d864bcbce023cb697295910261595afe0569a4b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phinze",
+        "repo": "camlink-fix",
+        "type": "github"
+      }
+    },
     "claude-code-nix": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -555,6 +578,7 @@
     "root": {
       "inputs": {
         "bankshot": "bankshot",
+        "camlink-fix": "camlink-fix",
         "claude-code-nix": "claude-code-nix",
         "claude-desktop": "claude-desktop",
         "claude-plugin-coderabbit": "claude-plugin-coderabbit",
