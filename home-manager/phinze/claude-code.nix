@@ -113,41 +113,33 @@ in
         # sourcekit-lsp comes from Xcode, only available on macOS
         "swift-lsp@claude-plugins-official" = true;
       };
-      hooks = {
-        SessionStart = [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true'';
-              }
-              {
-                type = "command";
-                command = config.services.sophon.hookCommand;
-              }
-            ];
-          }
-        ];
-        Notification = [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = config.services.sophon.hookCommand;
-              }
-            ];
-          }
-        ];
-        Stop = [
-          {
-            hooks = [
-              {
-                type = "command";
-                command = config.services.sophon.hookCommand;
-              }
-            ];
-          }
-        ];
+      hooks = let
+        # Wire sophon into every known Claude Code hook event.
+        # Unhandled events are logged by the hook command and ignored.
+        sophonHook = { type = "command"; command = config.services.sophon.hookCommand; };
+        sophonOnly = [{ hooks = [ sophonHook ]; }];
+      in builtins.listToAttrs (map (event: { name = event; value = sophonOnly; }) [
+        "Notification"
+        "Stop"
+        "SessionEnd"
+        "UserPromptSubmit"
+        "PreToolUse"
+        "PostToolUse"
+        "PostToolUseFailure"
+        "PermissionRequest"
+        "SubagentStart"
+        "SubagentStop"
+        "TeammateIdle"
+        "TaskCompleted"
+        "PreCompact"
+      ]) // {
+        # SessionStart has additional hooks beyond sophon
+        SessionStart = [{
+          hooks = [
+            { type = "command"; command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true''; }
+            sophonHook
+          ];
+        }];
       };
     };
     force = true;
