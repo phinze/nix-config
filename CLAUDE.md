@@ -94,21 +94,16 @@ This converts the base32 hash from `nix-prefetch-url` to the SRI format (`sha256
 
 ## Clipboard Access
 
-Use `pbcopy` to copy text to the user's system clipboard:
+Use `pbcopy` to copy text to the user's system clipboard. Always use a heredoc — piping from `echo` or `printf` results in 0 bytes reaching pbcopy in this environment:
 ```bash
-echo "text" | pbcopy
-cat file.txt | pbcopy
-```
-This works on both macOS (native) and NixOS (via OSC 52 through SSH/tmux).
-
-For multi-line content or text with quotes/special characters, use a heredoc:
-```bash
-pbcopy << 'EOF'
-Multi-line content here
-With "quotes" and 'apostrophes'
-No escaping needed!
+cat <<'EOF' | pbcopy
+Text to copy here.
+Quotes, apostrophes, and special characters all work.
 EOF
 ```
+For copying file contents: `cat file.txt | pbcopy`
+
+This works on both macOS (native) and NixOS (via OSC 52 through SSH/tmux).
 
 ## Claude Code Configuration
 
