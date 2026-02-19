@@ -44,7 +44,6 @@
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
       outputs.overlays.nixvim
-      outputs.overlays.multipass
 
       # Claude Code 2.0 overlay
       inputs.claude-code-nix.overlays.default
@@ -90,7 +89,7 @@
       ghq # Clone repos into dir structure
       git-trim # Smart cleanup of merged branches with worktree awareness
       google-cloud-sdk # I want to run gcloud from anywhere
-      multipass # GCP Workload Identity Federation auth CLI
+      inputs.multipass.packages.${pkgs.system}.default # GCP Workload Identity Federation auth CLI
       gwq # Git worktree manager that works with ghq
       jq
       linearis # CLI tool for Linear.app with JSON output

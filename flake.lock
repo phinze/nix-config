@@ -331,14 +331,21 @@
         "type": "github"
       }
     },
-    "multipass-src": {
-      "flake": false,
+    "multipass": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
       "locked": {
-        "lastModified": 1771534209,
-        "narHash": "sha256-QCDH5iYs2pyN0rGGyLBiV9rZH9opHLyplfmRqPw4SMU=",
+        "lastModified": 1771535063,
+        "narHash": "sha256-hbaXU2JY1F8UVc6zrrhTMrvhafiJUYzZsyRBsJMld48=",
         "ref": "refs/heads/main",
-        "rev": "fc249160c26391155837a3bf74c18b876d735de8",
-        "revCount": 15,
+        "rev": "3634347285942c1039c1e42f98e01d4df2a341db",
+        "revCount": 16,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
@@ -601,7 +608,7 @@
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
         "iso": "iso",
-        "multipass-src": "multipass-src",
+        "multipass": "multipass",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixos-hardware": "nixos-hardware",

@@ -42,19 +42,4 @@
     nixvim = inputs.nixvim-config.packages.${_prev.system}.default;
   };
 
-  # Multipass CLI for GCP Workload Identity Federation auth
-  multipass = final: _prev: {
-    multipass = final.unstable.buildGoModule {
-      pname = "multipass";
-      version = "0-unstable-2026-02-12";
-      src = inputs.multipass-src;
-      vendorHash = "sha256-EKCcwa+eNel6jwOSDkhiUyZBQoO0oX8x/6IZG6KRzZ0=";
-      subPackages = [ "cmd/multipass" ];
-      env.CGO_ENABLED = 0;
-      meta = {
-        description = "Auth CLI with GCP Workload Identity Federation support";
-        mainProgram = "multipass";
-      };
-    };
-  };
 }

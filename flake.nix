@@ -61,10 +61,9 @@
 
     iso.url = "git+https://github.com/mirendev/iso.git";
 
-    multipass-src = {
-      url = "git+https://github.com/mirendev/multipass.git";
-      flake = false;
-    };
+    multipass.url = "git+https://github.com/mirendev/multipass.git";
+    multipass.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    multipass.inputs.flake-utils.follows = "flake-utils";
   };
 
   outputs =
