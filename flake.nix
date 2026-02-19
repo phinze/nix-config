@@ -15,7 +15,6 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nixvim-config.url = "github:phinze/nixvim-config";
-    nixvim-config.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";

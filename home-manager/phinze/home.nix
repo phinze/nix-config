@@ -98,8 +98,8 @@
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
       unstable.fabric-ai # AI framework for augmenting humans
-      mpv # Media player for YouTube DJ sets and streams
-      yt-dlp # For fabric's video features
+      unstable.mpv # Media player for YouTube DJ sets and streams
+      unstable.yt-dlp # Video downloader, used by mpv and fabric
     ]
     ++ lib.optionals pkgs.stdenv.isDarwin [
       # Docker CLI tools for macOS with Colima
