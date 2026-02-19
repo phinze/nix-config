@@ -88,6 +88,7 @@ in
   # Claude Code package with LSP fallbacks
   home.packages = [
     claude-code-wrapped
+    pkgs.ast-grep
   ];
 
   # Ignore SWT (Simple Work Tracker) directories globally
@@ -113,32 +114,50 @@ in
         # sourcekit-lsp comes from Xcode, only available on macOS
         "swift-lsp@claude-plugins-official" = true;
       };
-      hooks = let
-        # Wire sophon into every known Claude Code hook event.
-        # Unhandled events are logged by the hook command and ignored.
-        sophonHook = { type = "command"; command = config.services.sophon.hookCommand; };
-        sophonOnly = [{ hooks = [ sophonHook ]; }];
-      in builtins.listToAttrs (map (event: { name = event; value = sophonOnly; }) [
-        "Notification"
-        "Stop"
-        "SessionEnd"
-        "UserPromptSubmit"
-        "PreToolUse"
-        "PostToolUse"
-        "PostToolUseFailure"
-        "PermissionRequest"
-        "SubagentStart"
-        "SubagentStop"
-        "PreCompact"
-      ]) // {
-        # SessionStart has additional hooks beyond sophon
-        SessionStart = [{
-          hooks = [
-            { type = "command"; command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true''; }
-            sophonHook
+      hooks =
+        let
+          # Wire sophon into every known Claude Code hook event.
+          # Unhandled events are logged by the hook command and ignored.
+          sophonHook = {
+            type = "command";
+            command = config.services.sophon.hookCommand;
+          };
+          sophonOnly = [ { hooks = [ sophonHook ]; } ];
+        in
+        builtins.listToAttrs (
+          map
+            (event: {
+              name = event;
+              value = sophonOnly;
+            })
+            [
+              "Notification"
+              "Stop"
+              "SessionEnd"
+              "UserPromptSubmit"
+              "PreToolUse"
+              "PostToolUse"
+              "PostToolUseFailure"
+              "PermissionRequest"
+              "SubagentStart"
+              "SubagentStop"
+              "PreCompact"
+            ]
+        )
+        // {
+          # SessionStart has additional hooks beyond sophon
+          SessionStart = [
+            {
+              hooks = [
+                {
+                  type = "command";
+                  command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true'';
+                }
+                sophonHook
+              ];
+            }
           ];
-        }];
-      };
+        };
     };
     force = true;
   };
@@ -239,6 +258,9 @@ in
     source = ./claude-global.md;
     force = true;
   };
+
+  # Claude Code rules (always-on instructions loaded automatically)
+  home.file.".claude/rules/tooling.md".source = ./claude-rules/tooling.md;
 
   # Claude Code slash commands (skills stored in separate files for easier editing)
   home.file.".claude/commands/whatsup.md".source = ./claude-skills/whatsup.md;
