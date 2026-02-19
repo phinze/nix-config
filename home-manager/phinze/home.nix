@@ -765,14 +765,11 @@
 
   services.sophon = {
     enable = true;
-    ntfyUrl = "https://foxtrotbase.swallow-galaxy.ts.net/claude";
-    baseUrl = "https://foxtrotbase.swallow-galaxy.ts.net";
     nodeName = osConfig.networking.hostName;
-    daemon.enable = pkgs.stdenv.isLinux; # foxtrotbase runs the daemon
+    daemonUrl = "https://sophon.miren01.versa.inze.ph";
     agent.enable = true;
     agent.advertiseUrl = lib.mkIf (!pkgs.stdenv.isLinux)
       "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
-    daemonUrl = "https://foxtrotbase.swallow-galaxy.ts.net"; # all hosts use the public URL
   };
 
   services.double-agent = {

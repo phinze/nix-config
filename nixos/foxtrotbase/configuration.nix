@@ -109,36 +109,6 @@
     "d '/Users/phinze/Library/Application Support/CleanShot/media' 0755 phinze users -"
   ];
 
-  # ntfy push notification server for Claude Code hooks
-  # Accessible over Tailscale at https://foxtrotbase.swallow-galaxy.ts.net/claude
-  services.ntfy-sh = {
-    enable = true;
-    settings = {
-      base-url = "https://foxtrotbase.swallow-galaxy.ts.net";
-      listen-http = ":2586";
-      behind-proxy = true;
-    };
-  };
-
-  # Caddy reverse proxy with automatic Tailscale HTTPS certs
-  # Routes: /sophon/* → sophon daemon, everything else → ntfy
-  services.caddy = {
-    enable = true;
-    virtualHosts."foxtrotbase.swallow-galaxy.ts.net" = {
-      extraConfig = ''
-        handle /sophon/* {
-          reverse_proxy localhost:2587
-        }
-        handle /api/* {
-          reverse_proxy localhost:2587
-        }
-        handle {
-          reverse_proxy localhost:2586
-        }
-      '';
-    };
-  };
-  services.tailscale.permitCertUid = "caddy";
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";
