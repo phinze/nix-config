@@ -98,6 +98,7 @@
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
       unstable.fabric-ai # AI framework for augmenting humans
+      mpv # Media player for YouTube DJ sets and streams
       yt-dlp # For fabric's video features
     ]
     ++ lib.optionals pkgs.stdenv.isDarwin [
