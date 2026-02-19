@@ -48,7 +48,7 @@
       pname = "multipass";
       version = "0-unstable-2026-02-12";
       src = inputs.multipass-src;
-      vendorHash = "sha256-8RMRoFt0ZC8i6W+ojNSdZyivW/xofVt1HW3IvJp/HSE=";
+      vendorHash = "sha256-EKCcwa+eNel6jwOSDkhiUyZBQoO0oX8x/6IZG6KRzZ0=";
       subPackages = [ "cmd/multipass" ];
       env.CGO_ENABLED = 0;
       meta = {
