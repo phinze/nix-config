@@ -23,6 +23,29 @@
         "type": "github"
       }
     },
+    "belowdeck": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1771610084,
+        "narHash": "sha256-g2aPFNR1YrkFwUpTSVDX3NVrv6HgJgUv9AkDBdvxmsk=",
+        "owner": "phinze",
+        "repo": "belowdeck",
+        "rev": "3c102166e78be84227288b245b45d1091e455b0e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phinze",
+        "repo": "belowdeck",
+        "type": "github"
+      }
+    },
     "camlink-fix": {
       "inputs": {
         "flake-utils": [
@@ -599,6 +622,7 @@
     "root": {
       "inputs": {
         "bankshot": "bankshot",
+        "belowdeck": "belowdeck",
         "camlink-fix": "camlink-fix",
         "claude-code-nix": "claude-code-nix",
         "claude-desktop": "claude-desktop",

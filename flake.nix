@@ -47,6 +47,10 @@
     camlink-fix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     camlink-fix.inputs.flake-utils.follows = "flake-utils";
 
+    belowdeck.url = "github:phinze/belowdeck";
+    belowdeck.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    belowdeck.inputs.flake-utils.follows = "flake-utils";
+
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 

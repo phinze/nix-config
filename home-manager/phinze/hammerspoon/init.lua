@@ -1,6 +1,9 @@
 -- Hammerspoon configuration
 -- Replaces Karabiner-Elements for keyboard remapping
 
+-- Enable IPC so the `hs` CLI can talk to Hammerspoon
+require("hs.ipc")
+
 --------------------------------------------------------------------------------
 -- ControlEscape: Tap Control for Escape, Hold for Control
 --------------------------------------------------------------------------------
