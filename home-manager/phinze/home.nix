@@ -670,13 +670,6 @@
             host.address = "/Users/phinze/.bankshot.sock";
           }
         ];
-        extraOptions = {
-          # Disable terminal focus reporting during connection (printf '\e[?1004l')
-          # to prevent ^[[I/^[[O escape sequences from appearing as noise.
-          # tmux will re-enable focus events when it starts.
-          RemoteCommand = "printf '\\e[?1004l'; bankshot monitor reconcile 2>/dev/null || true; exec \$SHELL -l";
-          RequestTTY = "yes";
-        };
       };
 
       "pixiu" = {
@@ -684,6 +677,19 @@
       };
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      # Only set up RemoteCommand for interactive sessions (no CLI command).
+      # Uses Match command "" so that `ssh foxtrotbase 'cmd'` works normally.
+      "foxtrotbase-interactive" = {
+        match = ''host foxtrotbase command ""'';
+        extraOptions = {
+          # Suppress focus-event noise during SSH connection:
+          # 1. stty -echo: prevent echoing of focus events already in flight
+          # 2. printf '\e[?1004l': tell terminal to stop sending focus events
+          # The login shell (exec $SHELL) restores terminal settings.
+          RemoteCommand = "stty -echo 2>/dev/null; printf '\\e[?1004l'; bankshot monitor reconcile >/dev/null 2>&1 || true; exec \$SHELL -l";
+          RequestTTY = "yes";
+        };
+      };
       "*" = {
         extraOptions = {
           IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
@@ -767,8 +773,9 @@
     nodeName = osConfig.networking.hostName;
     daemonUrl = "https://sophon.miren01.versa.inze.ph";
     agent.enable = true;
-    agent.advertiseUrl = lib.mkIf (!pkgs.stdenv.isLinux)
-      "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
+    agent.advertiseUrl = lib.mkIf (
+      !pkgs.stdenv.isLinux
+    ) "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
   };
 
   services.double-agent = {
