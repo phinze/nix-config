@@ -709,9 +709,7 @@
     nodeName = osConfig.networking.hostName;
     daemonUrl = "https://sophon.miren01.versa.inze.ph";
     agent.enable = true;
-    agent.advertiseUrl = lib.mkIf (
-      !pkgs.stdenv.isLinux
-    ) "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
+    agent.advertiseUrl = "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
   };
 
   services.double-agent = {
