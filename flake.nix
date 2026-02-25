@@ -137,6 +137,14 @@
             ./nixos/simurgh/home-manager.nix
           ];
         };
+
+        # Dedicated Tailscale exit node
+        homegate = nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs outputs; };
+          modules = [
+            ./nixos/homegate/configuration.nix
+          ];
+        };
       };
 
       # Darwin machines
