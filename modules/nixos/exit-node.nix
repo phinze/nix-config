@@ -4,7 +4,7 @@
 # which already provides:
 #   services.tailscale.enable = true
 #   services.tailscale.useRoutingFeatures = "both"
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   # IP forwarding for exit node traffic
   boot.kernel.sysctl = {
@@ -41,5 +41,27 @@
     enable = true;
     trustedInterfaces = [ "tailscale0" ];
     allowedUDPPorts = [ config.services.tailscale.port ];
+  };
+
+  # Optimize UDP GRO forwarding for better Tailscale exit node throughput
+  # See: https://tailscale.com/s/ethtool-config-udp-gro
+  systemd.services.tailscale-udp-gro = {
+    description = "Optimize UDP GRO forwarding for Tailscale";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    path = [ pkgs.ethtool ];
+    script = ''
+      for iface in /sys/class/net/*; do
+        iface=$(basename "$iface")
+        [ "$iface" = "lo" ] && continue
+        [ "$iface" = "tailscale0" ] && continue
+        ethtool -K "$iface" rx-udp-gro-forwarding on rx-gro-list off 2>/dev/null || true
+      done
+    '';
   };
 }
