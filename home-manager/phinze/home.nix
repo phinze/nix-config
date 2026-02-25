@@ -515,11 +515,13 @@
       branch.autosetuprebase = "always";
       color.ui = true;
       core.askPass = ""; # needs to be empty to use terminal for ask pass
-      core.pager = "env COLORTERM=truecolor delta";
-      interactive.diffFilter = "env COLORTERM=truecolor delta --color-only";
+      core.pager = "delta";
+      interactive.diffFilter = "delta --color-only";
       delta = {
         navigate = true;
         dark = true;
+        hyperlinks = true;
+        true-color = "always";
         syntax-theme = "Dracula";
         minus-style = "syntax #3b1d2b";
         minus-emph-style = "syntax #5c2a3f";
@@ -581,6 +583,7 @@
     terminal = "tmux-256color";
     historyLimit = 100000;
     keyMode = "vi";
+    mouse = true;
 
     # See https://github.com/nix-community/home-manager/issues/6266
     sensibleOnTop = false;
@@ -631,6 +634,10 @@
 
       # Allow passthrough of escape sequences (needed for OSC 52 clipboard from subprocesses)
       set -g allow-passthrough on
+
+      # Ghostty's terminfo has Tc/setrgbf/setrgbb but tmux doesn't auto-promote
+      # those to feature flags; hyperlinks (OSC 8) has no terminfo representation at all.
+      set -as terminal-features ",xterm-ghostty:RGB:hyperlinks"
 
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
