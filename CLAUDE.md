@@ -10,8 +10,8 @@ This is a personal Nix configuration repository that manages multiple machines u
 
 ### Flake Structure
 - `flake.nix` - Main entry point defining nixosConfigurations and darwinConfigurations
-- `nixos/` - NixOS system configurations for VMs (foxtrotbase, victormike)
-- `nix-darwin/` - macOS system configurations (manticore, phinze-mrn-mbp)
+- `nixos/` - NixOS system configurations (foxtrotbase, xiezhi, simurgh, homegate)
+- `nix-darwin/` - macOS system configurations (phinze-mrn-mbp)
 - `home-manager/` - User environment configs shared across all machines
 - `modules/` - Reusable modules for different platform types
 - `overlays/` - Custom package overlays and modifications

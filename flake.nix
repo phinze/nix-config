@@ -110,16 +110,6 @@
           ];
         };
 
-        # A VMware Fusion VM for isolation on manticore
-        victormike = nixpkgs.lib.nixosSystem {
-          specialArgs = { inherit inputs outputs; };
-          modules = [
-            # > Our main nixos configuration file <
-            ./nixos/victormike/configuration.nix
-            ./nixos/victormike/home-manager.nix
-          ];
-        };
-
         # Framework 12" laptop
         xiezhi = nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs outputs; };
@@ -150,13 +140,6 @@
       # Darwin machines
       # Run with `darwin-rebuild --flake .`
       darwinConfigurations = {
-        manticore = nix-darwin.lib.darwinSystem {
-          specialArgs = { inherit inputs outputs; };
-          modules = [
-            ./nix-darwin/manticore/configuration.nix
-            ./nix-darwin/manticore/home-manager.nix
-          ];
-        };
         phinze-mrn-mbp = nix-darwin.lib.darwinSystem {
           specialArgs = { inherit inputs outputs; };
           modules = [
