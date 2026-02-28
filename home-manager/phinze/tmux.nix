@@ -52,7 +52,7 @@
       {
         plugin = tmux-smooth-scroll;
         extraConfig = ''
-          set -g @smooth-scroll-mouse "true"
+          set -g @smooth-scroll-mouse "false"
         '';
       }
       vim-tmux-navigator
@@ -89,6 +89,19 @@
 
       # Update environment variables when attaching to tmux
       set -g update-environment "DISPLAY SSH_ASKPASS SSH_AUTH_SOCK SSH_CONNECTION PATH"
+
+      # Copy-mode mouse tweaks:
+      # - Single-line wheel steps (tmux defaults to 5)
+      # - Auto-exit copy mode when scrolling past the bottom
+      # - Mouse select copies without exiting copy mode
+      bind-key -T copy-mode-vi WheelUpPane send-keys -X scroll-up
+      bind-key -T copy-mode-vi WheelDownPane {
+        send-keys -X scroll-down
+        if-shell -F "#{&&:#{pane_in_mode},#{==:#{scroll_position},0}}" {
+          send-keys -X cancel
+        }
+      }
+      bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-selection
     '';
   };
 }
