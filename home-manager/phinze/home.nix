@@ -687,18 +687,8 @@
     };
 
     # Monitor configuration (applies to bankshot monitor on remote servers)
+    # Default: forward all non-privileged ports (>= 1024)
     monitor = {
-      portRanges = [
-        {
-          start = 3000;
-          end = 9999;
-        }
-      ];
-      ignoreProcesses = [
-        "sshd"
-        "systemd"
-        "ssh-agent"
-      ];
       pollInterval = "1s";
       gracePeriod = "30s";
     };
