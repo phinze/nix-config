@@ -12,7 +12,19 @@
     # See https://github.com/nix-community/home-manager/issues/6266
     sensibleOnTop = false;
 
-    plugins = with pkgs.tmuxPlugins; [
+    plugins = let
+      tmux-smooth-scroll = pkgs.tmuxPlugins.mkTmuxPlugin {
+        pluginName = "smooth-scroll";
+        rtpFilePath = "smooth-scroll.tmux";
+        version = "unstable-2025-02-16";
+        src = pkgs.fetchFromGitHub {
+          owner = "azorng";
+          repo = "tmux-smooth-scroll";
+          rev = "4c1232796235173f3e48031cbffe4a19773a957a";
+          hash = "sha256-nTB0V/Xln8QJ95TB+hpIbuf0GwlBCU7CFQyzd0oWXw4=";
+        };
+      };
+    in with pkgs.tmuxPlugins; [
       {
         plugin = catppuccin;
         extraConfig = ''
@@ -35,6 +47,12 @@
           set -g @session-wizard "t"
           # sometimes I edit multiple repos w/ the same name
           set -g @session-wizard-mode "full-path"
+        '';
+      }
+      {
+        plugin = tmux-smooth-scroll;
+        extraConfig = ''
+          set -g @smooth-scroll-mouse "true"
         '';
       }
       vim-tmux-navigator
