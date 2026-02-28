@@ -16,12 +16,12 @@
       tmux-smooth-scroll = pkgs.tmuxPlugins.mkTmuxPlugin {
         pluginName = "smooth-scroll";
         rtpFilePath = "smooth-scroll.tmux";
-        version = "unstable-2025-02-16";
+        version = "unstable-2025-02-28";
         src = pkgs.fetchFromGitHub {
-          owner = "azorng";
+          owner = "phinze";
           repo = "tmux-smooth-scroll";
-          rev = "4c1232796235173f3e48031cbffe4a19773a957a";
-          hash = "sha256-nTB0V/Xln8QJ95TB+hpIbuf0GwlBCU7CFQyzd0oWXw4=";
+          rev = "4f8bfcd97ac231a27580392bedc314d94000bd45";
+          hash = "sha256-2oDwVMuuu6gnaKqaqUjTdJ4nMuvOIt04W5SipxHBxQY=";
         };
       };
     in with pkgs.tmuxPlugins; [
