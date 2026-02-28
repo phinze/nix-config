@@ -11,6 +11,7 @@ let
   fallbackLsps = with pkgs; [
     nixd # Nix
     gopls # Go
+    clang-tools # C/C++ (clangd)
     # sourcekit-lsp comes from Xcode on macOS, no need for fallback
   ];
 
@@ -106,6 +107,7 @@ in
       # Enable LSP plugins: official ones + custom nix-lsp
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
+        "clangd-lsp@claude-plugins-official" = true;
         "frontend-design@claude-plugins-official" = true;
         "nix-lsp" = true; # Custom plugin defined below
         "coderabbit@claude-plugins-official" = true; # CodeRabbit AI code review
@@ -184,6 +186,7 @@ in
         };
       basePlugins = {
         "gopls-lsp@claude-plugins-official" = [ (mkPlugin "gopls-lsp" { gitCommitSha = officialRev; }) ];
+        "clangd-lsp@claude-plugins-official" = [ (mkPlugin "clangd-lsp" { gitCommitSha = officialRev; }) ];
         "frontend-design@claude-plugins-official" = [
           (mkPlugin "frontend-design" { gitCommitSha = officialRev; })
         ];
@@ -207,6 +210,8 @@ in
   # Marketplace plugins (symlinked from flake inputs)
   home.file.".claude/plugins/gopls-lsp".source =
     "${inputs.claude-plugins-official}/plugins/gopls-lsp";
+  home.file.".claude/plugins/clangd-lsp".source =
+    "${inputs.claude-plugins-official}/plugins/clangd-lsp";
   home.file.".claude/plugins/frontend-design".source =
     "${inputs.claude-plugins-official}/plugins/frontend-design";
   home.file.".claude/plugins/coderabbit".source = inputs.claude-plugin-coderabbit;
