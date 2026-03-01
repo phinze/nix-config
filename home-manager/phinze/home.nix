@@ -697,7 +697,7 @@
   services.sophon = {
     enable = true;
     nodeName = osConfig.networking.hostName;
-    daemonUrl = "https://sophon.miren01.versa.inze.ph";
+    daemonUrl = "https://sophon.inze.ph";
     agent.enable = true;
     agent.advertiseUrl = "http://${osConfig.networking.hostName}.swallow-galaxy.ts.net:2588";
   };
