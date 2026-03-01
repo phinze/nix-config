@@ -90,6 +90,8 @@ in
   home.packages = [
     claude-code-wrapped
     pkgs.ast-grep
+    pkgs.yq-go # YAML/TOML/JSON processor
+    pkgs.python3 # stdlib-only interpreter for data processing (no pip)
   ];
 
   # Ignore SWT (Simple Work Tracker) directories globally
