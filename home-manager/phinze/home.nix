@@ -123,8 +123,22 @@
       # Nix will handle updates tyvm
       update_check = false;
 
+      # Scope ctrl-r history search to current git repo by default.
+      # Worktrees of the same repo share a scope, so ephemeral
+      # worktrees don't lose history.
+      workspaces = true;
+      filter_mode = "workspace";
+
       # Don't intersperse global history when just pressing up arrow
       filter_mode_shell_up_key_binding = "session";
+
+      # Silently drop commands containing secrets from history
+      history_filter = [
+        "_API_KEY="
+        "_SECRET="
+        "_TOKEN="
+        "_PASSWORD="
+      ];
 
       # New default in recent versions, enter to run, tab to complete
       enter_accept = true;
