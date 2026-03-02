@@ -134,15 +134,10 @@ in
   homebrew.global.autoUpdate = true;
 
   homebrew.taps = [
-    "phinze/bankshot"
   ];
 
   homebrew.brews = [
     "media-control"
-    {
-      name = "phinze/bankshot/bankshot";
-      start_service = true;
-    }
   ];
 
   homebrew.casks = [
