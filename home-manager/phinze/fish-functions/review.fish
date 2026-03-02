@@ -49,6 +49,18 @@ end
 # Step 4: Create worktree via gwq
 set -l original_dir (pwd)
 cd "$repo_path"
+
+# Check if the PR branch is already checked out in the main worktree —
+# git won't allow creating a worktree for it, and we'd silently fail.
+set -l current_branch (git branch --show-current 2>/dev/null)
+if test "$current_branch" = "$branch_name"
+    cd "$original_dir"
+    echo "Branch '$branch_name' is checked out in the main worktree."
+    echo "Run: cd $repo_path && git checkout main"
+    echo "Then retry: review $argv"
+    return 1
+end
+
 git fetch origin "$branch_name" --quiet 2>/dev/null
 set -l worktree_path (gwq get "$branch_name" 2>/dev/null)
 
@@ -77,9 +89,11 @@ if not tmux has-session -t "$session_name" 2>/dev/null
     set is_new_session 1
 end
 
-# Step 7: Launch Claude only for new sessions
+# Step 7: Launch Claude for new sessions; for existing ones, notify and switch
 if test $is_new_session -eq 1
     tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated worktree; skip branch verification'" Enter
+else
+    echo "Session already exists for $owner/$repo#$pr_number — switching to it"
 end
 
 # Step 8: Switch to session
