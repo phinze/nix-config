@@ -705,6 +705,7 @@
     monitor = {
       pollInterval = "1s";
       gracePeriod = "30s";
+      ignoreProcesses = ["sshd" "systemd" "ssh-agent" "miren" "etcd" "victoria"];
     };
   };
 
