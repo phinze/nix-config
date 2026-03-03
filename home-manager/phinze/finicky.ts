@@ -5,11 +5,11 @@ import type { FinickyConfig } from "/Applications/Finicky.app/Contents/Resources
 
 export default {
   defaultBrowser: "Zen",
-  hideIcon: true,
 
   options: {
     // Log all URL requests to console for debugging
     logRequests: false,
+    hideIcon: true,
   },
 
   handlers: [
