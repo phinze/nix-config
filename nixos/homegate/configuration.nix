@@ -12,6 +12,7 @@
     ./hardware-configuration.nix
     ../../modules/nixos/baseline.nix
     ../../modules/nixos/exit-node.nix
+    ../../modules/nixos/dns-blocker.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
