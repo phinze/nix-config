@@ -76,6 +76,10 @@
     # Since we aren't using a home-manager module for neovim, set neovim aliases here
     vi = "nvim";
     vim = "nvim";
+
+    # Claude Code shorthand
+    cld = "claude --dangerously-skip-permissions";
+    cldr = "claude --dangerously-skip-permissions --resume";
   };
 
   home.sessionVariables = {
@@ -705,7 +709,7 @@
     monitor = {
       pollInterval = "1s";
       gracePeriod = "30s";
-      ignoreProcesses = ["sshd" "systemd" "ssh-agent" "miren" "etcd" "victoria"];
+      ignoreProcesses = ["sshd" "systemd" "ssh-agent" "miren" "etcd" "victoria" "containerd" "postgres" "/\\.test$/"];
     };
   };
 

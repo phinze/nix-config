@@ -106,6 +106,7 @@ in
         command = "${claude-statusline}";
       };
       includeCoAuthoredBy = false;
+      skipDangerousModePermissionPrompt = true;
       # Enable LSP plugins: official ones + custom nix-lsp
       enabledPlugins = {
         "gopls-lsp@claude-plugins-official" = true;
