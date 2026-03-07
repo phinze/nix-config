@@ -29,8 +29,20 @@
       };
 
       bootstrapDns = [
-        { upstream = "https://one.one.one.one/dns-query"; ips = [ "1.1.1.1" "1.0.0.1" ]; }
-        { upstream = "https://dns.quad9.net/dns-query"; ips = [ "9.9.9.9" "149.112.112.112" ]; }
+        {
+          upstream = "https://one.one.one.one/dns-query";
+          ips = [
+            "1.1.1.1"
+            "1.0.0.1"
+          ];
+        }
+        {
+          upstream = "https://dns.quad9.net/dns-query";
+          ips = [
+            "9.9.9.9"
+            "149.112.112.112"
+          ];
+        }
       ];
 
       # Forward Tailscale MagicDNS queries so tailnet hostnames resolve
@@ -50,11 +62,14 @@
         };
         allowlists = {
           ads = [
-            # Local allowlist for temporary unblocking via the API tool
-            "/var/lib/blocky/allowlist.txt"
+            # Local allowlist managed by blocky-allowlist service
+            "/var/lib/blocky-allowlist/allowlist.txt"
           ];
         };
-        clientGroupsBlock.default = [ "ads" "threats" ];
+        clientGroupsBlock.default = [
+          "ads"
+          "threats"
+        ];
         blockType = "zeroIp";
         blockTTL = "1m";
         loading = {
@@ -89,11 +104,59 @@
     };
   };
 
-  # Ensure the local allowlist file exists so Blocky doesn't complain
+  # Shared group so blocky can read the allowlist written by blocky-allowlist
+  users.groups.blocky-shared = { };
+
+  # Ensure the shared allowlist directory and file exist
   systemd.tmpfiles.rules = [
-    "f /var/lib/blocky/allowlist.txt 0644 root root -"
+    "d /var/lib/blocky-allowlist 0770 root blocky-shared -"
+    "f /var/lib/blocky-allowlist/allowlist.txt 0664 root blocky-shared -"
   ];
 
-  # Open HTTP API port to tailnet (DNS 53 is already covered by trustedInterfaces)
-  networking.firewall.allowedTCPPorts = [ 4000 ];
+  # Give blocky access to the shared allowlist directory
+  systemd.services.blocky.serviceConfig = {
+    SupplementaryGroups = [ "blocky-shared" ];
+    ReadOnlyPaths = [ "/var/lib/blocky-allowlist" ];
+  };
+
+  # blocky-allowlist web service
+  users.users.blocky-allowlist = {
+    isSystemUser = true;
+    group = "blocky-shared";
+  };
+
+  systemd.services.blocky-allowlist = {
+    description = "Blocky temporary allowlist manager";
+    wantedBy = [ "multi-user.target" ];
+    after = [
+      "blocky.service"
+      "network.target"
+    ];
+    wants = [ "blocky.service" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.blocky-allowlist}/bin/blocky-allowlist";
+      User = "blocky-allowlist";
+      Group = "blocky-shared";
+      Restart = "on-failure";
+      RestartSec = 5;
+      ReadWritePaths = [ "/var/lib/blocky-allowlist" ];
+
+      # Hardening
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      PrivateDevices = true;
+      ProtectKernelTunables = true;
+      ProtectKernelModules = true;
+      ProtectControlGroups = true;
+      RestrictSUIDSGID = true;
+    };
+  };
+
+  # Open HTTP API port and allowlist UI port to tailnet
+  networking.firewall.allowedTCPPorts = [
+    4000
+    4001
+  ];
 }

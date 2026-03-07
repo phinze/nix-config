@@ -11,4 +11,5 @@ pkgs: rec {
   osc-copy = pkgs.callPackage ./osc-copy { };
   synckick = pkgs.callPackage ./synckick.nix { };
   whoson = pkgs.callPackage ./whoson.nix { };
+  blocky-allowlist = pkgs.callPackage ./blocky-allowlist { };
 }
