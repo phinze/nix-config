@@ -62,8 +62,8 @@
         };
         allowlists = {
           ads = [
-            # Local allowlist managed by blocky-allowlist service
-            "/var/lib/blocky-allowlist/allowlist.txt"
+            # Temporary allowlist served by blocky-allowlist on miren01 (dns.inze.ph)
+            "https://dns.inze.ph/allowlist.txt"
           ];
         };
         clientGroupsBlock.default = [
@@ -104,59 +104,6 @@
     };
   };
 
-  # Shared group so blocky can read the allowlist written by blocky-allowlist
-  users.groups.blocky-shared = { };
-
-  # Ensure the shared allowlist directory and file exist
-  systemd.tmpfiles.rules = [
-    "d /var/lib/blocky-allowlist 0770 root blocky-shared -"
-    "f /var/lib/blocky-allowlist/allowlist.txt 0664 root blocky-shared -"
-  ];
-
-  # Give blocky access to the shared allowlist directory
-  systemd.services.blocky.serviceConfig = {
-    SupplementaryGroups = [ "blocky-shared" ];
-    ReadOnlyPaths = [ "/var/lib/blocky-allowlist" ];
-  };
-
-  # blocky-allowlist web service
-  users.users.blocky-allowlist = {
-    isSystemUser = true;
-    group = "blocky-shared";
-  };
-
-  systemd.services.blocky-allowlist = {
-    description = "Blocky temporary allowlist manager";
-    wantedBy = [ "multi-user.target" ];
-    after = [
-      "blocky.service"
-      "network.target"
-    ];
-    wants = [ "blocky.service" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.blocky-allowlist}/bin/blocky-allowlist";
-      User = "blocky-allowlist";
-      Group = "blocky-shared";
-      Restart = "on-failure";
-      RestartSec = 5;
-      ReadWritePaths = [ "/var/lib/blocky-allowlist" ];
-
-      # Hardening
-      NoNewPrivileges = true;
-      ProtectSystem = "strict";
-      ProtectHome = true;
-      PrivateTmp = true;
-      PrivateDevices = true;
-      ProtectKernelTunables = true;
-      ProtectKernelModules = true;
-      ProtectControlGroups = true;
-      RestrictSUIDSGID = true;
-    };
-  };
-
-  # Open HTTP API port and allowlist UI port to tailnet
-  networking.firewall.allowedTCPPorts = [
-    4000
-    4001
-  ];
+  # Open HTTP API port to tailnet (DNS 53 is already covered by trustedInterfaces)
+  networking.firewall.allowedTCPPorts = [ 4000 ];
 }
