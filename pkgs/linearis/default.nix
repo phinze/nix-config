@@ -17,6 +17,12 @@ buildNpmPackage rec {
 
   npmDepsHash = "sha256-PUXLphH82leQLHj5+BIxezKSpRiK/S9WevzK0duwo28=";
 
+  patches = [
+    # Fix crash when comment.user is null (deleted users, integrations).
+    # Remove once czottmann/linearis#38 is released.
+    ./fix-null-comment-user.patch
+  ];
+
   postPatch = ''
     cp ${./package-lock.json} package-lock.json
   '';

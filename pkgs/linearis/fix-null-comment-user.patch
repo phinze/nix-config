@@ -1,0 +1,21 @@
+Fix crash when comment.user is null (e.g. deleted users, integrations).
+
+Upstream fix: https://github.com/czottmann/linearis/pull/38
+Remove this patch once a release including PR #38 is available.
+
+--- a/src/utils/graphql-issues-service.ts
++++ b/src/utils/graphql-issues-service.ts
+@@ -881,10 +881,10 @@
+         body: comment.body,
+         embeds: extractEmbeds(comment.body),
+-        user: {
+-          id: comment.user.id,
+-          name: comment.user.name,
+-        },
++        user: comment.user ? {
++          id: comment.user.id,
++          name: comment.user.name,
++        } : { id: null, name: "Unknown" },
+         createdAt: comment.createdAt instanceof Date
+           ? comment.createdAt.toISOString()
+           : (comment.createdAt
