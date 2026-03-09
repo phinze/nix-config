@@ -89,6 +89,22 @@
       # Formatter for your nix files, available through 'nix fmt'
       formatter = eachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
+      # Dev shell with repo-local helpers
+      devShells = eachSystem (system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+        switch = pkgs.writeShellScriptBin "switch" ''
+          if [[ "$(uname)" == "Darwin" ]]; then
+            nh darwin switch . "$@"
+          else
+            nh os switch . "$@"
+          fi
+        '';
+      in {
+        default = pkgs.mkShell {
+          packages = [ switch ];
+        };
+      });
+
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };
       # Reusable nixos modules you might want to export
