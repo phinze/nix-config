@@ -92,7 +92,7 @@
       # Dev shell with repo-local helpers
       devShells = eachSystem (system: let
         pkgs = nixpkgs.legacyPackages.${system};
-        switch = pkgs.writeShellScriptBin "switch" ''
+        nhs = pkgs.writeShellScriptBin "nhs" ''
           if [[ "$(uname)" == "Darwin" ]]; then
             nh darwin switch . "$@"
           else
@@ -101,7 +101,7 @@
         '';
       in {
         default = pkgs.mkShell {
-          packages = [ switch ];
+          packages = [ nhs ];
         };
       });
 
