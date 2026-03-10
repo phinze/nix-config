@@ -6,7 +6,7 @@
   buildFHSEnv,
 }:
 let
-  version = "0.3.5";
+  version = "0.3.7";
 
   selectSystem =
     system:
@@ -14,22 +14,22 @@ let
       x86_64-linux = {
         os = "linux";
         arch = "x64";
-        sha256 = "sha256-2j4wR6QJ36GsnN7yrBgvCWWb6l7DS29v4Sl4T16H7po=";
+        sha256 = "sha256-ko5u4KoH1U1ZAJRamFk8W8JNb4aEX6AxYao3A2aG7yk=";
       };
       aarch64-linux = {
         os = "linux";
         arch = "arm64";
-        sha256 = "sha256-LTrYcu2eYalLOSD+Su8sJ8hwiIQtHshnHWyL2MjvOFU=";
+        sha256 = "sha256-qo4DcdazJmHqoVPxmOB4zG+hzg+XKukh3bKoK0VKAdQ=";
       };
       x86_64-darwin = {
         os = "darwin";
         arch = "x64";
-        sha256 = "sha256-+AgQeptoac3Cg4A3Ssmui2ABqedIubYuB7lRp/B3WZ8=";
+        sha256 = "sha256-j8/fVJievur/CBnyspYx4UD6PwIcVqNjnvnjM0LUP0I=";
       };
       aarch64-darwin = {
         os = "darwin";
         arch = "arm64";
-        sha256 = "sha256-w0PLGaKvsOYlHMWJW48fJUekEXSWdcECambWju8LdIE=";
+        sha256 = "sha256-aUKYHntpDf0ge5URA9XyRZvl5OKfZYULjwgf+pZRAIQ=";
       };
     }
     .${system} or (throw "Unsupported system: ${system}");
