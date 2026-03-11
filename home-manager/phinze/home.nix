@@ -103,6 +103,7 @@
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
       unstable.fabric-ai # AI framework for augmenting humans
+      unstable.deno # JS runtime required by yt-dlp for YouTube signature solving
       unstable.mpv # Media player for YouTube DJ sets and streams
       unstable.yt-dlp # Video downloader, used by mpv and fabric
     ]
