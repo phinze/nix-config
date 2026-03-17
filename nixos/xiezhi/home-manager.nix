@@ -15,12 +15,6 @@
       inherit inputs outputs;
       nodeConfig = {
         isGraphical = true;
-        git = {
-          signing = {
-            key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDHP/N4P043PsjSR8rsvpBDAwOy7PEZCMVM1+gs32Nn";
-            format = "ssh";
-          };
-        };
       };
     };
     users = {

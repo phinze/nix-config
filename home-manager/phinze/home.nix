@@ -32,11 +32,23 @@
     ./modules/demo-recorder.nix
     # Screenshot module for website captures
     ./modules/screenshot.nix
+    # Dynamic SSH git signing key selection
+    ./modules/git-signing.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
     ./graphical.nix
   ];
+
+  # SSH signing keys — single source of truth for all nodes
+  phinze.git.signing = {
+    keys = [
+      { name = "delevingne"; publicKey = "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKri4aveRRo7osskk6Wg8urqRm1RuAZK0bksJvKiHcKUk55kQoES/aPIr+vC5tVETE+2AHrFmIuZfGf2PHeruwM="; }
+      { name = "foxtrotbase"; publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEu+8Why8CmSWV5FHEeIsaAgYTN156U3kpCa/QMxdnaC"; }
+      { name = "xiezhi"; publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDHP/N4P043PsjSR8rsvpBDAwOy7PEZCMVM1+gs32Nn"; }
+    ];
+    emails = [ "phinze@phinze.com" "paul@miren.dev" ];
+  };
 
   nixpkgs = {
     # You can add overlays here
@@ -501,14 +513,7 @@
     enable = true;
     userName = "Paul Hinze";
     userEmail = "phinze@phinze.com";
-    signing = {
-      key = lib.mkDefault (nodeConfig.git.signing.key or "70B94C31D170FB29");
-      signByDefault = true;
-
-      # TODO: when home-manager gets these first class in the next release, wire them in instead of the extraConfig
-      # format = lib.mkDefault (nodeConfig.git.signing.format or "openpgp");
-      # signer = lib.mkDefault (nodeConfig.git.signing.signer or null);
-    };
+    signing.signByDefault = true;
     aliases = {
       co = "checkout";
       st = "status";
@@ -559,22 +564,8 @@
       safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
       push.autoSetupRemote = true;
       ghq.root = "~/src";
-      gpg = {
-        format = "ssh";
-      };
-      "gpg \"ssh\"" = lib.mkMerge [
-        # On macOS, use the 1Password op-ssh-sign from homebrew installation
-        (lib.mkIf pkgs.stdenv.isDarwin {
-          program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
-        })
-        # On Linux, when SSH agent is forwarded, use ssh-keygen which will use the forwarded agent
-        (lib.mkIf pkgs.stdenv.isLinux {
-          program = "/run/current-system/sw/bin/ssh-keygen";
-          allowedSignersFile = "~/.ssh/allowed_signers";
-        })
-      ];
     }
-    // (nodeConfig.git.extraConfig or { });
+    // ((nodeConfig.git or { }).extraConfig or { });
   };
 
   programs.gh = {
@@ -598,9 +589,6 @@
   programs.ripgrep.enable = true;
 
   programs.zoxide.enable = true;
-
-  # SSH allowed signers for git commit verification
-  home.file.".ssh/allowed_signers".source = ./ssh-allowed-signers;
 
   # Finicky configuration for URL routing (macOS only)
   home.file.".finicky.ts" = lib.mkIf pkgs.stdenv.isDarwin {
