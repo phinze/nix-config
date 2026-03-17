@@ -57,6 +57,10 @@
     LC_TIME = "en_US.UTF-8";
   };
 
+  # Raise inotify instance limit — default 128 is too low when running
+  # many fish shells, Claude Code workers, and editor instances.
+  boot.kernel.sysctl."fs.inotify.max_user_instances" = 512;
+
   # Security
   security.sudo.wheelNeedsPassword = false;
   security.pam.loginLimits = [
