@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Screenshot - Capture website screenshot and share via GitHub gist
+# Uses Puppeteer (via pageres-cli's bundled copy) for full browser control
 
 set -euo pipefail
 
@@ -13,9 +14,25 @@ Examples:
   screenshot https://example.com                    # Default resolution (1366x768)
   screenshot https://example.com 1920x1080          # Single resolution
   screenshot https://example.com 1920x1080 768x1024 # Multiple resolutions
+  screenshot http://localhost:3000/admin --login=http://localhost:3000/users/sign_in \\
+    --login-field-user='user[email]' --login-field-pass='user[password]' \\
+    --login-user=admin@example.com --login-pass=password
+  screenshot http://localhost:3000/items/123 \\
+    --selector='.card' --padding=20 --highlight='.toast-warning'
 
 Options:
-  -h, --help     Show this help message
+  --login=<url>               Login URL (form-based auth)
+  --login-field-user=<name>   Name attribute of the username/email input (default: email)
+  --login-field-pass=<name>   Name attribute of the password input (default: password)
+  --login-user=<value>        Username/email value
+  --login-pass=<value>        Password value
+  --selector=<element>        Capture a specific DOM element
+  --padding=<px>              Padding around --selector capture (default: 0)
+  --highlight=<selector>      Highlight elements with a colored box (repeatable)
+  --highlight-color=<color>   Highlight color (default: rgba(255,200,0,0.25))
+  --highlight-border=<color>  Highlight border color (default: rgba(255,160,0,0.8))
+  --full-page                 Capture full scrollable page (default: viewport only)
+  -h, --help                  Show this help message
 
 The screenshot will be uploaded to a GitHub gist and the URL will be provided.
 EOF
@@ -31,12 +48,34 @@ fi
 url="$1"
 shift
 
-# Collect resolutions
 resolutions=()
+login_url=""
+login_field_user="email"
+login_field_pass="password"
+login_user=""
+login_pass=""
+selector=""
+padding="0"
+highlights=()
+highlight_color="rgba(255,200,0,0.25)"
+highlight_border="rgba(255,160,0,0.8)"
+full_page="false"
+
 while [[ $# -gt 0 ]]; do
-    if [[ "$1" =~ ^[0-9]+x[0-9]+$ ]]; then
-        resolutions+=("$1")
-    fi
+    case "$1" in
+        --login=*) login_url="${1#--login=}" ;;
+        --login-field-user=*) login_field_user="${1#--login-field-user=}" ;;
+        --login-field-pass=*) login_field_pass="${1#--login-field-pass=}" ;;
+        --login-user=*) login_user="${1#--login-user=}" ;;
+        --login-pass=*) login_pass="${1#--login-pass=}" ;;
+        --selector=*) selector="${1#--selector=}" ;;
+        --padding=*) padding="${1#--padding=}" ;;
+        --highlight=*) highlights+=("${1#--highlight=}") ;;
+        --highlight-color=*) highlight_color="${1#--highlight-color=}" ;;
+        --highlight-border=*) highlight_border="${1#--highlight-border=}" ;;
+        --full-page) full_page="true" ;;
+        *) [[ "$1" =~ ^[0-9]+x[0-9]+$ ]] && resolutions+=("$1") ;;
+    esac
     shift
 done
 
@@ -44,9 +83,6 @@ done
 if [[ ${#resolutions[@]} -eq 0 ]]; then
     resolutions=("1366x768")
 fi
-
-# Create description
-description="Screenshot of $url at ${resolutions[*]}"
 
 # Setup temporary directory
 timestamp=$(date +%Y%m%d-%H%M%S)
@@ -57,16 +93,177 @@ echo "📸 Capturing screenshot..."
 echo "URL: $url"
 echo "Resolution(s): ${resolutions[*]}"
 
-# Build and execute pageres command
-cd "$temp_dir"
-if ! pageres "$url" "${resolutions[@]}" --filename="screenshot-$timestamp"; then
-    echo "Failed to capture screenshot"
-    cd - > /dev/null
-    rm -rf "$temp_dir"
+# Find puppeteer from pageres-cli's node_modules
+pageres_bin=$(readlink -f "$(which pageres)")
+puppeteer_dir="$(dirname "$pageres_bin")/../lib/node_modules/pageres-cli/node_modules/puppeteer"
+
+if [[ ! -d "$puppeteer_dir" ]]; then
+    echo "Error: Could not find puppeteer in pageres-cli's node_modules"
     exit 1
 fi
 
+# Build resolutions as JSON array
+resolutions_json=$(printf '%s\n' "${resolutions[@]}" | jq -R 'split("x") | {width: (.[0] | tonumber), height: (.[1] | tonumber)}' | jq -s '.')
+
+# Generate and run the Puppeteer script
+node_script="$temp_dir/capture.js"
+cat > "$node_script" << 'NODESCRIPT'
+const puppeteer = require('puppeteer');
+const { join } = require('path');
+
+const config = JSON.parse(process.argv[2]);
+
+(async () => {
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+
+  const page = await browser.newPage();
+
+  // Login if configured
+  if (config.loginUrl) {
+    console.log(`🔑 Logging in at ${config.loginUrl}...`);
+    await page.goto(config.loginUrl, { waitUntil: 'networkidle2' });
+
+    // Fill in and submit the login form using JavaScript evaluation
+    // This avoids CSS selector escaping issues with field names like "user[email]"
+    await page.evaluate((fieldUser, fieldPass, user, pass) => {
+      const userInput = document.querySelector(`input[name="${fieldUser}"]`);
+      const passInput = document.querySelector(`input[name="${fieldPass}"]`);
+      if (!userInput) throw new Error(`Could not find input[name="${fieldUser}"]`);
+      if (!passInput) throw new Error(`Could not find input[name="${fieldPass}"]`);
+
+      // Set values using native setter to trigger framework change handlers
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value').set;
+      nativeInputValueSetter.call(userInput, user);
+      nativeInputValueSetter.call(passInput, pass);
+      userInput.dispatchEvent(new Event('input', { bubbles: true }));
+      passInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // Submit the form
+      userInput.closest('form').submit();
+    }, config.loginFieldUser, config.loginFieldPass, config.loginUser, config.loginPass);
+
+    // Wait for navigation after form submit
+    await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 })
+      .catch(() => null);
+    await new Promise(r => setTimeout(r, 1000));
+    console.log('✔ Logged in');
+  }
+
+  // Take screenshots at each resolution
+  for (const res of config.resolutions) {
+    await page.setViewport(res);
+    await page.goto(config.url, { waitUntil: 'networkidle2' });
+
+    // Apply highlights before capturing
+    if (config.highlights && config.highlights.length > 0) {
+      await page.evaluate((selectors, bgColor, borderColor) => {
+        for (const sel of selectors) {
+          const els = document.querySelectorAll(sel);
+          for (const el of els) {
+            el.style.outline = `3px solid ${borderColor}`;
+            el.style.outlineOffset = '2px';
+            el.style.backgroundColor = bgColor;
+          }
+        }
+      }, config.highlights, config.highlightColor, config.highlightBorder);
+      // Let repaint settle
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    const filename = `${config.filenameBase}-${res.width}x${res.height}.png`;
+    const filepath = join(config.outputDir, filename);
+
+    if (config.selector) {
+      const element = await page.$(config.selector);
+      if (element) {
+        if (config.padding > 0) {
+          // Screenshot with padding: get bounding box, expand, clip
+          const box = await element.boundingBox();
+          const vp = page.viewport();
+          const clip = {
+            x: Math.max(0, box.x - config.padding),
+            y: Math.max(0, box.y - config.padding),
+            width: Math.min(box.width + config.padding * 2, vp.width - Math.max(0, box.x - config.padding)),
+            height: box.height + config.padding * 2,
+          };
+          await page.screenshot({ path: filepath, clip });
+        } else {
+          await element.screenshot({ path: filepath });
+        }
+      } else {
+        console.error(`Selector "${config.selector}" not found, falling back to full page`);
+        await page.screenshot({ path: filepath, fullPage: config.fullPage });
+      }
+    } else {
+      await page.screenshot({ path: filepath, fullPage: config.fullPage });
+    }
+
+    console.log(`✔ Captured ${res.width}x${res.height}`);
+  }
+
+  await browser.close();
+})();
+NODESCRIPT
+
+# Build highlights as JSON array
+if [[ ${#highlights[@]} -gt 0 ]]; then
+    highlights_json=$(printf '%s\n' "${highlights[@]}" | jq -R '.' | jq -s '.')
+else
+    highlights_json="[]"
+fi
+
+# Build config JSON
+config_json=$(jq -n \
+    --arg url "$url" \
+    --arg outputDir "$temp_dir" \
+    --arg filenameBase "screenshot-$timestamp" \
+    --arg loginUrl "$login_url" \
+    --arg loginFieldUser "$login_field_user" \
+    --arg loginFieldPass "$login_field_pass" \
+    --arg loginUser "$login_user" \
+    --arg loginPass "$login_pass" \
+    --arg selector "$selector" \
+    --argjson padding "$padding" \
+    --argjson highlights "$highlights_json" \
+    --arg highlightColor "$highlight_color" \
+    --arg highlightBorder "$highlight_border" \
+    --argjson fullPage "$full_page" \
+    --argjson resolutions "$resolutions_json" \
+    '{
+        url: $url,
+        outputDir: $outputDir,
+        filenameBase: $filenameBase,
+        loginUrl: (if $loginUrl == "" then null else $loginUrl end),
+        loginFieldUser: $loginFieldUser,
+        loginFieldPass: $loginFieldPass,
+        loginUser: $loginUser,
+        loginPass: $loginPass,
+        selector: (if $selector == "" then null else $selector end),
+        padding: $padding,
+        highlights: $highlights,
+        highlightColor: $highlightColor,
+        highlightBorder: $highlightBorder,
+        fullPage: $fullPage,
+        resolutions: $resolutions
+    }')
+
+# Run with puppeteer from pageres-cli's node_modules
+# Use the same Chromium that pageres is configured to use
+PUPPETEER_EXECUTABLE_PATH="${PUPPETEER_EXECUTABLE_PATH:-$(which chromium 2>/dev/null || echo "")}"
+if [[ -z "$PUPPETEER_EXECUTABLE_PATH" ]]; then
+    echo "Error: Could not find chromium. Set PUPPETEER_EXECUTABLE_PATH."
+    exit 1
+fi
+export PUPPETEER_EXECUTABLE_PATH
+NODE_PATH="$(dirname "$puppeteer_dir")" node "$node_script" "$config_json"
+
 # Find generated screenshots
+cd "$temp_dir"
 screenshots=(screenshot-$timestamp*.png)
 
 if [[ ${#screenshots[@]} -eq 0 ]] || [[ ! -f "${screenshots[0]}" ]]; then
@@ -75,6 +272,9 @@ if [[ ${#screenshots[@]} -eq 0 ]] || [[ ! -f "${screenshots[0]}" ]]; then
     rm -rf "$temp_dir"
     exit 1
 fi
+
+# Create description
+description="Screenshot of $url at ${resolutions[*]}"
 
 # Create markdown file
 md_file="$temp_dir/README.md"
@@ -85,9 +285,8 @@ md_file="$temp_dir/README.md"
     echo ""
     echo "## Screenshots"
     echo ""
-    
+
     for screenshot in "${screenshots[@]}"; do
-        # Extract resolution from filename if possible
         if [[ "$screenshot" =~ -([0-9]+x[0-9]+)\.png$ ]]; then
             resolution="${BASH_REMATCH[1]}"
             echo "### $resolution"
@@ -95,7 +294,7 @@ md_file="$temp_dir/README.md"
         echo "![$screenshot]($screenshot)"
         echo ""
     done
-    
+
     echo "## Source"
     echo "- URL: $url"
     echo "- Captured: $(date)"
@@ -146,7 +345,6 @@ echo "Gist URL: $gist_url"
 echo ""
 echo "📋 Direct image URLs:"
 for screenshot in "${screenshots[@]}"; do
-    # Get GitHub username from git config
     github_user=$(gh api user --jq .login 2>/dev/null || echo "phinze")
     echo "https://gist.githubusercontent.com/$github_user/$gist_id/raw/$screenshot"
 done
