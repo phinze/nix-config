@@ -1,7 +1,7 @@
 # Dynamic SSH git signing module
 #
 # Single source of truth for SSH signing keys. Derives:
-# - git-ssh-sign wrapper (Linux): dynamically selects key from agent
+# - git-ssh-sign wrapper: dynamically selects signing key from SSH agent
 # - programs.git.signing.key
 # - programs.git.extraConfig."gpg \"ssh\"".program
 # - ~/.ssh/allowed_signers (generated from keys × emails)
@@ -29,9 +29,16 @@ let
     ) cfg.emails
   ) + "\n";
 
+  # 1Password agent socket path on macOS (use $HOME since ~ won't expand in the script)
+  opAgentSock = "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
+
   # Build the git-ssh-sign wrapper package
   gitSshSign = pkgs.callPackage ../../../pkgs/git-ssh-sign.nix {
     signingKeys = cfg.keys;
+    sshAuthSock =
+      if pkgs.stdenv.isDarwin
+      then opAgentSock
+      else null;
   };
 in
 {
@@ -53,22 +60,15 @@ in
     # Generate ~/.ssh/allowed_signers from keys × emails
     home.file.".ssh/allowed_signers".text = allowedSignersContent;
 
-    programs.git.signing.key =
-      if pkgs.stdenv.isLinux
-      then "dynamic"  # wrapper overrides; git needs a non-empty value
-      else (builtins.head cfg.keys).publicKey;  # macOS: 1Password handles selection
+    # git-ssh-sign wrapper overrides the key; git just needs a non-empty value
+    programs.git.signing.key = "dynamic";
 
     programs.git.extraConfig = {
       gpg.format = "ssh";
-      "gpg \"ssh\"" = lib.mkMerge [
-        (lib.mkIf pkgs.stdenv.isDarwin {
-          program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
-        })
-        (lib.mkIf pkgs.stdenv.isLinux {
-          program = "${gitSshSign}/bin/git-ssh-sign";
-          allowedSignersFile = "~/.ssh/allowed_signers";
-        })
-      ];
+      "gpg \"ssh\"" = {
+        program = "${gitSshSign}/bin/git-ssh-sign";
+        allowedSignersFile = "~/.ssh/allowed_signers";
+      };
     };
   };
 }

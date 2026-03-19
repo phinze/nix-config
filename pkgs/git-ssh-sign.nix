@@ -10,6 +10,7 @@
   openssh,
   coreutils,
   signingKeys,
+  sshAuthSock ? null,
 }:
 let
   # Build the allowlist as a bash array literal
@@ -20,6 +21,10 @@ writeShellScriptBin "git-ssh-sign" ''
   set -euo pipefail
 
   export PATH="${lib.makeBinPath [ openssh coreutils ]}:$PATH"
+${lib.optionalString (sshAuthSock != null) ''
+  # Override SSH agent socket (e.g. to use 1Password agent on macOS)
+  export SSH_AUTH_SOCK="${sshAuthSock}"
+''}
 
   # Git uses gpg.ssh.program for both signing and verification.
   # Only intercept "-Y sign" calls; pass everything else to ssh-keygen as-is.
