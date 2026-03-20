@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# pbcopy - Copy stdin to system clipboard via OSC 52
+# osc-copy - Copy stdin to system clipboard via OSC 52
 # Works through SSH and tmux to reach the local terminal's clipboard
+# Installed as: pbcopy, xclip, xsel
+
+progname=$(basename "$0")
 
 # Debug mode: set PBCOPY_DEBUG=1 to see diagnostics
 debug() {
   if [[ -n "$PBCOPY_DEBUG" ]]; then
-    echo "[pbcopy] $*" >&2
+    echo "[$progname] $*" >&2
   fi
 }
 
@@ -22,8 +25,8 @@ if [[ -n "$TMUX" ]]; then
   debug "allow-passthrough: ${passthrough:-<not set>}"
 
   if [[ "$passthrough" != "on" && "$passthrough" != "all" ]]; then
-    echo "[pbcopy] WARNING: tmux allow-passthrough is '${passthrough:-off}', OSC 52 may not work" >&2
-    echo "[pbcopy] Run: tmux set -g allow-passthrough on" >&2
+    echo "[$progname] WARNING: tmux allow-passthrough is '${passthrough:-off}', OSC 52 may not work" >&2
+    echo "[$progname] Run: tmux set -g allow-passthrough on" >&2
   fi
 
   # Inside tmux: wrap in passthrough sequence and write to pane's tty

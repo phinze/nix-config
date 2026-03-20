@@ -125,7 +125,7 @@
       docker-compose
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
-      osc-copy # Provides pbcopy via OSC 52 for clipboard access through SSH/tmux
+      osc-copy # Provides pbcopy/xclip/xsel via OSC 52 for clipboard access through SSH/tmux
     ]
     # Private packages that require gh authentication
     # Note: Include by default; bootstrap users can set SKIP_PRIVATE_PACKAGES=1
