@@ -34,6 +34,8 @@
     ./modules/screenshot.nix
     # Dynamic SSH git signing key selection
     ./modules/git-signing.nix
+    # Nushell experiment (launch `nu` to try it)
+    ./modules/nushell.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
@@ -49,6 +51,9 @@
     ];
     emails = [ "phinze@phinze.com" "paul@miren.dev" ];
   };
+
+  # Nushell experiment — try `nu` alongside fish
+  phinze.nushell.enable = true;
 
   nixpkgs = {
     # You can add overlays here
