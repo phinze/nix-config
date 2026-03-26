@@ -91,6 +91,13 @@
         prefetchThreshold = 5;
       };
 
+      # Query log for the dns.inze.ph "Recent Queries" UI
+      queryLog = {
+        type = "csv";
+        target = "/var/log/blocky/queries.csv";
+        logRetentionDays = 1;
+      };
+
       prometheus = {
         enable = true;
         path = "/metrics";
@@ -104,6 +111,24 @@
     };
   };
 
-  # Open HTTP API port to tailnet (DNS 53 is already covered by trustedInterfaces)
-  networking.firewall.allowedTCPPorts = [ 4000 ];
+  # Lightweight HTTP server to expose the query log CSV to the tailnet.
+  # The blocky-allowlist webapp on miren01 fetches this to show recent queries.
+  # Blocky uses DynamicUser=true with LogsDirectory="blocky", which creates
+  # /var/log/blocky (0755) with files readable by anyone. We run the file
+  # server as nobody to keep it unprivileged.
+  systemd.services.blocky-query-log-server = {
+    description = "Serve blocky query log CSV over HTTP";
+    after = [ "network.target" "blocky.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.python3}/bin/python3 -m http.server 4001 --directory /var/log/blocky --bind 0.0.0.0";
+      User = "nobody";
+      Group = "nogroup";
+      Restart = "always";
+      RestartSec = 5;
+    };
+  };
+
+  # Open HTTP API port + query log server port to tailnet
+  networking.firewall.allowedTCPPorts = [ 4000 4001 ];
 }
