@@ -36,6 +36,8 @@
     ./modules/git-signing.nix
     # Nushell experiment (launch `nu` to try it)
     ./modules/nushell.nix
+    # Nightly cleanup of stale dev sessions and merged branches
+    ./modules/dev-cleanup.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
@@ -45,11 +47,23 @@
   # SSH signing keys — single source of truth for all nodes
   phinze.git.signing = {
     keys = [
-      { name = "delevingne"; publicKey = "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKri4aveRRo7osskk6Wg8urqRm1RuAZK0bksJvKiHcKUk55kQoES/aPIr+vC5tVETE+2AHrFmIuZfGf2PHeruwM="; }
-      { name = "foxtrotbase"; publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEu+8Why8CmSWV5FHEeIsaAgYTN156U3kpCa/QMxdnaC"; }
-      { name = "xiezhi"; publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDHP/N4P043PsjSR8rsvpBDAwOy7PEZCMVM1+gs32Nn"; }
+      {
+        name = "delevingne";
+        publicKey = "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKri4aveRRo7osskk6Wg8urqRm1RuAZK0bksJvKiHcKUk55kQoES/aPIr+vC5tVETE+2AHrFmIuZfGf2PHeruwM=";
+      }
+      {
+        name = "foxtrotbase";
+        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEu+8Why8CmSWV5FHEeIsaAgYTN156U3kpCa/QMxdnaC";
+      }
+      {
+        name = "xiezhi";
+        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDHP/N4P043PsjSR8rsvpBDAwOy7PEZCMVM1+gs32Nn";
+      }
     ];
-    emails = [ "phinze@phinze.com" "paul@miren.dev" ];
+    emails = [
+      "phinze@phinze.com"
+      "paul@miren.dev"
+    ];
   };
 
   # Nushell experiment — try `nu` alongside fish
@@ -703,7 +717,18 @@
     monitor = {
       pollInterval = "1s";
       gracePeriod = "30s";
-      ignoreProcesses = ["sshd" "systemd" "ssh-agent" "miren" "etcd" "victoria" "containerd" "postgres" "/\\.test$/" "/^chromedp-runner/"];
+      ignoreProcesses = [
+        "sshd"
+        "systemd"
+        "ssh-agent"
+        "miren"
+        "etcd"
+        "victoria"
+        "containerd"
+        "postgres"
+        "/\\.test$/"
+        "/^chromedp-runner/"
+      ];
     };
   };
 
