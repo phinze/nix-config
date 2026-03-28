@@ -8,8 +8,11 @@ let
     [
       coreutils
       findutils
+      gawk
       git
       ghq
+      gnugrep
+      gnused
       jq
       procps
       tmux
