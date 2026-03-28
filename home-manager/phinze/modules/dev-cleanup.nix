@@ -13,6 +13,9 @@ lib.mkIf pkgs.stdenv.isLinux {
     Service = {
       Type = "oneshot";
       ExecStart = "${pkgs.dev-session-cleanup}/bin/dev-session-cleanup";
+      # tmux needs TMUX_TMPDIR to find the user's server socket,
+      # otherwise window_activity checks fail and all sessions look idle
+      Environment = "TMUX_TMPDIR=%t";
     };
   };
 
