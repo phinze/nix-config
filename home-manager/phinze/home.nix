@@ -155,6 +155,7 @@
 
   programs.atuin = {
     enable = true;
+    package = pkgs.unstable.atuin;
     settings = {
       # Nix will handle updates tyvm
       update_check = false;
