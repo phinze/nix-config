@@ -51,6 +51,9 @@
     belowdeck.inputs.nixpkgs.follows = "nixpkgs-unstable";
     belowdeck.inputs.flake-utils.follows = "flake-utils";
 
+    atuin.url = "github:atuinsh/atuin";
+    atuin.inputs.nixpkgs.follows = "nixpkgs-unstable";
+
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
