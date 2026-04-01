@@ -27,7 +27,7 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
   # Defaults
   DRY_RUN=false
   PHASE=""
-  CLAUDE_MAX_AGE=86400  # 24 hours
+  MAX_IDLE=86400  # 24 hours
 
   while [[ $# -gt 0 ]]; do
     case $1 in
@@ -39,18 +39,19 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
         PHASE="$2"
         shift 2
         ;;
-      --claude-max-age)
-        CLAUDE_MAX_AGE="$2"
+      --max-idle|--claude-max-age)
+        MAX_IDLE="$2"
         shift 2
         ;;
       --help|-h)
-        echo "Usage: dev-session-cleanup [--dry-run|-n] [--phase git-trim|claude] [--claude-max-age SECONDS]"
+        echo "Usage: dev-session-cleanup [--dry-run|-n] [--phase liveness|worktrees|claude] [--max-idle SECONDS]"
         echo ""
         echo "Nightly cleanup of stale dev sessions and merged git branches."
         echo ""
         echo "  --dry-run, -n              Show what would be done without acting"
-        echo "  --phase git-trim|claude    Run only the specified phase"
-        echo "  --claude-max-age SECONDS   Max age for Claude Code processes (default: 86400 = 24h)"
+        echo "  --phase liveness|worktrees|claude"
+        echo "                             Run only the specified phase"
+        echo "  --max-idle SECONDS         Max idle time before reaping (default: 86400 = 24h)"
         exit 0
         ;;
       *)
@@ -77,10 +78,83 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
   log_ok() { echo -e "  ''${GREEN}✓''${NC} $*"; }
   log_warn() { echo -e "  ''${YELLOW}⚠''${NC} $*"; }
 
-  # ─── Phase 1: git-trim-all ────────────────────────────────────────────
+  # ─── Phase 1: Build liveness map ─────────────────────────────────────
 
-  phase_git_trim() {
-    log "Phase 1: Trimming merged branches across all repos"
+  NOW=$(date +%s)
+
+  # Map tmux session names to their most recent window_activity across all panes.
+  # window_activity tracks when the window last had *output* — not when it was
+  # viewed. This tells us whether a session has been producing output recently.
+  # (session_activity updates on view, making it useless; window_activity is output-based)
+  declare -A session_activity_map
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    session=$(echo "$line" | awk '{print $1}')
+    activity=$(echo "$line" | awk '{print $2}')
+    if [ -z "''${session_activity_map[$session]+x}" ] || [ "$activity" -gt "''${session_activity_map[$session]}" ]; then
+      session_activity_map[$session]=$activity
+    fi
+  done < <(tmux list-panes -a -F '#{session_name} #{window_activity}' 2>/dev/null)
+
+  # Map tmux pane PIDs to their window's last activity time (for Claude process reaping).
+  declare -A pane_activity_map
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    ppid=$(echo "$line" | awk '{print $1}')
+    pactivity=$(echo "$line" | awk '{print $2}')
+    pane_activity_map[$ppid]=$pactivity
+  done < <(tmux list-panes -a -F '#{pane_pid} #{window_activity}' 2>/dev/null)
+
+  # Check if a tmux session is active (has recent pane output).
+  # Returns 0 (true) if session exists and has activity within MAX_IDLE, 1 otherwise.
+  is_session_active() {
+    local session_name=$1
+    if [ -n "''${session_activity_map[$session_name]+x}" ]; then
+      local idle_seconds=$(( NOW - session_activity_map[$session_name] ))
+      if [ "$idle_seconds" -lt "$MAX_IDLE" ]; then
+        return 0
+      fi
+    fi
+    return 1
+  }
+
+  # Get idle seconds for a tmux session. Returns -1 if session not found.
+  get_session_idle() {
+    local session_name=$1
+    if [ -n "''${session_activity_map[$session_name]+x}" ]; then
+      echo $(( NOW - session_activity_map[$session_name] ))
+    else
+      echo -1
+    fi
+  }
+
+  # Walk up the process tree from a PID to find its tmux pane's last activity time.
+  # Returns seconds since last pane activity, or the process age if no pane is found.
+  get_pid_idle_seconds() {
+    local check_pid=$1
+    local fallback_etimes=$2
+    while [ "$check_pid" -gt 1 ] 2>/dev/null; do
+      if [ -n "''${pane_activity_map[$check_pid]+x}" ]; then
+        echo $(( NOW - pane_activity_map[$check_pid] ))
+        return
+      fi
+      check_pid=$(ps -o ppid= -p "$check_pid" 2>/dev/null | tr -d ' ')
+    done
+    # No tmux pane found (orphan?) — fall back to process age
+    echo "$fallback_etimes"
+  }
+
+  phase_liveness() {
+    log "Phase 1: Building liveness map"
+    log "  ''${#session_activity_map[@]} tmux sessions tracked"
+    log "  ''${#pane_activity_map[@]} tmux panes tracked"
+    log "  Idle threshold: $((MAX_IDLE / 3600))h"
+  }
+
+  # ─── Phase 2: Worktree reaping ───────────────────────────────────────
+
+  phase_worktrees() {
+    log "Phase 2: Reaping merged branches and stale worktrees"
 
     local repos_trimmed=0
     local branches_removed=0
@@ -171,7 +245,7 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
             continue
           fi
 
-          # Get worktree path and kill tmux session
+          # Get worktree path to check for active session
           local worktree_path
           worktree_path=$(cd "$repo_path" && gwq get "$branch_name" 2>/dev/null || echo "")
 
@@ -181,6 +255,16 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
             session_name=$(echo "$worktree_path" | sed "s|^$HOME|~|")
             session_name="''${session_name//./-}"
 
+            # Check if session is active before removing
+            if is_session_active "$session_name"; then
+              local idle_seconds idle_hours
+              idle_seconds=$(get_session_idle "$session_name")
+              idle_hours=$((idle_seconds / 3600))
+              log_warn "Skipping $branch_name — active session (idle ''${idle_hours}h)"
+              continue
+            fi
+
+            # Session is either absent or idle beyond threshold — tear it down
             if tmux has-session -t "$session_name" 2>/dev/null; then
               if [ "$DRY_RUN" = true ]; then
                 log_ok "Would kill tmux session: $session_name"
@@ -217,47 +301,15 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
       done <<< "$merged"
     done < <(ghq list --full-path)
 
-    log "Phase 1 complete: $branches_removed branches across $repos_trimmed repos"
+    log "Phase 2 complete: $branches_removed branches across $repos_trimmed repos"
   }
 
-  # ─── Phase 2: Stale Claude Code reaping ───────────────────────────────
+  # ─── Phase 3: Stale Claude Code reaping ───────────────────────────────
 
   phase_claude() {
-    log "Phase 2: Reaping Claude Code processes idle for more than $((CLAUDE_MAX_AGE / 3600))h"
+    log "Phase 3: Reaping Claude Code processes idle for more than $((MAX_IDLE / 3600))h"
 
     local killed=0
-    local now
-    now=$(date +%s)
-
-    # Build a map of tmux pane PIDs to their window's last activity time.
-    # window_activity tracks when the window last had *output* — not when it was
-    # viewed. This tells us whether a session has been producing output recently,
-    # even if the Claude process itself is days old.
-    # (session_activity updates on view, making it useless; window_activity is output-based)
-    declare -A pane_activity_map
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      local ppid pactivity
-      ppid=$(echo "$line" | awk '{print $1}')
-      pactivity=$(echo "$line" | awk '{print $2}')
-      pane_activity_map[$ppid]=$pactivity
-    done < <(tmux list-panes -a -F '#{pane_pid} #{window_activity}' 2>/dev/null)
-
-    # Walk up the process tree from a PID to find its tmux pane's last activity time.
-    # Returns seconds since last pane activity, or the process age if no pane is found.
-    get_idle_seconds() {
-      local check_pid=$1
-      local fallback_etimes=$2
-      while [ "$check_pid" -gt 1 ] 2>/dev/null; do
-        if [ -n "''${pane_activity_map[$check_pid]+x}" ]; then
-          echo $(( now - pane_activity_map[$check_pid] ))
-          return
-        fi
-        check_pid=$(ps -o ppid= -p "$check_pid" 2>/dev/null | tr -d ' ')
-      done
-      # No tmux pane found (orphan?) — fall back to process age
-      echo "$fallback_etimes"
-    }
 
     # Find claude-unwrapped processes with their age in seconds
     while IFS= read -r line; do
@@ -269,10 +321,10 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
 
       # Check pane activity instead of just process age
       local idle_seconds
-      idle_seconds=$(get_idle_seconds "$pid" "$etimes")
+      idle_seconds=$(get_pid_idle_seconds "$pid" "$etimes")
 
       # Skip if recently active
-      if [ "$idle_seconds" -lt "$CLAUDE_MAX_AGE" ]; then
+      if [ "$idle_seconds" -lt "$MAX_IDLE" ]; then
         continue
       fi
 
@@ -306,15 +358,15 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
         pid=$(echo "$line" | awk '{print $1}')
         etimes=$(echo "$line" | awk '{print $2}')
         local idle_seconds
-        idle_seconds=$(get_idle_seconds "$pid" "$etimes")
-        if [ "$idle_seconds" -ge "$CLAUDE_MAX_AGE" ]; then
+        idle_seconds=$(get_pid_idle_seconds "$pid" "$etimes")
+        if [ "$idle_seconds" -ge "$MAX_IDLE" ]; then
           kill -KILL "$pid" 2>/dev/null || true
           log_warn "Sent SIGKILL to PID $pid"
         fi
       done < <(ps -eo pid,etimes,args --no-headers | grep 'claude-unwrapped' | grep -v grep | awk '{print $1, $2}')
     fi
 
-    log "Phase 2 complete: $killed processes reaped"
+    log "Phase 3 complete: $killed processes reaped"
   }
 
   # ─── Main ─────────────────────────────────────────────────────────────
@@ -323,12 +375,22 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
     log "DRY RUN — no changes will be made"
   fi
 
-  if [ -z "$PHASE" ] || [ "$PHASE" = "git-trim" ]; then
-    phase_git_trim || log_warn "Phase 1 (git-trim) encountered errors"
+  # Normalize phase aliases
+  case "$PHASE" in
+    git-trim) PHASE="worktrees" ;;
+  esac
+
+  # Liveness map is always built (other phases depend on it)
+  if [ -z "$PHASE" ] || [ "$PHASE" = "liveness" ]; then
+    phase_liveness
+  fi
+
+  if [ -z "$PHASE" ] || [ "$PHASE" = "worktrees" ]; then
+    phase_worktrees || log_warn "Phase 2 (worktrees) encountered errors"
   fi
 
   if [ -z "$PHASE" ] || [ "$PHASE" = "claude" ]; then
-    phase_claude || log_warn "Phase 2 (claude) encountered errors"
+    phase_claude || log_warn "Phase 3 (claude) encountered errors"
   fi
 
   log "All done."
