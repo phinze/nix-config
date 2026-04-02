@@ -98,7 +98,7 @@
     };
   };
 
-  # Ensure the target directory exists with proper permissions
+  # Ensure the parent directory tree exists for the SSHFS mountpoint
   # Using /Users/phinze to match macOS path structure for consistency
   systemd.tmpfiles.rules = [
     "d /Users 0755 root root -"
@@ -108,6 +108,34 @@
     "d '/Users/phinze/Library/Application Support/CleanShot' 0755 phinze users -"
     "d '/Users/phinze/Library/Application Support/CleanShot/media' 0755 phinze users -"
   ];
+
+  # SSHFS mount for on-demand access to CleanShot screenshots from Mac
+  # Reads pass through immediately over Tailscale SSH — no sync delay
+  programs.fuse.userAllowOther = true;
+  systemd.user.services.cleanshot-sshfs = {
+    description = "SSHFS mount for CleanShot media from phinze-mrn-mbp";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "default.target" ];
+    serviceConfig = {
+      Type = "simple";
+      Environment = "SSH_AUTH_SOCK=%h/.ssh/agent.sock";
+      ExecStart = ''
+        ${pkgs.sshfs}/bin/sshfs \
+          phinze-mrn-mbp:"Library/Application Support/CleanShot/media" \
+          "/Users/phinze/Library/Application Support/CleanShot/media" \
+          -f \
+          -o reconnect \
+          -o ServerAliveInterval=15 \
+          -o ServerAliveCountMax=3 \
+          -o allow_other \
+          -o idmap=user
+      '';
+      ExecStop = "${pkgs.fuse}/bin/fusermount -u '/Users/phinze/Library/Application Support/CleanShot/media'";
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+  };
 
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
