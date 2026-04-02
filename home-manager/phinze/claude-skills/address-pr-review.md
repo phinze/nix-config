@@ -25,9 +25,9 @@ gh pr view $PR_NUMBER --json number,title,body,author,createdAt,updatedAt,state,
 gh pr diff $PR_NUMBER --name-only
 ```
 
-### 1b. Unresolved review threads (primary data source)
+### 1b. Unresolved review threads (inline comments)
 
-Use GraphQL to get only unresolved threads with all their comments. This is the main data source — it gives you resolution status, comment bodies, authors, file paths, and line numbers in one call.
+Use GraphQL to get only unresolved threads with all their comments. This captures inline review comments attached to specific lines of code.
 
 ```bash
 gh api graphql -f query='
@@ -55,7 +55,23 @@ gh api graphql -f query='
 
 Substitute the actual OWNER, REPO, and PR_NUMBER values. The `jq` filter discards resolved threads immediately so you only work with what matters.
 
-### 1c. Issue comments (general PR conversation, slim format)
+### 1c. Review bodies (catches feedback not attached to lines)
+
+Bot reviewers like CodeRabbit embed some feedback directly in the review body text rather than as inline comments. This includes nitpick comments (`🧹 Nitpick comments`) and outside-diff-range comments (`⚠️ Outside diff range comments`). These do NOT appear in `reviewThreads` — you must fetch review bodies separately.
+
+```bash
+gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+  | jq '[.[] | select(.body != null and .body != "") | {id, author: .user.login, state, body}]'
+```
+
+Parse the review body markdown for actionable sections. Look for headings/sections like:
+- `🧹 Nitpick comments` — lower-severity suggestions, often in collapsible `<details>` blocks
+- `⚠️ Outside diff range comments` — issues in code adjacent to but not part of the diff, often inside `> [!CAUTION]` callouts with suggested diffs
+- `🤖 Prompt for all review comments` — aggregated summary of all findings
+
+Treat nitpick and outside-diff-range items as review feedback alongside inline threads. They have file paths and line references embedded in the markdown even though they aren't attached to diff lines.
+
+### 1d. Issue comments (general PR conversation, slim format)
 
 ```bash
 gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" --paginate \
@@ -64,9 +80,11 @@ gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" --paginate \
 
 ## Phase 2: Analyze & Plan
 
-Work through the unresolved threads from the GraphQL response:
+Work through ALL review feedback — both inline threads (from 1b) and review body comments (from 1c):
 
-**Filter out already-addressed threads.** If the PR author's reply is the last comment in a thread and no reviewer responded after it, treat the thread as "likely addressed, pending resolution" — exclude it from the fix plan and note it separately.
+**Inline threads (from GraphQL):** Filter out already-addressed threads. If the PR author's reply is the last comment in a thread and no reviewer responded after it, treat the thread as "likely addressed, pending resolution" — exclude it from the fix plan and note it separately.
+
+**Review body comments (nitpicks + outside-diff-range):** Parse these from the review body markdown. Each item typically includes a file path, line reference, description, and sometimes a suggested diff. Treat them as additional review items alongside inline threads.
 
 **Distinguish human vs bot reviewers.** Automated reviewers (CodeRabbit, Copilot, github-actions, etc.) behave differently from humans:
 - **Human comments**: Always important — humans took time to write them
@@ -91,7 +109,7 @@ Present a plan with these sections:
 
 Work through the approved fixes. Read the relevant source files, make the changes, and verify they look correct.
 
-**If all items are being addressed (none skipped):** Bot threads auto-resolve when code changes are pushed. If there are no skipped items and no human threads needing replies, skip Phases 4 and 5.
+**If all items are being addressed (none skipped):** Bot inline threads auto-resolve when code changes are pushed. Review body items (nitpicks, outside-diff-range) have no thread to resolve — addressing the code is sufficient. If there are no skipped items and no human threads needing replies, skip Phases 4 and 5.
 
 ## Phase 4: Draft Responses
 
