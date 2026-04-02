@@ -35,8 +35,6 @@
   environment.systemPackages = with pkgs; [
     docker-compose
     pageres-cli
-    syncthing # CLI for debugging syncthing
-    synckick # Quick command to trigger syncthing scans
     whoson # Show process info for a port
   ];
 
@@ -64,39 +62,6 @@
 
   # Add docker group to user (baseline provides wheel group)
   users.users.phinze.extraGroups = [ "docker" ];
-
-  # Syncthing service for receiving CleanShot screenshots from Mac
-  services.syncthing = {
-    enable = true;
-    user = "phinze";
-    dataDir = "/home/phinze";
-    configDir = "/home/phinze/.config/syncthing";
-    # Don't override - let Syncthing manage devices/folders in its database
-    # This avoids the device ID chicken-and-egg problem
-    overrideDevices = false;
-    overrideFolders = false;
-
-    settings = {
-      # Allow access to web UI from Tailscale network
-      gui = {
-        address = "0.0.0.0:8384";
-      };
-
-      options = {
-        # Use local discovery - Tailscale makes all devices appear local!
-        localAnnounceEnabled = true;
-        # Disable global discovery - we don't need public discovery servers
-        # since Tailscale handles device discovery and connectivity
-        globalAnnounceEnabled = false;
-        # Disable public relays - direct Tailscale connection is faster
-        relaysEnabled = false;
-        # NAT traversal not needed with Tailscale's mesh network
-        natEnabled = false;
-        # Optionally reduce announcement interval since Tailscale is reliable
-        localAnnounceIntervalS = 21600; # 6 hours instead of default
-      };
-    };
-  };
 
   # Ensure the parent directory tree exists for the SSHFS mountpoint
   # Using /Users/phinze to match macOS path structure for consistency
@@ -136,7 +101,6 @@
       RestartSec = 5;
     };
   };
-
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.05";
