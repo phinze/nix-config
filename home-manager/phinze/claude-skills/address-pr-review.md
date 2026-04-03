@@ -36,6 +36,7 @@ gh api graphql -f query='
     pullRequest(number: PR_NUMBER) {
       reviewThreads(first: 100) {
         nodes {
+          id
           isResolved
           comments(first: 10) {
             nodes {
@@ -52,6 +53,8 @@ gh api graphql -f query='
   }
 }' | jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false)]'
 ```
+
+The `id` field on each thread node is needed later for resolving threads via the `resolveReviewThread` mutation.
 
 Substitute the actual OWNER, REPO, and PR_NUMBER values. The `jq` filter discards resolved threads immediately so you only work with what matters.
 
@@ -87,8 +90,8 @@ Work through ALL review feedback — both inline threads (from 1b) and review bo
 **Review body comments (nitpicks + outside-diff-range):** Parse these from the review body markdown. Each item typically includes a file path, line reference, description, and sometimes a suggested diff. Treat them as additional review items alongside inline threads.
 
 **Distinguish human vs bot reviewers.** Automated reviewers (CodeRabbit, Copilot, github-actions, etc.) behave differently from humans:
-- **Human comments**: Always important — humans took time to write them
-- **Bot comments**: Assess severity — real issues vs nitpicks
+- **Human comments**: Always important. Every human thread gets a reply (acknowledging the fix or explaining why we're skipping) and manual resolution. No bot is auto-resolving these.
+- **Bot comments**: Assess severity — real issues vs nitpicks. Addressed bot threads auto-resolve on push; skipped ones need a reply and manual resolution.
 
 Present a plan with these sections:
 
@@ -109,7 +112,7 @@ Present a plan with these sections:
 
 Work through the approved fixes. Read the relevant source files, make the changes, and verify they look correct.
 
-**If all items are being addressed (none skipped):** Bot inline threads auto-resolve when code changes are pushed. Review body items (nitpicks, outside-diff-range) have no thread to resolve — addressing the code is sufficient. If there are no skipped items and no human threads needing replies, skip Phases 4 and 5.
+Bot reviewers like CodeRabbit will auto-resolve their threads when they see the fix in a new push, so addressed items generally don't need manual replies or resolution. Skipped items do need replies (explaining why) and manual resolution. Continue to Phase 4 for any threads that need replies, then Phase 6 to resolve any that remain unresolved.
 
 ## Phase 4: Draft Responses
 
@@ -159,6 +162,48 @@ gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" \
 **Editing vs. appending:** `in_reply_to` always creates a new comment — it does not replace an existing one. If you need to revise a reply you already posted, use the PATCH endpoint to edit it in place. If appending a follow-up instead, word it as an update (e.g., "Update: we ended up going with X instead") so the thread reads naturally.
 
 Post one at a time, confirming as we go.
+
+## Phase 6: Resolve All Threads
+
+After responses are posted, check for any remaining unresolved threads. Bot reviewers like CodeRabbit will auto-resolve their threads when they see fixes in a new push, so addressed items usually resolve themselves. Skipped items that we replied to need manual resolution. The PR review is not considered done until zero unresolved threads remain.
+
+First, re-fetch unresolved threads to get their node IDs:
+
+```bash
+gh api graphql -f query='
+{
+  repository(owner: "OWNER", name: "REPO") {
+    pullRequest(number: PR_NUMBER) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) {
+            nodes {
+              databaseId
+            }
+          }
+        }
+      }
+    }
+  }
+}' | jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {threadId: .id, commentId: .comments.nodes[0].databaseId}]'
+```
+
+Then resolve each thread with the `resolveReviewThread` mutation:
+
+```bash
+gh api graphql -f query='
+mutation {
+  resolveReviewThread(input: {threadId: "THREAD_NODE_ID"}) {
+    thread {
+      isResolved
+    }
+  }
+}'
+```
+
+Run all resolve mutations in parallel when there are multiple threads. Confirm zero unresolved threads remain before finishing.
 
 ## Response Style
 - Concise and friendly
