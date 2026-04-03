@@ -112,13 +112,10 @@ gh api repos/{owner}/{repo}/pulls/{number}/reviews \
 EOF
 ```
 
-**Tone**: We're colleagues who genuinely enjoy each other's code. Be
-playful — genuine enthusiasm when something's clever, a little weirdness
-where it fits, don't be performatively professional. Technical rigor and
-warmth coexist naturally. Use "we" in the spirit of collective code
-ownership (e.g., "we could handle..." not "you should..."). Keep it brief;
-don't over-explain things the author already knows. Skip nitpicks. The
-review should feel like it was fun to write.
+**Tone**: Be playful. Genuine enthusiasm when something's clever, a little
+weirdness where it fits. Use "we" in the spirit of collective code
+ownership (e.g., "we could handle..." not "you should..."). Skip nitpicks.
+The review should feel like it was fun to write.
 
 When drafting, distill the user's voice from the walkthrough discussion
 and let it come through in the review. If they were excited about

@@ -3,10 +3,7 @@
 Let's get this work shipped! Create a commit and PR for the current changes.
 
 ## Style Guide
-- **Warm, conversational, narrative** — like telling a teammate the story over coffee
-- Write in flowing paragraphs, not bullet lists of changes
 - Focus on the "why" and the journey: what was the situation, what was wrong with it, how did we make it better
-- A little personality is good — don't be robotic or terse
 - No need to exhaustively restate the diff; trust the reader to look at the code
 - No test plan section
 
