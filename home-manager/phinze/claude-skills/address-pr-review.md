@@ -205,6 +205,39 @@ mutation {
 
 Run all resolve mutations in parallel when there are multiple threads. Confirm zero unresolved threads remain before finishing.
 
+## Phase 7: Babysit After Push
+
+After fixes are pushed, stick around and make sure everything actually lands clean. This phase is fully autonomous.
+
+**7a. Watch CI**
+
+Poll `gh pr checks $PR_NUMBER --watch` to wait for checks to settle. Once they resolve:
+
+- **All green**: Move on to 7b.
+- **Failure**: Read the failed check's logs (`gh run view $RUN_ID --log-failed`). Assess the failure:
+  - If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident in the fix: fix it, commit, push, and loop back to watch CI again. **You get up to two auto-fix attempts.**
+  - If the failure reveals a real issue that needs discussion, or if you've already used both auto-fix attempts: stop and report the situation.
+
+**7b. Verify CodeRabbit resolutions**
+
+After the push, CodeRabbit should auto-resolve threads for issues we fixed. Give it up to 2 minutes, then re-fetch unresolved threads to confirm they cleared. If any addressed threads are still unresolved, resolve them manually with the `resolveReviewThread` mutation from Phase 6.
+
+**7c. Check for new CodeRabbit comments**
+
+The new push may trigger a fresh CodeRabbit review with new findings. Poll for it (up to 5 minutes, every 15 seconds):
+
+```bash
+gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+  | jq '[.[] | select(.user.login == "coderabbitai")]'
+```
+
+Compare the review list against what was there before our push. If a new review appeared:
+
+- **Clean**: Just a summary walkthrough, no actionable sections or new inline threads. Report that everything is green and clean.
+- **Has new comments**: New actionable sections (`🧹 Nitpick comments`, `⚠️ Outside diff range comments`) or new inline threads from CodeRabbit. Loop back to Phase 1 and work through the new feedback.
+
+**Polling mechanics**: Check every 15 seconds. Use `sleep 15` between checks. Keep it simple.
+
 ## Response Style
 - Concise and friendly
 - Acknowledge the reviewer's point even when disagreeing
