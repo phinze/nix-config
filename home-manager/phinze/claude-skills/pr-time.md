@@ -27,6 +27,33 @@ Let's get this work shipped! Create a commit and PR for the current changes.
 
 6. **After approval**: Stage and commit (using `git add -p` or specific files to separate commits if needed), push, and create the PR with `gh pr create`
 
+7. **Babysit the PR**: After the PR is created, stick around and shepherd it through CI and automated review. This phase is fully autonomous — no need to check in unless something needs human judgment.
+
+   **7a. Watch CI**
+
+   Poll `gh pr checks $PR_NUMBER --watch` to wait for checks to settle. Once they resolve:
+
+   - **All green**: Move on to 7b.
+   - **Failure**: Read the failed check's logs (`gh run view $RUN_ID --log-failed`). Assess the failure:
+     - If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident in the fix: fix it, commit, push, and loop back to watch CI again. **You get up to two auto-fix attempts.**
+     - If the failure reveals a real issue that needs discussion, or if you've already used both auto-fix attempts: stop and report the situation. Show what failed, what you tried (if anything), and what you think the options are.
+
+   **7b. Wait for CodeRabbit review**
+
+   Poll for CodeRabbit's review to arrive. CodeRabbit is usually fast (under a minute), but give it up to 5 minutes before giving up on it.
+
+   ```bash
+   gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+     | jq '[.[] | select(.user.login == "coderabbitai")]'
+   ```
+
+   Once the review lands, determine if it has actionable findings:
+
+   - **Clean review**: The review body is just a summary walkthrough with no actionable sections. No nitpick comments, no outside-diff-range warnings, no inline review threads from CodeRabbit. Report that CI is green and CodeRabbit is clean — we're done.
+   - **Has real comments**: The review body contains actionable sections (`🧹 Nitpick comments`, `⚠️ Outside diff range comments`) or CodeRabbit left inline review threads. Report what was found and kick off `/address-pr-review` to work through the feedback.
+
+   **Polling mechanics**: Check every 15 seconds. Use `sleep 15` between checks. Keep it simple.
+
 ## Examples
 
 ### Single commit (when changes are cohesive)
