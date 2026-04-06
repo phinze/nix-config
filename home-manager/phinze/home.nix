@@ -584,6 +584,7 @@
       safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
       push.autoSetupRemote = true;
       ghq.root = "~/src";
+      fetch.prune = true;
     }
     // ((nodeConfig.git or { }).extraConfig or { });
   };
