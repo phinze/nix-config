@@ -44,7 +44,7 @@ Let's get this work shipped! Create a commit and PR for the current changes.
 
    ```bash
    gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
-     | jq '[.[] | select(.user.login == "coderabbitai")]'
+     | jq '[.[] | select(.user.login == "coderabbitai[bot]")]'
    ```
 
    Once the review lands, determine if it has actionable findings:
