@@ -275,4 +275,5 @@ in
   home.file.".claude/commands/pr-time.md".source = ./claude-skills/pr-time.md;
   home.file.".claude/commands/address-pr-review.md".source = ./claude-skills/address-pr-review.md;
   home.file.".claude/commands/review-pr.md".source = ./claude-skills/review-pr.md;
+  home.file.".claude/commands/eod.md".source = ./claude-skills/eod.md;
 }
