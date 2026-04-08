@@ -211,7 +211,19 @@ After fixes are pushed, stick around and make sure everything actually lands cle
 
 **7a. Watch CI**
 
-Poll `gh pr checks $PR_NUMBER --watch` to wait for checks to settle. Once they resolve:
+Wait for checks to register and complete. **CI always runs** — if you see zero checks, it means they haven't registered yet, not that the repo has no CI.
+
+Wait 15 seconds after the push before the first poll to give GitHub time to register checks. Then poll with:
+
+```bash
+gh pr checks $PR_NUMBER
+```
+
+Parse the output to determine status. Keep polling every 30 seconds until all checks have a final status (pass/fail, not pending). **Do not use `--watch`** — it streams continuous output that bloats context. A simple poll loop is better.
+
+If after 2 minutes you still see zero checks, that's unexpected — mention it but keep waiting (up to 5 minutes total before flagging it as a real problem).
+
+Once checks resolve:
 
 - **All green**: Move on to 7b.
 - **Failure**: Read the failed check's logs (`gh run view $RUN_ID --log-failed`). Assess the failure:
@@ -224,7 +236,7 @@ After the push, CodeRabbit should auto-resolve threads for issues we fixed. Give
 
 **7c. Check for new CodeRabbit comments**
 
-The new push may trigger a fresh CodeRabbit review with new findings. Poll for it (up to 5 minutes, every 15 seconds):
+The new push may trigger a fresh CodeRabbit review with new findings. **CodeRabbit is always expected on `mirendev/` repos** — do not bail early assuming it's not set up. Poll for it (up to 5 minutes, every 30 seconds):
 
 ```bash
 gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
@@ -236,7 +248,7 @@ Compare the review list against what was there before our push. If a new review 
 - **Clean**: Just a summary walkthrough, no actionable sections or new inline threads. Report that everything is green and clean.
 - **Has new comments**: New actionable sections (`🧹 Nitpick comments`, `⚠️ Outside diff range comments`) or new inline threads from CodeRabbit. Loop back to Phase 1 and work through the new feedback.
 
-**Polling mechanics**: Check every 15 seconds. Use `sleep 15` between checks. Keep it simple.
+**Polling mechanics**: Check every 30 seconds. Use `sleep 30` between checks. Keep it simple.
 
 ## Response Style
 - Concise and friendly

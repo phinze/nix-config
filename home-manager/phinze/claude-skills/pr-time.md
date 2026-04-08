@@ -31,7 +31,24 @@ Let's get this work shipped! Create a commit and PR for the current changes.
 
    **7a. Watch CI**
 
-   Poll `gh pr checks $PR_NUMBER --watch` to wait for checks to settle. Once they resolve:
+   Wait for checks to register and complete. **CI always runs** — if you see zero checks, it means they haven't registered yet, not that the repo has no CI.
+
+   Wait 15 seconds after the push before the first poll to give GitHub time to register checks. Then poll with:
+
+   ```bash
+   gh pr checks $PR_NUMBER
+   ```
+
+   Parse the output to determine status. Keep polling every 30 seconds until all checks have a final status (pass/fail, not pending). **Do not use `--watch`** — it streams continuous output that bloats context. A simple poll loop is better:
+
+   ```
+   sleep 15  # initial grace period for checks to register
+   # then loop: gh pr checks, parse, sleep 30, repeat
+   ```
+
+   If after 2 minutes you still see zero checks, that's unexpected — mention it but keep waiting (up to 5 minutes total before flagging it as a real problem).
+
+   Once checks resolve:
 
    - **All green**: Move on to 7b.
    - **Failure**: Read the failed check's logs (`gh run view $RUN_ID --log-failed`). Assess the failure:
@@ -40,19 +57,17 @@ Let's get this work shipped! Create a commit and PR for the current changes.
 
    **7b. Wait for CodeRabbit review**
 
-   Poll for CodeRabbit's review to arrive. CodeRabbit is usually fast (under a minute), but give it up to 5 minutes before giving up on it.
+   Poll for CodeRabbit's review to arrive. CodeRabbit is usually fast (under a minute), but give it up to 5 minutes. **CodeRabbit is always expected on `mirendev/` repos** — do not bail early assuming it's not set up.
 
    ```bash
    gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
      | jq '[.[] | select(.user.login == "coderabbitai[bot]")]'
    ```
 
-   Once the review lands, determine if it has actionable findings:
+   Poll every 30 seconds. Once the review lands, determine if it has actionable findings:
 
    - **Clean review**: The review body is just a summary walkthrough with no actionable sections. No nitpick comments, no outside-diff-range warnings, no inline review threads from CodeRabbit. Report that CI is green and CodeRabbit is clean — we're done.
    - **Has real comments**: The review body contains actionable sections (`🧹 Nitpick comments`, `⚠️ Outside diff range comments`) or CodeRabbit left inline review threads. Report what was found and kick off `/address-pr-review` to work through the feedback.
-
-   **Polling mechanics**: Check every 15 seconds. Use `sleep 15` between checks. Keep it simple.
 
 ## Examples
 
