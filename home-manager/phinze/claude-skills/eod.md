@@ -1,6 +1,15 @@
 # End of Day Summary
 
-You are writing an end-of-day summary for the memex (personal knowledge vault). The goal is to produce a concise, useful record of what happened today — the kind of note that's valuable to read a week or a month from now.
+You are writing an end-of-day summary for the memex (personal knowledge vault). The goal is to produce a concise, useful record of what happened on a given day, the kind of note that's valuable to read a week or a month from now.
+
+## Date
+
+If an argument is provided (e.g. `/eod 2026-04-06`), use that as the target date. Otherwise default to today's date.
+
+Set these variables for use throughout the steps below:
+
+- **TARGET_DATE**: the date to summarize, in `YYYY-MM-DD` format
+- **NEXT_DATE**: the day after TARGET_DATE, for range queries
 
 ## Environment Context
 - Memex repo: ~/src/github.com/phinze/memex
@@ -18,21 +27,21 @@ You are writing an end-of-day summary for the memex (personal knowledge vault). 
 
 ## Your Task
 
-Gather today's activity, synthesize it, write a daily note, commit and push.
+Gather the target day's activity, synthesize it, write a daily note, commit and push.
 
 ### Step 1: Gather Signals
 
-Run these commands to understand what happened today:
+Run these commands to understand what happened on TARGET_DATE:
 
 1. **Tmux sessions**: `tmux list-sessions -F '#{session_name} (#{session_windows} windows, #{?session_attached,attached,detached}) - last activity: #{t:session_activity}'`
-2. **Shell history (today)**: `atuin history list --after "$(gdate -d 'today 00:00' '+%Y-%m-%d %H:%M:%S' 2>/dev/null || date -d 'today 00:00' '+%Y-%m-%d %H:%M:%S')" --format '{time} | {command}'`
-3. **Claude sessions (today)**: `find ~/.claude/projects -name 'sessions-index.json' -exec cat {} \; 2>/dev/null | jq -s --arg cutoff "$(gdate -d 'today 00:00' -Iseconds 2>/dev/null || date -d 'today 00:00' -Iseconds)" '[.[].entries[]] | map(select(.modified > $cutoff)) | sort_by(.modified) | .[] | "\(.modified) | \(.projectPath | split("/")[-1]) | \(.firstPrompt | .[0:120])..."' -r`
-4. **Git activity across repos**: For each active tmux session, check `git log --oneline --since="today" --author="phinze"` (remember: "github-com" in session name = "github.com" on disk)
-5. **Read today's Claude session transcripts** for the most active sessions — skim for key decisions, outcomes, and open threads. Transcripts are at `~/.claude/projects/{cwd-slug}/{session-id}.jsonl`. Focus on user messages and assistant text blocks, skip tool calls.
+2. **Shell history**: `atuin search --after TARGET_DATE --before NEXT_DATE --format '{time} | {command}'`
+3. **Claude sessions**: `find ~/.claude/projects -name 'sessions-index.json' -exec cat {} \; 2>/dev/null | jq -s --arg start "TARGET_DATE" --arg end "NEXT_DATE" '[.[].entries[]] | map(select(.modified > $start and .modified < $end)) | sort_by(.modified) | .[] | "\(.modified) | \(.projectPath | split("/")[-1]) | \(.firstPrompt | .[0:120])..."' -r`
+4. **Git activity across repos**: For each active tmux session, check `git log --oneline --since="TARGET_DATE" --until="NEXT_DATE" --author="Paul Hinze"` (remember: "github-com" in session name = "github.com" on disk)
+5. **Read Claude session transcripts** for the most active sessions from that day. Transcripts are at `~/.claude/projects/{cwd-slug}/{session-id}.jsonl`. Focus on user messages and assistant text blocks, skip tool calls.
 
 ### Step 2: Write the Daily Note
 
-Write a markdown file to `~/src/github.com/phinze/memex/Daily/YYYY-MM-DD.md` (using today's date).
+Write a markdown file to `~/src/github.com/phinze/memex/Daily/TARGET_DATE.md`.
 
 Format:
 
@@ -71,8 +80,8 @@ Guidelines:
 
 ```bash
 cd ~/src/github.com/phinze/memex
-git add "Daily/YYYY-MM-DD.md"
-git commit -m "Daily: YYYY-MM-DD"
+git add "Daily/TARGET_DATE.md"
+git commit --no-gpg-sign -m "Daily: TARGET_DATE"
 git push
 ```
 

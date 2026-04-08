@@ -38,6 +38,7 @@
     ./modules/nushell.nix
     # Nightly cleanup of stale dev sessions and merged branches
     ./modules/dev-cleanup.nix
+    ./modules/eod-timer.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
