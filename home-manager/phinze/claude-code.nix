@@ -318,23 +318,31 @@ in
     '';
   };
 
-  # Neovim commands for Claude Code diffview integration
+  # Neovim commands for reviewing Claude Code changes
   # Placed in site/plugin/ so neovim loads it automatically
-  home.file.".local/share/nvim/site/plugin/claude-diffview.lua".text = ''
-    -- ClaudeDiffviewWatch: open diffview to show unstaged changes (accumulation mode)
-    vim.api.nvim_create_user_command('ClaudeDiffviewWatch', function()
-      local ok, _ = pcall(require, 'diffview')
-      if not ok then
-        vim.notify('diffview.nvim not installed', vim.log.levels.ERROR)
+  home.file.".local/share/nvim/site/plugin/claude-review.lua".text = ''
+    -- ClaudeChanges: populate quickfix with changed files, then navigate with
+    -- ]q/[q between files and ]c/[c between hunks (gitsigns), <leader>hp to preview
+    vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
+      local base = opts.args ~= "" and opts.args or nil
+      local cmd = base
+        and string.format("git diff --name-only %s...HEAD", base)
+        or "git diff --name-only HEAD"
+      local output = vim.fn.systemlist(cmd)
+      if vim.v.shell_error ~= 0 or #output == 0 then
+        vim.notify("No changes found", vim.log.levels.INFO)
         return
       end
-      vim.cmd('DiffviewOpen')
-    end, {})
-
-    -- ClaudeDiffviewRefresh: re-check files changed on disk (called by hook via RPC)
-    vim.api.nvim_create_user_command('ClaudeDiffviewRefresh', function()
-      vim.cmd('checktime')
-    end, {})
+      local items = {}
+      for _, file in ipairs(output) do
+        if file ~= "" then
+          table.insert(items, { filename = file, lnum = 1 })
+        end
+      end
+      vim.fn.setqflist(items, "r")
+      vim.cmd("copen")
+      vim.cmd("cfirst")
+    end, { nargs = "?", desc = "Populate quickfix with changed files (optional: base ref)" })
   '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
