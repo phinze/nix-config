@@ -91,7 +91,22 @@ end
 
 # Step 7: Launch Claude for new sessions; for existing ones, notify and switch
 if test $is_new_session -eq 1
-    tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated worktree; skip branch verification'" Enter
+    # Get base branch for PR diff
+    set -l base_branch (gh pr view $pr_number -R "$owner/$repo" --json baseRefName --jq '.baseRefName')
+    test -z "$base_branch"; and set base_branch main
+
+    # Compute neovim socket path (matches hook script derivation)
+    set -l nvim_sock "/tmp/nvc-$session_name.sock"
+    if test (string length "$nvim_sock") -gt 100
+        set nvim_sock "/tmp/nvc-"(echo "$session_name" | md5sum | cut -c1-12)".sock"
+    end
+
+    # Split: neovim+diffview on the right (PR diff), Claude on the left
+    tmux split-window -h -t "$session_name" -c "$worktree_path" \
+        "nvim --listen '$nvim_sock' -c 'DiffviewOpen origin/$base_branch...HEAD'"
+    tmux select-pane -t "$session_name:0.0"
+
+    tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated worktree; skip branch verification'" Enter
 else
     echo "Session already exists for $owner/$repo#$pr_number — switching to it"
 end

@@ -448,9 +448,20 @@
               set is_new_session 1
           end
 
-          # Step 6: Launch Claude only for new sessions
+          # Step 6: For new sessions, create split layout and launch Claude
           if test $is_new_session -eq 1
-              tmux send-keys -t "$session_name" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP (it may take a few seconds to connect) to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter
+              # Compute neovim socket path (matches hook script derivation)
+              set -l nvim_sock "/tmp/nvc-$session_name.sock"
+              if test (string length "$nvim_sock") -gt 100
+                  set nvim_sock "/tmp/nvc-"(echo "$session_name" | md5sum | cut -c1-12)".sock"
+              end
+
+              # Split: neovim+diffview on the right, Claude on the left
+              tmux split-window -h -t "$session_name" -c "$worktree_path" \
+                  "nvim --listen '$nvim_sock' -c ClaudeDiffviewWatch"
+              tmux select-pane -t "$session_name:0.0"
+
+              tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP (it may take a few seconds to connect) to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter
           end
 
           # Step 7: Switch to session

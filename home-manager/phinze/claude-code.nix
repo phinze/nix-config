@@ -26,6 +26,48 @@ let
     '';
   };
 
+  # PostToolUse hook: poke neovim's diffview when Claude modifies files
+  claude-diffview-hook = pkgs.writeShellScript "claude-diffview-hook" ''
+    input=$(cat)
+    tool=$(echo "$input" | ${pkgs.jq}/bin/jq -r '.tool_name // ""')
+
+    # Only care about file-modifying tools
+    case "$tool" in
+      Write|Edit|MultiEdit) ;;
+      *) exit 0 ;;
+    esac
+
+    # Derive tmux session name from cwd (same formula as pickup/review fish functions)
+    cwd=$(echo "$input" | ${pkgs.jq}/bin/jq -r '.cwd // ""')
+    [ -z "$cwd" ] && exit 0
+
+    session_name=$(echo "$cwd" | sed "s|$HOME|~|" | tr ' .:' '---' | tr '[:upper:]' '[:lower:]')
+
+    # Socket path: env override or derived from session name
+    sock="''${CLAUDE_NVIM_SOCK:-/tmp/nvc-''${session_name}.sock}"
+
+    # Truncate socket path if too long for unix domain socket (108 char limit)
+    if [ ''${#sock} -gt 100 ]; then
+      hash=$(echo "$session_name" | ${pkgs.coreutils}/bin/md5sum | cut -c1-12)
+      sock="/tmp/nvc-''${hash}.sock"
+    fi
+
+    # Skip if neovim isn't listening
+    [ -S "$sock" ] || exit 0
+
+    # Simple debounce: skip if last poke was <2 seconds ago
+    debounce_file="/tmp/claude-diffview-debounce-$$PPID"
+    now=$(date +%s)
+    last=$(cat "$debounce_file" 2>/dev/null || echo 0)
+    if [ $((now - last)) -lt 2 ]; then
+      exit 0
+    fi
+    echo "$now" > "$debounce_file"
+
+    # Tell neovim to re-check files on disk
+    ${pkgs.neovim}/bin/nvim --server "$sock" --remote-send '<cmd>checktime<CR>' 2>/dev/null || true
+  '';
+
   # Status line script with colors
   claude-statusline = pkgs.writeShellScript "claude-statusline" ''
     read -r input
@@ -127,6 +169,10 @@ in
             type = "command";
             command = config.services.sophon.hookCommand;
           };
+          diffviewHook = {
+            type = "command";
+            command = "${claude-diffview-hook}";
+          };
           sophonOnly = [ { hooks = [ sophonHook ]; } ];
         in
         builtins.listToAttrs (
@@ -141,7 +187,6 @@ in
               "SessionEnd"
               "UserPromptSubmit"
               "PreToolUse"
-              "PostToolUse"
               "PostToolUseFailure"
               "PermissionRequest"
               "SubagentStart"
@@ -158,6 +203,15 @@ in
                   type = "command";
                   command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true'';
                 }
+                sophonHook
+              ];
+            }
+          ];
+          # PostToolUse: sophon + poke neovim diffview on file changes
+          PostToolUse = [
+            {
+              hooks = [
+                diffviewHook
                 sophonHook
               ];
             }
@@ -260,6 +314,25 @@ in
       - [nixd GitHub](https://github.com/nix-community/nixd)
     '';
   };
+
+  # Neovim commands for Claude Code diffview integration
+  # Placed in site/plugin/ so neovim loads it automatically
+  home.file.".local/share/nvim/site/plugin/claude-diffview.lua".text = ''
+    -- ClaudeDiffviewWatch: open diffview to show unstaged changes (accumulation mode)
+    vim.api.nvim_create_user_command('ClaudeDiffviewWatch', function()
+      local ok, _ = pcall(require, 'diffview')
+      if not ok then
+        vim.notify('diffview.nvim not installed', vim.log.levels.ERROR)
+        return
+      end
+      vim.cmd('DiffviewOpen')
+    end, {})
+
+    -- ClaudeDiffviewRefresh: re-check files changed on disk (called by hook via RPC)
+    vim.api.nvim_create_user_command('ClaudeDiffviewRefresh', function()
+      vim.cmd('checktime')
+    end, {})
+  '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
   home.file.".claude/CLAUDE.md" = {
