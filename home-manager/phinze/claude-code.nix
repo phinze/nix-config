@@ -324,20 +324,26 @@ in
     -- ClaudeChanges: load changed files, set gitsigns base if needed, then
     -- populate quickfix with hunks. Navigate with ]q/[q between hunks,
     -- ]c/[c within a file, <leader>hp to preview inline.
+    --
+    -- No args:           unstaged working tree changes (pickup workflow)
+    -- With base ref:     committed changes vs base branch (review workflow)
+    --                    also sets gitsigns.change_base so gutter marks show
     vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
       local base = opts.args ~= "" and opts.args or nil
-      local cmd = base
-        and string.format("git diff --name-only %s...HEAD", base)
-        or "git diff --name-only HEAD"
+      local cmd
+      if base then
+        -- Review: committed changes between base and HEAD
+        cmd = string.format("git diff --name-only %s...HEAD", base)
+        -- Tell gitsigns to diff against the PR base, not the index
+        require('gitsigns').change_base(base, true)
+      else
+        -- Pickup: unstaged working tree changes
+        cmd = "git diff --name-only"
+      end
       local files = vim.fn.systemlist(cmd)
       if vim.v.shell_error ~= 0 or #files == 0 then
         vim.notify("No changes found", vim.log.levels.INFO)
         return
-      end
-
-      -- If reviewing against a non-default base, tell gitsigns
-      if base then
-        require('gitsigns').change_base(base, true)
       end
 
       -- Load all changed files into buffers so gitsigns can attach
