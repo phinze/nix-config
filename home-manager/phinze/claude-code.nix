@@ -321,9 +321,9 @@ in
   # Neovim commands for reviewing Claude Code changes
   # Placed in site/plugin/ so neovim loads it automatically
   home.file.".local/share/nvim/site/plugin/claude-review.lua".text = ''
-    -- ClaudeChanges: populate quickfix with changed files and set gitsigns base.
-    -- Two-level navigation: ]q/[q between files, ]c/[c between hunks within a file.
-    -- <leader>q to fuzzy-pick from the quickfix list.
+    -- ClaudeChanges: load changed files, set gitsigns base, populate quickfix
+    -- with hunks. <leader>q to fuzzy-pick, ]q/[q to walk linearly,
+    -- ]c/[c for hunks within a file, <leader>hp for inline preview.
     --
     -- No args:           unstaged working tree changes (pickup workflow)
     -- With base ref:     committed changes vs base branch (review workflow)
@@ -341,16 +341,20 @@ in
         vim.notify("No changes found", vim.log.levels.INFO)
         return
       end
-      local items = {}
+
+      -- Load all changed files so gitsigns can attach and compute hunks
       for _, file in ipairs(files) do
         if file ~= "" then
-          table.insert(items, { filename = file, lnum = 1 })
+          vim.fn.bufadd(file)
+          vim.fn.bufload(file)
         end
       end
-      vim.fn.setqflist(items, "r")
-      vim.cmd("copen")
-      vim.cmd("cfirst")
-    end, { nargs = "?", desc = "Populate quickfix with changed files (optional: base ref)" })
+
+      -- Let gitsigns attach, then populate quickfix with hunks
+      vim.defer_fn(function()
+        require('gitsigns').setqflist("all", { open = true })
+      end, 500)
+    end, { nargs = "?", desc = "Populate quickfix with changed hunks (optional: base ref)" })
   '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
