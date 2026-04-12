@@ -321,28 +321,38 @@ in
   # Neovim commands for reviewing Claude Code changes
   # Placed in site/plugin/ so neovim loads it automatically
   home.file.".local/share/nvim/site/plugin/claude-review.lua".text = ''
-    -- ClaudeChanges: populate quickfix with changed files, then navigate with
-    -- ]q/[q between files and ]c/[c between hunks (gitsigns), <leader>hp to preview
+    -- ClaudeChanges: load changed files, set gitsigns base if needed, then
+    -- populate quickfix with hunks. Navigate with ]q/[q between hunks,
+    -- ]c/[c within a file, <leader>hp to preview inline.
     vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
       local base = opts.args ~= "" and opts.args or nil
       local cmd = base
         and string.format("git diff --name-only %s...HEAD", base)
         or "git diff --name-only HEAD"
-      local output = vim.fn.systemlist(cmd)
-      if vim.v.shell_error ~= 0 or #output == 0 then
+      local files = vim.fn.systemlist(cmd)
+      if vim.v.shell_error ~= 0 or #files == 0 then
         vim.notify("No changes found", vim.log.levels.INFO)
         return
       end
-      local items = {}
-      for _, file in ipairs(output) do
+
+      -- If reviewing against a non-default base, tell gitsigns
+      if base then
+        require('gitsigns').change_base(base, true)
+      end
+
+      -- Load all changed files into buffers so gitsigns can attach
+      for _, file in ipairs(files) do
         if file ~= "" then
-          table.insert(items, { filename = file, lnum = 1 })
+          vim.fn.bufadd(file)
+          vim.fn.bufload(file)
         end
       end
-      vim.fn.setqflist(items, "r")
-      vim.cmd("copen")
-      vim.cmd("cfirst")
-    end, { nargs = "?", desc = "Populate quickfix with changed files (optional: base ref)" })
+
+      -- Give gitsigns a moment to attach and compute hunks, then populate qf
+      vim.defer_fn(function()
+        require('gitsigns').setqflist("all", { open = true })
+      end, 500)
+    end, { nargs = "?", desc = "Populate quickfix with changed hunks (optional: base ref)" })
   '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
