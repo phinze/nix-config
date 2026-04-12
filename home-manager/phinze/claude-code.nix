@@ -43,12 +43,15 @@ let
 
     session_name=$(echo "$cwd" | sed "s|$HOME|~|" | tr ' .:' '---' | tr '[:upper:]' '[:lower:]')
 
+    # Flatten slashes to hyphens so the socket path doesn't imply subdirectories
+    sock_name=$(echo "$session_name" | tr '/' '-')
+
     # Socket path: env override or derived from session name
-    sock="''${CLAUDE_NVIM_SOCK:-/tmp/nvc-''${session_name}.sock}"
+    sock="''${CLAUDE_NVIM_SOCK:-/tmp/nvc-''${sock_name}.sock}"
 
     # Truncate socket path if too long for unix domain socket (108 char limit)
     if [ ''${#sock} -gt 100 ]; then
-      hash=$(echo "$session_name" | ${pkgs.coreutils}/bin/md5sum | cut -c1-12)
+      hash=$(echo "$sock_name" | ${pkgs.coreutils}/bin/md5sum | cut -c1-12)
       sock="/tmp/nvc-''${hash}.sock"
     fi
 

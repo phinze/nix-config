@@ -451,9 +451,11 @@
           # Step 6: For new sessions, create split layout and launch Claude
           if test $is_new_session -eq 1
               # Compute neovim socket path (matches hook script derivation)
-              set -l nvim_sock "/tmp/nvc-$session_name.sock"
+              # Flatten slashes to hyphens so the path doesn't imply subdirectories
+              set -l sock_name (string replace -a "/" "-" "$session_name")
+              set -l nvim_sock "/tmp/nvc-$sock_name.sock"
               if test (string length "$nvim_sock") -gt 100
-                  set nvim_sock "/tmp/nvc-"(echo "$session_name" | md5sum | cut -c1-12)".sock"
+                  set nvim_sock "/tmp/nvc-"(echo "$sock_name" | md5sum | cut -c1-12)".sock"
               end
 
               # Split: neovim+diffview on the right, Claude on the left
