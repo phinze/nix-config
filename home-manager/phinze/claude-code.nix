@@ -321,23 +321,19 @@ in
   # Neovim commands for reviewing Claude Code changes
   # Placed in site/plugin/ so neovim loads it automatically
   home.file.".local/share/nvim/site/plugin/claude-review.lua".text = ''
-    -- ClaudeChanges: load changed files, set gitsigns base if needed, then
-    -- populate quickfix with hunks. Navigate with ]q/[q between hunks,
-    -- ]c/[c within a file, <leader>hp to preview inline.
+    -- ClaudeChanges: populate quickfix with changed files and set gitsigns base.
+    -- Two-level navigation: ]q/[q between files, ]c/[c between hunks within a file.
+    -- <leader>q to fuzzy-pick from the quickfix list.
     --
     -- No args:           unstaged working tree changes (pickup workflow)
     -- With base ref:     committed changes vs base branch (review workflow)
-    --                    also sets gitsigns.change_base so gutter marks show
     vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
       local base = opts.args ~= "" and opts.args or nil
       local cmd
       if base then
-        -- Review: committed changes between base and HEAD
         cmd = string.format("git diff --name-only %s...HEAD", base)
-        -- Tell gitsigns to diff against the PR base, not the index
         require('gitsigns').change_base(base, true)
       else
-        -- Pickup: unstaged working tree changes
         cmd = "git diff --name-only"
       end
       local files = vim.fn.systemlist(cmd)
@@ -345,20 +341,16 @@ in
         vim.notify("No changes found", vim.log.levels.INFO)
         return
       end
-
-      -- Load all changed files into buffers so gitsigns can attach
+      local items = {}
       for _, file in ipairs(files) do
         if file ~= "" then
-          vim.fn.bufadd(file)
-          vim.fn.bufload(file)
+          table.insert(items, { filename = file, lnum = 1 })
         end
       end
-
-      -- Give gitsigns a moment to attach and compute hunks, then populate qf
-      vim.defer_fn(function()
-        require('gitsigns').setqflist("all", { open = true })
-      end, 500)
-    end, { nargs = "?", desc = "Populate quickfix with changed hunks (optional: base ref)" })
+      vim.fn.setqflist(items, "r")
+      vim.cmd("copen")
+      vim.cmd("cfirst")
+    end, { nargs = "?", desc = "Populate quickfix with changed files (optional: base ref)" })
   '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
