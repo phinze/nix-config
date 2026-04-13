@@ -12,7 +12,10 @@ lib.mkIf pkgs.stdenv.isLinux {
       Type = "oneshot";
       WorkingDirectory = "%h/src/github.com/phinze/memex";
       ExecStart = "${pkgs.claude-code}/bin/claude -p /eod --allowedTools '*' --dangerously-skip-permissions";
-      Environment = "TMUX_TMPDIR=%t";
+      Environment = [
+        "TMUX_TMPDIR=%t"
+        "SHELL=${pkgs.bash}/bin/bash"
+      ];
       TimeoutStartSec = "5min";
     };
   };
