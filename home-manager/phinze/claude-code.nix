@@ -321,28 +321,19 @@ in
   # Neovim commands for reviewing Claude Code changes
   # Placed in site/plugin/ so neovim loads it automatically
   home.file.".local/share/nvim/site/plugin/claude-review.lua".text = ''
-    -- ClaudeChanges: load changed files, set gitsigns base, populate quickfix
-    -- with hunks. <leader>q to fuzzy-pick, ]q/[q to walk linearly,
-    -- ]c/[c for hunks within a file, <leader>hp for inline preview.
-    --
-    -- No args:           unstaged working tree changes (pickup workflow)
-    -- With base ref:     committed changes vs base branch (review workflow)
-    vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
-      local base = opts.args ~= "" and opts.args or nil
+    -- Refresh quickfix with changed hunks (shared by ClaudeChanges and ClaudeWatch)
+    local function refresh_changes(base)
       local cmd
       if base then
         cmd = string.format("git diff --name-only %s...HEAD", base)
-        require('gitsigns').change_base(base, true)
       else
         cmd = "git diff --name-only"
       end
       local files = vim.fn.systemlist(cmd)
       if vim.v.shell_error ~= 0 or #files == 0 then
-        vim.notify("No changes found", vim.log.levels.INFO)
         return
       end
 
-      -- Load all changed files so gitsigns can attach and compute hunks
       for _, file in ipairs(files) do
         if file ~= "" then
           vim.fn.bufadd(file)
@@ -350,11 +341,61 @@ in
         end
       end
 
-      -- Let gitsigns attach, then populate quickfix with hunks
       vim.defer_fn(function()
-        require('gitsigns').setqflist("all", { open = true })
+        require('gitsigns').setqflist("all", { open = false })
       end, 500)
+    end
+
+    -- ClaudeChanges: one-shot populate quickfix with changed hunks
+    vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
+      local base = opts.args ~= "" and opts.args or nil
+      if base then
+        require('gitsigns').change_base(base, true)
+      end
+      refresh_changes(base)
+      -- Open quickfix on first run
+      vim.defer_fn(function() vim.cmd("copen") end, 600)
     end, { nargs = "?", desc = "Populate quickfix with changed hunks (optional: base ref)" })
+
+    -- ClaudeWatch: open neo-tree git_status + auto-refresh quickfix on a timer
+    local watch_timer = nil
+    vim.api.nvim_create_user_command('ClaudeWatch', function(opts)
+      local base = opts.args ~= "" and opts.args or nil
+      if base then
+        require('gitsigns').change_base(base, true)
+      end
+
+      -- Open neo-tree git_status sidebar
+      vim.cmd("Neotree git_status")
+
+      -- Initial population
+      refresh_changes(base)
+
+      -- Stop any existing timer
+      if watch_timer then
+        watch_timer:stop()
+        watch_timer:close()
+      end
+
+      -- Refresh every 5 seconds
+      watch_timer = vim.uv.new_timer()
+      watch_timer:start(5000, 5000, vim.schedule_wrap(function()
+        vim.cmd("checktime")
+        refresh_changes(base)
+      end))
+
+      vim.notify("Watching for changes (5s interval)", vim.log.levels.INFO)
+    end, { nargs = "?", desc = "Watch for changes: neo-tree + auto-refresh quickfix" })
+
+    -- ClaudeUnwatch: stop the timer
+    vim.api.nvim_create_user_command('ClaudeUnwatch', function()
+      if watch_timer then
+        watch_timer:stop()
+        watch_timer:close()
+        watch_timer = nil
+        vim.notify("Stopped watching", vim.log.levels.INFO)
+      end
+    end, {})
   '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)

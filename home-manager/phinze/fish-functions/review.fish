@@ -103,9 +103,9 @@ if test $is_new_session -eq 1
         set nvim_sock "/tmp/nvc-"(echo "$sock_name" | md5sum | cut -c1-12)".sock"
     end
 
-    # Split: neovim on the right (quickfix pre-loaded with PR changes), Claude on the left
+    # Split: neovim on the right (watching PR changes), Claude on the left
     tmux split-window -h -t "$session_name" -c "$worktree_path" \
-        "nvim --listen '$nvim_sock' -c 'ClaudeChanges origin/$base_branch'"
+        "nvim --listen '$nvim_sock' -c 'ClaudeWatch origin/$base_branch'"
     tmux select-pane -t "$session_name:0.0"
 
     tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated worktree; skip branch verification'" Enter
