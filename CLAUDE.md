@@ -32,36 +32,38 @@ This is a personal Nix configuration repository that manages multiple machines u
 
 ### Building and Switching Configurations
 
-Using `nh` (nix-helper) for more convenient commands:
+The owner uses `nh` (nix-helper) interactively for its nice TUI progress display. When Claude Code needs to build or switch configurations, use the direct nix commands below instead. They produce clean output without a TTY.
 
-For NixOS systems:
+Do NOT use `-L` (print-build-logs) by default. It dumps every line of compiler output during builds, which can be tens of thousands of lines. Only add `-L` when diagnosing a specific build failure. Use `--show-trace` only when debugging evaluation errors.
+
+**Quick eval check** (catches most config errors in seconds, no build):
 ```bash
-# Build and switch on the current machine
-nh os switch .
+# NixOS
+nix eval .#nixosConfigurations.foxtrotbase.config.system.build.toplevel.drvPath
 
-# Build and switch a specific host
-nh os switch . -- --flake .#foxtrotbase
+# Darwin
+nix eval .#darwinConfigurations.phinze-mrn-mbp.system.drvPath
 ```
 
-For macOS systems:
+**Build without activating** (proves the full closure builds):
 ```bash
-# Build and switch darwin configuration
-nh darwin switch .
+# NixOS
+nix build .#nixosConfigurations.foxtrotbase.config.system.build.toplevel --no-link
 
-# Build and switch specific host
-nh darwin switch . -- --flake .#phinze-mrn-mbp
+# Darwin
+nix build .#darwinConfigurations.phinze-mrn-mbp.system --no-link
 ```
 
-Legacy commands (without nh):
+**Build and switch** (actually apply the configuration):
 ```bash
 # NixOS
 sudo nixos-rebuild switch --flake .
-sudo nixos-rebuild switch --flake .#foxtrotbase
 
-# macOS
+# Darwin
 darwin-rebuild switch --flake .
-darwin-rebuild switch --flake .#phinze-mrn-mbp
 ```
+
+Substitute the appropriate hostname for other hosts (NixOS: foxtrotbase, xiezhi, simurgh, homegate; Darwin: phinze-mrn-mbp).
 
 ### Maintenance Commands
 
