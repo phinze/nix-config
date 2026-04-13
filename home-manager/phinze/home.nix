@@ -458,9 +458,10 @@
                   set nvim_sock "/tmp/nvc-"(echo "$sock_name" | md5sum | cut -c1-12)".sock"
               end
 
-              # Split: neovim (watching for changes) on the right, Claude on the left
+              # Split: neovim on the right, Claude on the left
+              # ClaudeChanges opens neo-tree git_status + quickfix; hook keeps it current
               tmux split-window -h -t "$session_name" -c "$worktree_path" \
-                  "nvim --listen '$nvim_sock' -c ClaudeWatch"
+                  "nvim --listen '$nvim_sock' -c ClaudeChanges"
               tmux select-pane -t "$session_name:0.0"
 
               tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP (it may take a few seconds to connect) to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter
