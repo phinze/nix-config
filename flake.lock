@@ -636,11 +636,11 @@
         "nixvim": "nixvim"
       },
       "locked": {
-        "lastModified": 1776082253,
-        "narHash": "sha256-zES8hYYgPo01yla5jlhFLQ07vvzafNKW3JU1QKwMtMU=",
+        "lastModified": 1776193416,
+        "narHash": "sha256-l0sRc9SgqD1EwwT0uLZvNK+5xj6/7RFb0/63IogwpU4=",
         "owner": "phinze",
         "repo": "nixvim-config",
-        "rev": "3586982b78ccf549f90e33a49fa009718f767b0e",
+        "rev": "7085fa131cffb6754a5c453d730d6aec17a9636f",
         "type": "github"
       },
       "original": {
