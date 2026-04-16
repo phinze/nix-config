@@ -153,6 +153,22 @@
         "type": "github"
       }
     },
+    "claude-plugin-miren-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1774895800,
+        "narHash": "sha256-nYIqrj+xcE3Kz+h+6RX+zGPm3fuHXqcB9Z4fssJUt0E=",
+        "owner": "mirendev",
+        "repo": "miren-skills",
+        "rev": "6db7fb209589e8714798b03def6472feab17287a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mirendev",
+        "repo": "miren-skills",
+        "type": "github"
+      }
+    },
     "claude-plugins-official": {
       "flake": false,
       "locked": {
@@ -707,6 +723,7 @@
         "claude-code-nix": "claude-code-nix",
         "claude-desktop": "claude-desktop",
         "claude-plugin-coderabbit": "claude-plugin-coderabbit",
+        "claude-plugin-miren-skills": "claude-plugin-miren-skills",
         "claude-plugins-official": "claude-plugins-official",
         "double-agent": "double-agent",
         "flake-utils": "flake-utils_3",

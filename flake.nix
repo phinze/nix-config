@@ -65,6 +65,10 @@
       url = "github:coderabbitai/claude-plugin";
       flake = false;
     };
+    claude-plugin-miren-skills = {
+      url = "github:mirendev/miren-skills";
+      flake = false;
+    };
 
     iso.url = "git+https://github.com/mirendev/iso.git";
 

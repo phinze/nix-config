@@ -159,6 +159,7 @@ in
         "frontend-design@claude-plugins-official" = true;
         "nix-lsp" = true; # Custom plugin defined below
         "coderabbit@claude-plugins-official" = true; # CodeRabbit AI code review
+        "miren" = true; # Miren CLI skills (public miren-skills repo)
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         # sourcekit-lsp comes from Xcode, only available on macOS
@@ -233,6 +234,7 @@ in
       pluginsDir = "${homeDir}/.claude/plugins";
       officialRev = inputs.claude-plugins-official.rev;
       coderabbitRev = inputs.claude-plugin-coderabbit.rev;
+      mirenSkillsRev = inputs.claude-plugin-miren-skills.rev;
       mkPlugin =
         name:
         { gitCommitSha }:
@@ -252,6 +254,9 @@ in
         ];
         "coderabbit@claude-plugins-official" = [
           (mkPlugin "coderabbit" { gitCommitSha = coderabbitRev; })
+        ];
+        "miren" = [
+          (mkPlugin "miren" { gitCommitSha = mirenSkillsRev; })
         ];
       };
       darwinPlugins = lib.optionalAttrs pkgs.stdenv.isDarwin {
@@ -275,6 +280,8 @@ in
   home.file.".claude/plugins/frontend-design".source =
     "${inputs.claude-plugins-official}/plugins/frontend-design";
   home.file.".claude/plugins/coderabbit".source = inputs.claude-plugin-coderabbit;
+  home.file.".claude/plugins/miren".source =
+    "${inputs.claude-plugin-miren-skills}/plugins/miren";
   # swift-lsp only useful on macOS (sourcekit-lsp comes from Xcode)
   home.file.".claude/plugins/swift-lsp" = lib.mkIf pkgs.stdenv.isDarwin {
     source = "${inputs.claude-plugins-official}/plugins/swift-lsp";
