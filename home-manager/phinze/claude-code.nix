@@ -158,8 +158,8 @@ in
         "clangd-lsp@claude-plugins-official" = true;
         "frontend-design@claude-plugins-official" = true;
         "nix-lsp" = true; # Custom plugin defined below
-        "coderabbit@claude-plugins-official" = true; # CodeRabbit AI code review
-        "miren" = true; # Miren CLI skills (public miren-skills repo)
+        "coderabbit" = true; # CodeRabbit AI code review (standalone, not in a marketplace)
+        "miren@miren" = true; # Miren CLI skills (public miren-skills repo)
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         # sourcekit-lsp comes from Xcode, only available on macOS
@@ -225,15 +225,14 @@ in
     force = true;
   };
 
-  # Declarative plugin registry — replaces imperative `claude plugin install`
-  # Each entry points installPath at our nix-managed plugin directories.
-  # Written as a mutable file (not symlink) because claude tries to write to it.
-  home.activation.claudePluginRegistry =
+  # Declarative plugin registry and marketplace config.
+  # Both files are mutable (not symlinks) because Claude Code writes to them at runtime.
+  # Our activation seeds them on each rebuild; Claude Code may update them between rebuilds.
+  home.activation.claudePluginFiles =
     let
       homeDir = config.home.homeDirectory;
       pluginsDir = "${homeDir}/.claude/plugins";
       officialRev = inputs.claude-plugins-official.rev;
-      coderabbitRev = inputs.claude-plugin-coderabbit.rev;
       mirenSkillsRev = inputs.claude-plugin-miren-skills.rev;
       mkPlugin =
         name:
@@ -246,16 +245,15 @@ in
           lastUpdated = "2026-01-01T00:00:00.000Z";
           inherit gitCommitSha;
         };
+      # Only marketplace plugins go in the registry (key = plugin@marketplace).
+      # Standalone plugins (coderabbit, nix-lsp) work via enabledPlugins + directory presence.
       basePlugins = {
         "gopls-lsp@claude-plugins-official" = [ (mkPlugin "gopls-lsp" { gitCommitSha = officialRev; }) ];
         "clangd-lsp@claude-plugins-official" = [ (mkPlugin "clangd-lsp" { gitCommitSha = officialRev; }) ];
         "frontend-design@claude-plugins-official" = [
           (mkPlugin "frontend-design" { gitCommitSha = officialRev; })
         ];
-        "coderabbit@claude-plugins-official" = [
-          (mkPlugin "coderabbit" { gitCommitSha = coderabbitRev; })
-        ];
-        "miren" = [
+        "miren@miren" = [
           (mkPlugin "miren" { gitCommitSha = mirenSkillsRev; })
         ];
       };
@@ -267,9 +265,28 @@ in
         plugins = basePlugins // darwinPlugins;
       };
       registryFile = pkgs.writeText "installed_plugins.json" registryJson;
+
+      # Marketplace registry — tells Claude Code where to find plugin catalogs.
+      # Marketplace dirs under plugins/marketplaces/ are git clones managed by Claude Code;
+      # we just seed the index so it knows they exist on fresh machines.
+      mkMarketplace = name: repo: {
+        source = {
+          source = "github";
+          inherit repo;
+        };
+        installLocation = "${pluginsDir}/marketplaces/${name}";
+        lastUpdated = "2026-01-01T00:00:00.000Z";
+      };
+      marketplaces = {
+        "claude-plugins-official" =
+          mkMarketplace "claude-plugins-official" "anthropics/claude-plugins-official";
+        "miren" = mkMarketplace "miren" "mirendev/miren-skills";
+      };
+      marketplacesFile = pkgs.writeText "known_marketplaces.json" (builtins.toJSON marketplaces);
     in
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       install -m 644 ${registryFile} ${pluginsDir}/installed_plugins.json
+      install -m 644 ${marketplacesFile} ${pluginsDir}/known_marketplaces.json
     '';
 
   # Marketplace plugins (symlinked from flake inputs)
@@ -280,8 +297,7 @@ in
   home.file.".claude/plugins/frontend-design".source =
     "${inputs.claude-plugins-official}/plugins/frontend-design";
   home.file.".claude/plugins/coderabbit".source = inputs.claude-plugin-coderabbit;
-  home.file.".claude/plugins/miren".source =
-    "${inputs.claude-plugin-miren-skills}/plugins/miren";
+  home.file.".claude/plugins/miren".source = "${inputs.claude-plugin-miren-skills}/plugins/miren";
   # swift-lsp only useful on macOS (sourcekit-lsp comes from Xcode)
   home.file.".claude/plugins/swift-lsp" = lib.mkIf pkgs.stdenv.isDarwin {
     source = "${inputs.claude-plugins-official}/plugins/swift-lsp";
