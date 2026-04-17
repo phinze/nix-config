@@ -366,6 +366,12 @@ in
       vim.defer_fn(function()
         require('gitsigns').setqflist("all", { open = false })
       end, 500)
+      -- Pickup only: neo-tree git_status reads HEAD, so it's useless with an alt base
+      if not base then
+        pcall(function()
+          require('neo-tree.sources.manager').refresh('git_status')
+        end)
+      end
     end
 
     -- ClaudeChanges: set up the review view (quickfix with hunks, neo-tree for pickup)
@@ -374,8 +380,10 @@ in
       vim.g.claude_changes_base = base
       if base then
         require('gitsigns').change_base(base, true)
+        -- git_status source tracks HEAD, not an arbitrary base, so it's useless
+        -- in review. Open the regular filesystem tree for navigating context.
+        vim.cmd("Neotree filesystem")
       else
-        -- Neo-tree git_status only useful for pickup (unstaged changes)
         vim.cmd("Neotree git_status")
       end
       refresh_changes()
