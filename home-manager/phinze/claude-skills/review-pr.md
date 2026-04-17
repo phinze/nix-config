@@ -39,6 +39,15 @@ Think hard and carefully about the code changes.
      changes that look risky in isolation often compose into a coherent design
      when you see the full flow.
 
+3.5. **Follow along in nvim (if available)**:
+   - If `claude-nvim ping` exits 0, there's a review nvim attached on the
+     right. Use it to land the reader on whatever you're discussing:
+     - `claude-nvim open path/to/file.go:74` to focus a specific line
+     - `claude-nvim qf next` / `claude-nvim qf prev` to step through hunks
+   - Do this *before* you start explaining a hunk, so the pane is already
+     on the right spot as you talk. It's not required — if `ping` fails,
+     just skip it silently and continue.
+
 4. **Pause for walkthrough discussion**:
    - **This is the main event, not a preamble.** The walkthrough is where
      real understanding happens — ask if I want to go chunk by chunk, or if
