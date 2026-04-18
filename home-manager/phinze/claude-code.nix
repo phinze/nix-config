@@ -31,8 +31,9 @@ let
   # Socket derivation matches claude-diffview-hook below.
   claude-nvim = pkgs.writeShellApplication {
     name = "claude-nvim";
+    # Intentionally no `neovim` in runtimeInputs — that pins nvim to pkgs.neovim
+    # and loses the user's nixvim-wrapped config. Fall through to $PATH instead.
     runtimeInputs = with pkgs; [
-      neovim
       coreutils
     ];
     text = ''
