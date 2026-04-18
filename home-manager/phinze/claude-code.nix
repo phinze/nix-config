@@ -222,6 +222,7 @@ in
   home.packages = [
     claude-code-wrapped
     claude-nvim
+    inputs.tuicr.defaultPackage.${pkgs.system} # Terminal UI for reviewing agent diffs locally
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)
@@ -562,6 +563,17 @@ in
 
   # Claude Code rules (always-on instructions loaded automatically)
   home.file.".claude/rules/tooling.md".source = ./claude-rules/tooling.md;
+
+  # tuicr config — catppuccin-mocha matches the rest of the setup (ghostty, tmux)
+  xdg.configFile."tuicr/config.toml".text = ''
+    theme = "catppuccin-mocha"
+  '';
+
+  # tuicr's agent skill: SKILL.md + tuicr-wrapper.sh live in the flake source
+  home.file.".claude/skills/tuicr/SKILL.md".source =
+    "${inputs.tuicr}/skills/tuicr/SKILL.md";
+  home.file.".claude/skills/tuicr/tuicr-wrapper.sh".source =
+    "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
 
   # Claude Code slash commands (skills stored in separate files for easier editing)
   home.file.".claude/commands/whatsup.md".source = ./claude-skills/whatsup.md;

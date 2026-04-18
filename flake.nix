@@ -75,6 +75,10 @@
     multipass.url = "git+https://github.com/mirendev/multipass.git";
     multipass.inputs.nixpkgs.follows = "nixpkgs-unstable";
     multipass.inputs.flake-utils.follows = "flake-utils";
+
+    tuicr.url = "github:agavra/tuicr/v0.10.0";
+    tuicr.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    tuicr.inputs.utils.follows = "flake-utils";
   };
 
   outputs =
