@@ -226,6 +226,7 @@ in
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)
+    pkgs.poppler_utils # pdftoppm/pdftotext so Read tool can open PDFs
   ];
 
   # Ignore SWT (Simple Work Tracker) directories globally
