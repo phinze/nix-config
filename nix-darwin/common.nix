@@ -164,6 +164,7 @@ in
     "meetingbar"
     "obs"
     "obsidian"
+    "orcaslicer"
     "raycast"
     "rectangle"
     "rocket"
