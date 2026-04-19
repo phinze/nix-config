@@ -13,6 +13,9 @@
     sensibleOnTop = false;
 
     plugins = let
+      loadCommand = if pkgs.stdenv.isDarwin
+        then "sysctl -n vm.loadavg | awk '{print $2}'"
+        else "awk '{print $1}' /proc/loadavg";
       tmux-smooth-scroll = pkgs.tmuxPlugins.mkTmuxPlugin {
         pluginName = "smooth-scroll";
         rtpFilePath = "smooth-scroll.tmux";
@@ -34,7 +37,7 @@
           set -g status-right-length 100
           set -g status-left-length 100
           set -g status-left ""
-          set -g @catppuccin_load_text " #(awk '{print $1}' /proc/loadavg)"
+          set -g @catppuccin_load_text " #(${loadCommand})"
           set -g status-right "#{E:@catppuccin_status_load}"
           set -ag status-right "#{E:@catppuccin_status_session}"
           set -ag status-right "#{E:@catppuccin_status_host}"
@@ -70,6 +73,8 @@
     ];
 
     extraConfig = ''
+      bind r source-file ~/.config/tmux/tmux.conf \; display "reloaded"
+
       # Set terminal/tab title to "【 hostname 】› session" (last 2 path segments of session name)
       set-option -g set-titles on
       set-option -g set-titles-string "【 #h 】#(echo '#{session_name}' | rev | cut -d'/' -f1-2 | rev)"
