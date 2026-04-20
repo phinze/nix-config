@@ -100,6 +100,26 @@ echo ""
 echo "Commit message: $commit_msg"
 echo ""
 
+# Print upstream changelog delta for inputs with a known changelog source
+if [[ "$input" == "claude-code-nix" && "$old_version" != "unknown" && "$new_version" != "unknown" ]]; then
+  if changelog=$(gh api repos/anthropics/claude-code/contents/CHANGELOG.md \
+      -H "Accept: application/vnd.github.raw" 2>/dev/null); then
+    delta=$(echo "$changelog" | awk -v old="$old_version" -v new="$new_version" '
+      /^## / {
+        if ($2 == new) { printing = 1 }
+        else if ($2 == old) { printing = 0 }
+      }
+      printing { print }
+    ')
+    if [[ -n "$delta" ]]; then
+      echo "Changelog:"
+      echo ""
+      echo "$delta"
+      echo ""
+    fi
+  fi
+fi
+
 if [[ "$auto_commit" == "true" ]]; then
   git add flake.lock
   git commit -m "$commit_msg"
