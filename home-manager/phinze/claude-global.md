@@ -54,3 +54,32 @@ version-controlled file in the nix-config repo
 - **Skill behavior** → `home-manager/phinze/claude-skills/*.md`
 - **Project conventions** → the project's `CLAUDE.md`
 - **Global preferences** → `home-manager/phinze/claude-global.md` (this file)
+
+## Milestone Diary
+
+At milestone moments during a session, append a one-line entry to
+`~/src/github.com/phinze/memex/Daily/YYYY-MM-DD.md` (today's date).
+Lightweight replacement for the retired eod automation: drop a line as
+things happen, instead of trawling transcripts later.
+
+Format: `- HH:MM <area> - <observation>` (use `date +%H:%M` for the time).
+
+What counts as a milestone:
+- PR opened or merged
+- A decision worth remembering (architectural choice, direction change)
+- A sketch added to `memex/Projects/Ideas/`
+- A novel pattern landed in `nix-config`
+- An incident triaged or resolved
+
+Be selective. Minor edits, routine commits, and exploratory searches
+don't warrant an entry. If in doubt, skip it; a sparse log is more
+valuable than a noisy one.
+
+If the daily file doesn't exist, create it with frontmatter:
+
+    ---
+    date: YYYY-MM-DD
+    ---
+
+Do not auto-commit after writing. Commits are noisy and race-prone with
+parallel sessions; the human sweeps the memex repo manually.
