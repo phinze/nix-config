@@ -11,7 +11,9 @@
   home-manager = {
     extraSpecialArgs = {
       inherit inputs outputs;
-      nodeConfig = { };
+      nodeConfig = {
+        isMemexHost = true;
+      };
     };
     users = {
       # Import your home-manager configuration

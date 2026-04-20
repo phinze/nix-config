@@ -20,6 +20,7 @@
           "gather"
           "linear-linear"
         ];
+        isMemexHost = true;
       };
     };
     useUserPackages = true;

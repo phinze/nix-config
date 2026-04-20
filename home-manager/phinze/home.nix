@@ -38,6 +38,8 @@
     ./modules/nushell.nix
     # Nightly cleanup of stale dev sessions and merged branches
     ./modules/dev-cleanup.nix
+    # Hourly memex commit+push (gated by nodeConfig.isMemexHost)
+    ./modules/memex-autocommit.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
