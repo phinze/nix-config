@@ -62,7 +62,9 @@ At milestone moments during a session, append a one-line entry to
 Lightweight replacement for the retired eod automation: drop a line as
 things happen, instead of trawling transcripts later.
 
-Format: `- HH:MM <area> - <observation>` (use `date +%H:%M` for the time).
+Format: `- HH:MM <area> - <observation>` where HH:MM is Central Time.
+Use `TZ=America/Chicago date +%H:%M` so the time is correct from any
+machine.
 
 What counts as a milestone:
 - PR opened or merged
