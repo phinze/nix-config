@@ -571,10 +571,17 @@ in
   '';
 
   # tuicr's agent skill: SKILL.md + tuicr-wrapper.sh live in the flake source
-  home.file.".claude/skills/tuicr/SKILL.md".source =
-    "${inputs.tuicr}/skills/tuicr/SKILL.md";
+  home.file.".claude/skills/tuicr/SKILL.md".source = "${inputs.tuicr}/skills/tuicr/SKILL.md";
   home.file.".claude/skills/tuicr/tuicr-wrapper.sh".source =
     "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
+
+  # session-history skill: search/summarize Claude Code session JSONL files
+  home.file.".claude/skills/session-history/SKILL.md".source =
+    ./claude-skills/session-history/SKILL.md;
+  home.file.".claude/skills/session-history/claude-sessions.sh" = {
+    source = ./claude-skills/session-history/claude-sessions.sh;
+    executable = true;
+  };
 
   # Claude Code slash commands (skills stored in separate files for easier editing)
   home.file.".claude/commands/whatsup.md".source = ./claude-skills/whatsup.md;
