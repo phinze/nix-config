@@ -22,7 +22,8 @@ let
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/claude \
-        --suffix PATH : ${lib.makeBinPath fallbackLsps}
+        --suffix PATH : ${lib.makeBinPath fallbackLsps} \
+        --set DISABLE_UPDATES 1
     '';
   };
 
