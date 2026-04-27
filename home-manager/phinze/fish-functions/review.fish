@@ -61,12 +61,21 @@ if test "$current_branch" = "$branch_name"
     return 1
 end
 
-git fetch origin "$branch_name" --quiet 2>/dev/null
 set -l worktree_path (gwq get "$branch_name" 2>/dev/null)
 
 if test -z "$worktree_path"
-    gwq add "$branch_name" 2>/dev/null
-    if test $status -ne 0
+    # Fetch via the PR ref so this works for fork PRs too. refs/pull/N/head is
+    # published on the upstream regardless of where the head branch lives.
+    # Skip the fetch if we already have the branch locally — the colon-form
+    # of git fetch fails on existing branches.
+    if not git show-ref --verify --quiet "refs/heads/$branch_name"
+        if not git fetch origin "pull/$pr_number/head:$branch_name" --quiet
+            cd "$original_dir"
+            echo "Failed to fetch pull/$pr_number/head from origin"
+            return 1
+        end
+    end
+    if not gwq add "$branch_name"
         cd "$original_dir"
         echo "Failed to create worktree for $branch_name"
         return 1
