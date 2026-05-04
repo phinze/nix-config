@@ -26,6 +26,16 @@ spoon.ControlEscape:start()
 -- spoon.SemicolonNav:start()
 
 --------------------------------------------------------------------------------
+-- HandyClicker: Logitech R400 → Handy transcribe toggle (opt+space)
+--------------------------------------------------------------------------------
+-- Black-screen button on the R400 sends `.`; we intercept it (scoped to the
+-- R400's keyboardType) and translate to a single opt+space tap, which toggles
+-- Handy recording on/off. Requires Handy's Push-to-Talk setting to be OFF.
+
+hs.loadSpoon("HandyClicker")
+spoon.HandyClicker:start()
+
+--------------------------------------------------------------------------------
 -- Window/App Switching
 --------------------------------------------------------------------------------
 -- Using rcmd (Mac App Store) instead of eventtap hacks
