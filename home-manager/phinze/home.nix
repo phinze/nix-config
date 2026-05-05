@@ -24,8 +24,8 @@
     inputs.sophon.homeManagerModules.default
     # Claude Code configuration (package + statusline)
     ./claude-code.nix
-    # Hammerspoon for keyboard remapping (replaces Karabiner-Elements)
-    ./hammerspoon.nix
+    # Karabiner-Elements for keyboard remapping (incl. R400 → Handy)
+    ./karabiner.nix
     # Tmux terminal multiplexer
     ./tmux.nix
     # Demo recorder for terminal sessions

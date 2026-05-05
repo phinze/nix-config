@@ -157,7 +157,7 @@ in
     "google-chrome"
     "granola"
     "istat-menus"
-    "hammerspoon"
+    "karabiner-elements"
     "keepingyouawake"
     "keymapp"
     "libreoffice"
