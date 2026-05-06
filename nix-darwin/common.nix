@@ -102,6 +102,22 @@ in
   system.keyboard.enableKeyMapping = true;
   system.keyboard.remapCapsLockToControl = true;
 
+  # Raise file descriptor limit; default 256 is too low for nvim + many LSPs.
+  launchd.daemons.limit-maxfiles = {
+    serviceConfig = {
+      Label = "limit.maxfiles";
+      ProgramArguments = [
+        "launchctl"
+        "limit"
+        "maxfiles"
+        "524288"
+        "524288"
+      ];
+      RunAtLoad = true;
+      ServiceIPC = false;
+    };
+  };
+
   # System prompt for sudo operations, preserved within tmux with pam_reattach
   # TODO: This can be reverted to home-manager options once
   #       https://github.com/LnL7/nix-darwin/pull/1020/ is merged in some form
