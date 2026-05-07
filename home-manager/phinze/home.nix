@@ -130,6 +130,7 @@
       google-cloud-sdk # I want to run gcloud from anywhere
       inputs.multipass.packages.${pkgs.system}.default # GCP Workload Identity Federation auth CLI
       gwq # Git worktree manager that works with ghq
+      hunkdiff # Review-first terminal diff viewer for agentic coders
       jq
       linearis # CLI tool for Linear.app with JSON output
       mtr

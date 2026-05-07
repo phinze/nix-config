@@ -3,6 +3,7 @@
 pkgs: rec {
   ccusage = pkgs.callPackage ./ccusage { };
   gwq = pkgs.callPackage ./gwq { };
+  hunkdiff = pkgs.callPackage ./hunkdiff { };
   dev-session-cleanup = pkgs.callPackage ./dev-session-cleanup.nix { inherit gwq; };
   git-trim = pkgs.callPackage ./git-trim.nix { inherit gwq; };
   ccometixline = pkgs.callPackage ./ccometixline.nix { };
