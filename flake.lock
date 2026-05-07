@@ -482,11 +482,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1771535639,
-        "narHash": "sha256-W2NIDoLS4pvxpmFPFBGjj7WDTFaF79MNPBgfvLULI0w=",
+        "lastModified": 1777338598,
+        "narHash": "sha256-bQfheUvZ8rn5g6uiK3JAwJZGl1DR3Odn0rd0xT5na4U=",
         "ref": "refs/heads/main",
-        "rev": "1c826879ff4efabef88f9c468d47b802a9af4810",
-        "revCount": 17,
+        "rev": "f5a7c455c1675e3732e6100373aeb257cab1faf4",
+        "revCount": 27,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
