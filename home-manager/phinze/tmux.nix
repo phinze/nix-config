@@ -75,6 +75,9 @@
     extraConfig = ''
       bind r source-file ~/.config/tmux/tmux.conf \; display "reloaded"
 
+      # ilmari: popup radar for agent panes (Codex, Claude Code, OpenCode, ...)
+      bind-key i display-popup -E -w 90% -h 85% "ilmari"
+
       # Set terminal/tab title to "【 hostname 】› session" (last 2 path segments of session name)
       set-option -g set-titles on
       set-option -g set-titles-string "【 #h 】#(echo '#{session_name}' | rev | cut -d'/' -f1-2 | rev)"

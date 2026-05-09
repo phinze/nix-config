@@ -4,6 +4,8 @@ pkgs: rec {
   ccusage = pkgs.callPackage ./ccusage { };
   gwq = pkgs.callPackage ./gwq { };
   hunkdiff = pkgs.callPackage ./hunkdiff { };
+  # ilmari pulls Rust deps that require rustc 1.88+, so build against unstable
+  ilmari = pkgs.unstable.callPackage ./ilmari { };
   dev-session-cleanup = pkgs.callPackage ./dev-session-cleanup.nix { inherit gwq; };
   git-trim = pkgs.callPackage ./git-trim.nix { inherit gwq; };
   ccometixline = pkgs.callPackage ./ccometixline.nix { };
