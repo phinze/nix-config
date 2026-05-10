@@ -6,6 +6,8 @@ pkgs: rec {
   hunkdiff = pkgs.callPackage ./hunkdiff { };
   # ilmari pulls Rust deps that require rustc 1.88+, so build against unstable
   ilmari = pkgs.unstable.callPackage ./ilmari { };
+  # lumen's genai dep uses `if let && ` chains stabilized in rustc 1.88, build against unstable
+  lumen = pkgs.unstable.callPackage ./lumen { };
   dev-session-cleanup = pkgs.callPackage ./dev-session-cleanup.nix { inherit gwq; };
   git-trim = pkgs.callPackage ./git-trim.nix { inherit gwq; };
   ccometixline = pkgs.callPackage ./ccometixline.nix { };

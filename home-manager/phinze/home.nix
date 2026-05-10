@@ -132,6 +132,7 @@
       gwq # Git worktree manager that works with ghq
       hunkdiff # Review-first terminal diff viewer for agentic coders
       ilmari # tmux popup radar for agent panes (Codex, Claude Code, etc.)
+      lumen # Visual git diff viewer in the terminal
       jq
       linearis # CLI tool for Linear.app with JSON output
       mtr
