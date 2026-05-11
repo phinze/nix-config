@@ -229,6 +229,9 @@
           # Worktree directories managed by gwq
           "${config.home.homeDirectory}/worktrees/github.com/phinze"
           "${config.home.homeDirectory}/worktrees/github.com/mirendev"
+          # jj workspaces created by jpickup/jreview
+          "${config.home.homeDirectory}/workspaces/github.com/phinze"
+          "${config.home.homeDirectory}/workspaces/github.com/mirendev"
         ];
       };
     };
@@ -299,7 +302,6 @@
 
                   if test $status -eq 0
                       set -l new_worktree_path (gwq get $branch_name)
-                      command -q jj; and not test -d $new_worktree_path/.jj; and jj git init --colocate $new_worktree_path
                       t $new_worktree_path
                   else
                       echo "Failed to create worktree"
@@ -331,7 +333,6 @@
 
               if test $status -eq 0
                   set -l worktree_path (gwq get $branch_name)
-                  command -q jj; and not test -d $worktree_path/.jj; and jj git init --colocate $worktree_path
                   t $worktree_path
               else
                   echo "Failed to create worktree"
@@ -442,9 +443,6 @@
               set worktree_path (gwq get $branch_name 2>/dev/null)
           end
 
-          # Colocate jj in the worktree so `jj` works alongside git
-          command -q jj; and not test -d $worktree_path/.jj; and jj git init --colocate $worktree_path
-
           # Step 4: Compute tmux session name (matches session-wizard --full-path)
           set -l session_name (string replace "$HOME" "~" "$worktree_path")
           set session_name (string replace -a " " "-" $session_name)
@@ -490,6 +488,16 @@
       review = {
         description = "Review a GitHub PR: create worktree, tmux session, and start Claude";
         body = builtins.readFile ./fish-functions/review.fish;
+      };
+
+      jpickup = {
+        description = "Pick up a Linear issue with jj: create workspace, tmux session, and start Claude";
+        body = builtins.readFile ./fish-functions/jpickup.fish;
+      };
+
+      jreview = {
+        description = "Review a GitHub PR with jj: create workspace, tmux session, and start Claude";
+        body = builtins.readFile ./fish-functions/jreview.fish;
       };
 
       whatsup = {
