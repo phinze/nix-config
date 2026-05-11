@@ -20,10 +20,6 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-gQ8CMB29uce9SIqE8lmMELtz8vfrxUeyQjiI8rHdn6Y=";
 
-  # Skip the optional `jj` feature for now; we can re-enable later if we want
-  # Jujutsu revset support. Trims jj-lib + transitive deps from the build.
-  buildNoDefaultFeatures = true;
-
   nativeBuildInputs = [
     pkg-config
     cmake
