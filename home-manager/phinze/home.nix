@@ -219,6 +219,23 @@
     nix-direnv.enable = true;
     silent = true;
 
+    # Loaded before every .envrc. When the cwd is under a jj workspace
+    # (~/workspaces/<host>/<owner>/<repo>/...), auto-export GH_REPO so gh
+    # works without git context. A non-default jj workspace has no .git.
+    stdlib = ''
+      __gh_repo_from_workspace() {
+        if [[ "$PWD" == "$HOME/workspaces/"* ]]; then
+          local rel="''${PWD#$HOME/workspaces/}"
+          local _host owner repo _rest
+          IFS=/ read -r _host owner repo _rest <<< "$rel"
+          if [[ -n "$owner" && -n "$repo" ]]; then
+            export GH_REPO="$owner/$repo"
+          fi
+        fi
+      }
+      __gh_repo_from_workspace
+    '';
+
     # Auto-allow direnv for trusted organizations (repos and worktrees)
     config = {
       whitelist = {

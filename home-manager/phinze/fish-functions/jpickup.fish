@@ -78,6 +78,14 @@ if not test -d "$workspace_path"
         echo "Failed to create jj workspace for $branch_name"
         return 1
     end
+
+    # Drop a stub .envrc only when the project doesn't already ship one.
+    # direnv needs a .envrc to fire; our direnvrc stdlib then sets GH_REPO
+    # based on the workspace path. Projects with their own .envrc (nix
+    # devshells etc.) are left untouched and pick up GH_REPO the same way.
+    if not test -e "$workspace_path/.envrc"
+        echo '# stub for direnv; GH_REPO is set by direnvrc when under ~/workspaces' > "$workspace_path/.envrc"
+    end
 end
 
 # Step 6: Compute tmux session name (matches session-wizard --full-path)

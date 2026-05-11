@@ -87,6 +87,26 @@ command, use fileset syntax: `jj diff '~package-lock.json'` or
   `@-`, useful for advancing a branch pointer to current work without
   retyping its name.
 
+### Inside a jj workspace
+
+When the cwd is under `~/workspaces/...`, you're in a non-default jj
+workspace. These have `.jj/` but no `.git/`, so plain `git` commands fail
+with "not a git repository". Use jj equivalents — `jj log`, `jj diff`,
+`jj show`, `jj file show`, `jj file annotate` — and don't burn cycles
+trying to coax git into working.
+
+`gh` works fine because direnv's stdlib auto-exports `GH_REPO=<owner>/<repo>`
+whenever the cwd is under `~/workspaces/<host>/<owner>/<repo>/...`. So
+`gh pr view`, `gh pr diff`, `gh search`, etc. behave normally without any
+explicit setup. If `gh` complains about a missing repo context, check
+that direnv has loaded — a `.envrc` (or stub) needs to exist in the
+workspace and direnv has to have allowed it.
+
+The main checkout under `~/src/github.com/<owner>/<repo>` IS colocated
+(has both `.jj/` and `.git/`). If you genuinely need git for something
+that has no jj equivalent, run it there with `git -C <main-repo> ...`
+rather than trying to make git work in the workspace.
+
 ## Memory Policy
 
 Do not write to per-project memory files (`~/.claude/projects/*/memory/`).
