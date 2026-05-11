@@ -84,6 +84,9 @@ if test -z "$worktree_path"
 end
 cd "$original_dir"
 
+# Colocate jj in the worktree so `jj` works alongside git
+command -q jj; and not test -d "$worktree_path/.jj"; and jj git init --colocate "$worktree_path"
+
 # Step 5: Compute tmux session name (matches session-wizard --full-path)
 set -l session_name (string replace "$HOME" "~" "$worktree_path")
 set session_name (string replace -a " " "-" $session_name)

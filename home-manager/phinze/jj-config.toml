@@ -1,0 +1,64 @@
+"$schema" = "https://jj-vcs.github.io/jj/latest/config-schema.json"
+
+[user]
+name = "Paul Hinze"
+email = "phinze@phinze.com"
+
+# Use work email inside mirendev repos and worktrees, mirroring git includeIf
+[[--scope]]
+--when.repositories = [
+  "~/src/github.com/mirendev",
+  "~/worktrees/github.com/mirendev",
+]
+[--scope.user]
+email = "paul@miren.dev"
+
+[remotes.origin]
+auto-track-created-bookmarks = "*"
+
+[remotes.mine]
+auto-track-created-bookmarks = "*"
+
+[ui]
+# Side-by-side delta when the terminal is wide enough, plain delta otherwise
+pager = ["bash", "-c", '[ "${COLUMNS:-0}" -ge 165 ] && delta --side-by-side || delta']
+default-command = ["log", "--template", "home"]
+diff-editor = ":builtin"
+merge-editor = ":builtin"
+diff-formatter = ":git"
+
+[revsets]
+# Default log shows a bit more ancestry than jj's built-in
+log = "present(@) | ancestors(immutable_heads().., 4) | present(trunk()) | divergent()"
+
+[revset-aliases]
+# Treat commits not authored by me as immutable. The `trunk()..` bit limits
+# the scan to commits above trunk. See:
+# https://jj-vcs.github.io/jj/latest/config/#set-of-immutable-commits
+"immutable_heads()" = "builtin_immutable_heads() | (trunk().. & ~mine())"
+"fork(x)" = "fork_point(trunk() | x)"
+"fork()" = "fork_point(trunk() | @)"
+
+[aliases]
+# Move the closest ancestor bookmark to @-. Prefers non-trunk bookmarks so
+# merging trunk doesn't drag the trunk bookmark forward; falls back to
+# including trunk only if it's the sole ancestor bookmark.
+tug = ["util", "exec", "--", "bash", "-c", '''
+  from='heads(::@ & bookmarks()) ~ trunk()'
+  jj --no-pager log -r "$from" --no-graph -T '"x"' 2>/dev/null | grep -q . || from='heads(::@ & bookmarks())'
+  jj bookmark move --from "$from" --to '@-'
+  ''', 'jj tug']
+
+[template-aliases]
+# Log with diff stats inline for the working copy or empty-description revs.
+# `|` in stat output is swapped to a full-width variant so jjui's line
+# parser (which uses `|` as a separator) isn't confused.
+'home' = '''
+builtin_log_compact ++ if(
+  (self.current_working_copy() || self.description().len() == 0) && !self.empty(),
+  "\n" ++ stringify(self.diff().stat()).replace("|", "｜") ++ "\n"
+)
+'''
+
+# Show username part of the author email instead of the full address
+'format_short_signature(signature)' = 'signature.email().local()'
