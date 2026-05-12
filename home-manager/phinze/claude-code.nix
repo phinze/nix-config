@@ -27,138 +27,6 @@ let
     '';
   };
 
-  # claude-nvim: tiny helper so Claude can drive the review session's neovim
-  # (open a file at a line, step the quickfix, or send raw Ex commands).
-  # Socket derivation matches claude-diffview-hook below.
-  claude-nvim = pkgs.writeShellApplication {
-    name = "claude-nvim";
-    # Intentionally no `neovim` in runtimeInputs — that pins nvim to pkgs.neovim
-    # and loses the user's nixvim-wrapped config. Fall through to $PATH instead.
-    runtimeInputs = with pkgs; [
-      coreutils
-    ];
-    text = ''
-      resolve_sock() {
-        local name sock
-        name=$(echo "$PWD" | sed "s|$HOME|~|" | tr ' .:' '---' | tr '[:upper:]' '[:lower:]')
-        name=$(echo "$name" | tr '/' '-')
-        sock="''${CLAUDE_NVIM_SOCK:-/tmp/nvc-''${name}.sock}"
-        if [ ''${#sock} -gt 100 ]; then
-          local hash
-          hash=$(echo "$name" | md5sum | cut -c1-12)
-          sock="/tmp/nvc-''${hash}.sock"
-        fi
-        printf '%s' "$sock"
-      }
-
-      # Check whether a socket has a live nvim on the other end
-      sock_live() {
-        local s=$1
-        [ -S "$s" ] && nvim --server "$s" --remote-expr 1 >/dev/null 2>&1
-      }
-
-      # Escape a string for use inside a vim single-quoted literal (double each quote)
-      vim_sq_escape() {
-        printf "%s" "$1" | sed "s/'/'''/g"
-      }
-
-      usage() {
-        cat <<EOF >&2
-      Usage: claude-nvim <verb> [args...]
-        open <path>[:line[:col]]   Open file in the main editing window
-        qf   <next|prev|first|last> Step through the changed-hunks quickfix
-        cmd  <ex command>           Run an arbitrary Ex command
-        attach                      Run nvim here, listening on the session's socket
-        ping                        Exit 0 if a review nvim is attached, else 1
-      EOF
-      }
-
-      sock=$(resolve_sock)
-      verb=''${1:-}
-      [ $# -gt 0 ] && shift
-
-      case "$verb" in
-        ping)
-          sock_live "$sock"
-          ;;
-        attach)
-          if sock_live "$sock"; then
-            echo "claude-nvim attach: nvim already listening at $sock" >&2
-            exit 0
-          fi
-          # Stale socket file left by a dead nvim would block bind(); clear it
-          [ -e "$sock" ] && rm -f "$sock"
-          exec nvim --listen "$sock" "$@"
-          ;;
-        open|qf|cmd)
-          if ! sock_live "$sock"; then
-            echo "claude-nvim: no neovim listening at $sock (try: claude-nvim attach)" >&2
-            exit 1
-          fi
-          if [ $# -lt 1 ]; then
-            usage
-            exit 2
-          fi
-          case "$verb" in
-            open) ex="ClaudeOpen $(vim_sq_escape "$1")" ;;
-            qf)   ex="ClaudeQf $(vim_sq_escape "$1")" ;;
-            cmd)  ex=$(vim_sq_escape "$*") ;;
-          esac
-          nvim --server "$sock" --remote-expr "execute('$ex')" >/dev/null
-          ;;
-        *)
-          usage
-          exit 2
-          ;;
-      esac
-    '';
-  };
-
-  # PostToolUse hook: poke neovim's diffview when Claude modifies files
-  claude-diffview-hook = pkgs.writeShellScript "claude-diffview-hook" ''
-    input=$(cat)
-    tool=$(echo "$input" | ${pkgs.jq}/bin/jq -r '.tool_name // ""')
-
-    # Only care about file-modifying tools
-    case "$tool" in
-      Write|Edit|MultiEdit) ;;
-      *) exit 0 ;;
-    esac
-
-    # Derive tmux session name from cwd (same formula as pickup/review fish functions)
-    cwd=$(echo "$input" | ${pkgs.jq}/bin/jq -r '.cwd // ""')
-    [ -z "$cwd" ] && exit 0
-
-    session_name=$(echo "$cwd" | sed "s|$HOME|~|" | tr ' .:' '---' | tr '[:upper:]' '[:lower:]')
-
-    # Flatten slashes to hyphens so the socket path doesn't imply subdirectories
-    sock_name=$(echo "$session_name" | tr '/' '-')
-
-    # Socket path: env override or derived from session name
-    sock="''${CLAUDE_NVIM_SOCK:-/tmp/nvc-''${sock_name}.sock}"
-
-    # Truncate socket path if too long for unix domain socket (108 char limit)
-    if [ ''${#sock} -gt 100 ]; then
-      hash=$(echo "$sock_name" | ${pkgs.coreutils}/bin/md5sum | cut -c1-12)
-      sock="/tmp/nvc-''${hash}.sock"
-    fi
-
-    # Skip if neovim isn't listening
-    [ -S "$sock" ] || exit 0
-
-    # Simple debounce: skip if last poke was <2 seconds ago
-    debounce_file="/tmp/claude-diffview-debounce-$$PPID"
-    now=$(date +%s)
-    last=$(cat "$debounce_file" 2>/dev/null || echo 0)
-    if [ $((now - last)) -lt 2 ]; then
-      exit 0
-    fi
-    echo "$now" > "$debounce_file"
-
-    # Tell neovim to re-check files and refresh quickfix/gitsigns
-    ${pkgs.neovim}/bin/nvim --server "$sock" --remote-send '<cmd>ClaudeRefresh<CR>' 2>/dev/null || true
-  '';
-
   # Status line script with colors
   claude-statusline = pkgs.writeShellScript "claude-statusline" ''
     read -r input
@@ -222,7 +90,6 @@ in
   # Claude Code package with LSP fallbacks
   home.packages = [
     claude-code-wrapped
-    claude-nvim
     inputs.tuicr.defaultPackage.${pkgs.system} # Terminal UI for reviewing agent diffs locally
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor
@@ -264,10 +131,6 @@ in
             type = "command";
             command = config.services.sophon.hookCommand;
           };
-          diffviewHook = {
-            type = "command";
-            command = "${claude-diffview-hook}";
-          };
           sophonOnly = [ { hooks = [ sophonHook ]; } ];
         in
         builtins.listToAttrs (
@@ -282,6 +145,7 @@ in
               "SessionEnd"
               "UserPromptSubmit"
               "PreToolUse"
+              "PostToolUse"
               "PostToolUseFailure"
               "PermissionRequest"
               "SubagentStart"
@@ -298,15 +162,6 @@ in
                   type = "command";
                   command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true'';
                 }
-                sophonHook
-              ];
-            }
-          ];
-          # PostToolUse: sophon + poke neovim diffview on file changes
-          PostToolUse = [
-            {
-              hooks = [
-                diffviewHook
                 sophonHook
               ];
             }
@@ -431,131 +286,6 @@ in
       - [nixd GitHub](https://github.com/nix-community/nixd)
     '';
   };
-
-  # Neovim commands for reviewing Claude Code changes
-  # Placed in site/plugin/ so neovim loads it automatically
-  home.file.".local/share/nvim/site/plugin/claude-review.lua".text = ''
-    -- Remembered base ref for hook-triggered refreshes
-    vim.g.claude_changes_base = nil
-
-    -- Refresh quickfix with changed hunks
-    local function refresh_changes()
-      local base = vim.g.claude_changes_base
-      local cmd = base
-        and string.format("git diff --name-only %s...HEAD", base)
-        or "git diff --name-only"
-      local files = vim.fn.systemlist(cmd)
-      if vim.v.shell_error ~= 0 or #files == 0 then
-        return
-      end
-      for _, file in ipairs(files) do
-        if file ~= "" then
-          vim.fn.bufadd(file)
-          vim.fn.bufload(file)
-        end
-      end
-      vim.defer_fn(function()
-        require('gitsigns').setqflist("all", { open = false })
-      end, 500)
-      -- Pickup only: neo-tree git_status reads HEAD, so it's useless with an alt base
-      if not base then
-        pcall(function()
-          require('neo-tree.sources.manager').refresh('git_status')
-        end)
-      end
-    end
-
-    -- ClaudeChanges: set up the review view (quickfix with hunks, neo-tree for pickup)
-    vim.api.nvim_create_user_command('ClaudeChanges', function(opts)
-      local base = opts.args ~= "" and opts.args or nil
-      vim.g.claude_changes_base = base
-      if base then
-        require('gitsigns').change_base(base, true)
-        -- git_status source tracks HEAD, not an arbitrary base, so it's useless
-        -- in review. Open the regular filesystem tree for navigating context.
-        vim.cmd("Neotree filesystem")
-      else
-        vim.cmd("Neotree git_status")
-      end
-      refresh_changes()
-      vim.defer_fn(function() vim.cmd("copen") end, 600)
-    end, { nargs = "?", desc = "Show changes: quickfix hunks + neo-tree for pickup (optional: base ref)" })
-
-    -- ClaudeRefresh: called by the PostToolUse hook via RPC
-    vim.api.nvim_create_user_command('ClaudeRefresh', function()
-      vim.cmd("checktime")
-      refresh_changes()
-    end, {})
-
-    -- Find the "main" editing window (not neo-tree, quickfix, or scratch)
-    local function main_win()
-      for _, win in ipairs(vim.api.nvim_list_wins()) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        local ft = vim.bo[buf].filetype
-        local bt = vim.bo[buf].buftype
-        if ft ~= "neo-tree" and bt == "" then
-          return win
-        end
-      end
-      return nil
-    end
-
-    -- ClaudeOpen <path>[:line[:col]] — open a file in the main window and
-    -- advance the quickfix cursor to the matching hunk entry if one exists
-    vim.api.nvim_create_user_command('ClaudeOpen', function(opts)
-      local spec = opts.args
-      local path, line_s, col_s = spec:match("^(.-):(%d+):?(%d*)$")
-      if not path then
-        path = spec
-      end
-      local line = tonumber(line_s)
-      local col = tonumber(col_s) or 0
-
-      local win = main_win()
-      if win then
-        vim.api.nvim_set_current_win(win)
-      end
-      vim.cmd("edit " .. vim.fn.fnameescape(path))
-      if line then
-        local last = vim.api.nvim_buf_line_count(0)
-        vim.api.nvim_win_set_cursor(0, { math.min(line, last), col })
-        vim.cmd("normal! zz")
-      end
-
-      -- Point the quickfix cursor at the matching entry so ]q / [q keep flowing
-      local bufnr = vim.api.nvim_get_current_buf()
-      local qf = vim.fn.getqflist()
-      local best_idx, best_delta
-      for i, item in ipairs(qf) do
-        if item.bufnr == bufnr and item.lnum then
-          local delta = math.abs(item.lnum - (line or item.lnum))
-          if not best_delta or delta < best_delta then
-            best_idx, best_delta = i, delta
-          end
-        end
-      end
-      if best_idx then
-        vim.fn.setqflist({}, "r", { idx = best_idx, items = qf })
-      end
-    end, { nargs = 1, desc = "Open path[:line[:col]] in the main editing window" })
-
-    -- ClaudeQf next|prev|first|last — step through the changed-hunks quickfix
-    vim.api.nvim_create_user_command('ClaudeQf', function(opts)
-      local dir = opts.args
-      local map = { next = "cnext", prev = "cprev", first = "cfirst", last = "clast" }
-      local cmd = map[dir]
-      if not cmd then
-        vim.notify("ClaudeQf: expected next|prev|first|last, got " .. dir, vim.log.levels.ERROR)
-        return
-      end
-      local win = main_win()
-      if win then
-        vim.api.nvim_set_current_win(win)
-      end
-      pcall(vim.cmd, cmd)
-      vim.cmd("normal! zz")
-    end, { nargs = 1, desc = "Step through the changed-hunks quickfix: next|prev|first|last" })
-  '';
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
   home.file.".claude/CLAUDE.md" = {

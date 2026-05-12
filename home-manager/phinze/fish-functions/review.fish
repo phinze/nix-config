@@ -100,22 +100,10 @@ end
 
 # Step 7: Launch Claude for new sessions; for existing ones, notify and switch
 if test $is_new_session -eq 1
-    # Get base branch for PR diff
-    set -l base_branch (gh pr view $pr_number -R "$owner/$repo" --json baseRefName --jq '.baseRefName')
-    test -z "$base_branch"; and set base_branch main
-
-    # Compute neovim socket path (matches hook script derivation)
-    # Flatten slashes to hyphens so the path doesn't imply subdirectories
-    set -l sock_name (string replace -a "/" "-" "$session_name")
-    set -l nvim_sock "/tmp/nvc-$sock_name.sock"
-    if test (string length "$nvim_sock") -gt 100
-        set nvim_sock "/tmp/nvc-"(echo "$sock_name" | md5sum | cut -c1-12)".sock"
-    end
-
-    # Split: neovim on the right (PR changes view), Claude on the left
-    # ClaudeChanges opens neo-tree git_status + quickfix; hook keeps it current
+    # Split: lumen diff on the right (PR view via gh pr diff), Claude on the left.
+    # Pass the full PR URL so lumen doesn't need to resolve repo via `gh repo view`.
     tmux split-window -h -t "$session_name" -c "$worktree_path" \
-        "nvim --listen '$nvim_sock' -c 'ClaudeChanges origin/$base_branch'"
+        "lumen diff --pr https://github.com/$owner/$repo/pull/$pr_number --theme catppuccin-mocha"
     tmux select-pane -t "$session_name:0.0"
 
     tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated worktree; skip branch verification'" Enter

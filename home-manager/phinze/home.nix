@@ -476,18 +476,9 @@
 
           # Step 6: For new sessions, create split layout and launch Claude
           if test $is_new_session -eq 1
-              # Compute neovim socket path (matches hook script derivation)
-              # Flatten slashes to hyphens so the path doesn't imply subdirectories
-              set -l sock_name (string replace -a "/" "-" "$session_name")
-              set -l nvim_sock "/tmp/nvc-$sock_name.sock"
-              if test (string length "$nvim_sock") -gt 100
-                  set nvim_sock "/tmp/nvc-"(echo "$sock_name" | md5sum | cut -c1-12)".sock"
-              end
-
-              # Split: neovim on the right, Claude on the left
-              # ClaudeChanges opens neo-tree git_status + quickfix; hook keeps it current
+              # Split: lumen diff on the right (auto-refresh on file changes), Claude on the left
               tmux split-window -h -t "$session_name" -c "$worktree_path" \
-                  "nvim --listen '$nvim_sock' -c ClaudeChanges"
+                  "lumen diff -w --theme catppuccin-mocha"
               tmux select-pane -t "$session_name:0.0"
 
               tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP (it may take a few seconds to connect) to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter
