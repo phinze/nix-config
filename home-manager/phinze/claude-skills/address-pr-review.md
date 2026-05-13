@@ -8,12 +8,12 @@ Determine the PR to work on:
 - If `$ARGUMENTS` is provided, use it as the PR number
 - Otherwise, auto-detect from the current branch: `gh pr view --json number,title,url,state,headRefName,baseRefName`
 
-Parse owner/repo from the git remote:
+Parse owner/repo from gh (works in both colocated jj+git repos and jj workspaces under `~/workspaces/...` that have no `.git`, since direnv exports `GH_REPO` there):
 ```bash
-git config --get remote.origin.url
+gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"'
 ```
 
-Then gather review data. Read output directly — do NOT write to intermediate files. **Run independent commands in parallel.**
+Then gather review data. Read output directly. Do not write to intermediate files. **Run independent commands in parallel.**
 
 ### 1a. PR metadata + files changed
 
@@ -60,7 +60,7 @@ Substitute the actual OWNER, REPO, and PR_NUMBER values. The `jq` filter discard
 
 ### 1c. Review bodies (catches feedback not attached to lines)
 
-Bot reviewers like CodeRabbit embed some feedback directly in the review body text rather than as inline comments. This includes nitpick comments (`🧹 Nitpick comments`) and outside-diff-range comments (`⚠️ Outside diff range comments`). These do NOT appear in `reviewThreads` — you must fetch review bodies separately.
+Bot reviewers like CodeRabbit embed some feedback directly in the review body text rather than as inline comments. This includes nitpick comments (`🧹 Nitpick comments`) and outside-diff-range comments (`⚠️ Outside diff range comments`). These do NOT appear in `reviewThreads`, so you must fetch review bodies separately.
 
 ```bash
 gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
@@ -68,9 +68,9 @@ gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
 ```
 
 Parse the review body markdown for actionable sections. Look for headings/sections like:
-- `🧹 Nitpick comments` — lower-severity suggestions, often in collapsible `<details>` blocks
-- `⚠️ Outside diff range comments` — issues in code adjacent to but not part of the diff, often inside `> [!CAUTION]` callouts with suggested diffs
-- `🤖 Prompt for all review comments` — aggregated summary of all findings
+- `🧹 Nitpick comments`: lower-severity suggestions, often in collapsible `<details>` blocks
+- `⚠️ Outside diff range comments`: issues in code adjacent to but not part of the diff, often inside `> [!CAUTION]` callouts with suggested diffs
+- `🤖 Prompt for all review comments`: aggregated summary of all findings
 
 Treat nitpick and outside-diff-range items as review feedback alongside inline threads. They have file paths and line references embedded in the markdown even though they aren't attached to diff lines.
 
@@ -83,15 +83,15 @@ gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" --paginate \
 
 ## Phase 2: Analyze & Plan
 
-Work through ALL review feedback — both inline threads (from 1b) and review body comments (from 1c):
+Work through ALL review feedback, both inline threads (from 1b) and review body comments (from 1c):
 
-**Inline threads (from GraphQL):** Filter out already-addressed threads. If the PR author's reply is the last comment in a thread and no reviewer responded after it, treat the thread as "likely addressed, pending resolution" — exclude it from the fix plan and note it separately.
+**Inline threads (from GraphQL):** Filter out already-addressed threads. If the PR author's reply is the last comment in a thread and no reviewer responded after it, treat the thread as "likely addressed, pending resolution"; exclude it from the fix plan and note it separately.
 
 **Review body comments (nitpicks + outside-diff-range):** Parse these from the review body markdown. Each item typically includes a file path, line reference, description, and sometimes a suggested diff. Treat them as additional review items alongside inline threads.
 
 **Distinguish human vs bot reviewers.** Automated reviewers (CodeRabbit, Copilot, github-actions, etc.) behave differently from humans:
 - **Human comments**: Always important. Every human thread gets a reply (acknowledging the fix or explaining why we're skipping) and manual resolution. No bot is auto-resolving these.
-- **Bot comments**: Assess severity — real issues vs nitpicks. Addressed bot threads auto-resolve on push; skipped ones need a reply and manual resolution.
+- **Bot comments**: Assess severity. Real issues vs nitpicks. Addressed bot threads auto-resolve on push; skipped ones need a reply and manual resolution.
 
 Present a plan with these sections:
 
@@ -103,7 +103,7 @@ Present a plan with these sections:
 - Note whether the commenter is human or bot
 
 ### Will Skip (with draft responses)
-- For each skipped item, draft a brief response explaining why (e.g., "Keeping it simple for now" or "Intentional — here's why...")
+- For each skipped item, draft a brief response explaining why (e.g., "Keeping it simple for now" or "Intentional, here's why...")
 - These responses are valuable both as feedback for the bot and for any human reviewing the thread
 
 **Wait for approval before proceeding.**
@@ -112,13 +112,15 @@ Present a plan with these sections:
 
 Work through the approved fixes. Read the relevant source files, make the changes, and verify they look correct.
 
+Land the fixes via jj. Edits autosnapshot into `@`. From there you can either land them as a new rev on top of the PR's last rev with `jj desc -m '<message>'`, or fold them into one of the existing PR revs with `jj squash --into <rev> -u` (the `-u` keeps the destination's message and skips the editor). After landing, push with `jj git push`. If a squash rewrote an already-pushed rev, jj moves the bookmark sideways and the remote updates without complaint.
+
 Bot reviewers like CodeRabbit will auto-resolve their threads when they see the fix in a new push, so addressed items generally don't need manual replies or resolution. Skipped items do need replies (explaining why) and manual resolution. Continue to Phase 4 for any threads that need replies, then Phase 6 to resolve any that remain unresolved.
 
 ## Phase 4: Draft Responses
 
 Skip this phase if there are no threads needing replies.
 
-For each comment that needs a reply — skipped items (human or bot), questions from reviewers, acknowledgments of fixes — draft the response text.
+For each comment that needs a reply, draft the response text. These include skipped items (human or bot), reviewer questions, and acknowledgments of fixes.
 
 Present ALL drafts together in a summary like:
 
@@ -128,7 +130,7 @@ Present ALL drafts together in a summary like:
 ### Reply to @reviewer on file.go:42
 > Their comment text...
 
-Draft: "Thanks, fixed in the latest push — added the nil check."
+Draft: "Thanks, fixed in the latest push: added the nil check."
 
 ### Reply to @reviewer on file.go:87
 > Their comment text...
@@ -159,7 +161,7 @@ gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" \
   -f body="Response text"
 ```
 
-**Editing vs. appending:** `in_reply_to` always creates a new comment — it does not replace an existing one. If you need to revise a reply you already posted, use the PATCH endpoint to edit it in place. If appending a follow-up instead, word it as an update (e.g., "Update: we ended up going with X instead") so the thread reads naturally.
+**Editing vs. appending:** `in_reply_to` always creates a new comment. It does not replace an existing one. If you need to revise a reply you already posted, use the PATCH endpoint to edit it in place. If appending a follow-up instead, word it as an update (e.g., "Update: we ended up going with X instead") so the thread reads naturally.
 
 Post one at a time, confirming as we go.
 
@@ -211,7 +213,7 @@ After fixes are pushed, stick around and make sure everything actually lands cle
 
 **7a. Watch CI**
 
-Wait for checks to register and complete. **CI always runs** — if you see zero checks, it means they haven't registered yet, not that the repo has no CI.
+Wait for checks to register and complete. **CI always runs**. If you see zero checks, it means they haven't registered yet, not that the repo has no CI.
 
 Wait 15 seconds after the push before the first poll to give GitHub time to register checks. Then poll with:
 
@@ -219,15 +221,15 @@ Wait 15 seconds after the push before the first poll to give GitHub time to regi
 gh pr checks $PR_NUMBER
 ```
 
-Parse the output to determine status. Keep polling every 30 seconds until all checks have a final status (pass/fail, not pending). **Do not use `--watch`** — it streams continuous output that bloats context. A simple poll loop is better.
+Parse the output to determine status. Keep polling every 30 seconds until all checks have a final status (pass/fail, not pending). **Do not use `--watch`**; it streams continuous output that bloats context. A simple poll loop is better.
 
-If after 2 minutes you still see zero checks, that's unexpected — mention it but keep waiting (up to 5 minutes total before flagging it as a real problem).
+If after 2 minutes you still see zero checks, that's unexpected. Mention it but keep waiting (up to 5 minutes total before flagging it as a real problem).
 
 Once checks resolve:
 
 - **All green**: Move on to 7b.
 - **Failure**: Read the failed check's logs (`gh run view $RUN_ID --log-failed`). Assess the failure:
-  - If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident in the fix: fix it, commit, push, and loop back to watch CI again. **You get up to two auto-fix attempts.**
+  - If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident in the fix: write it at `@`, land it (either `jj desc -m 'fix CI: <what>'` as its own rev or `jj squash --into <broken-rev> -u` to fold it into the failing rev), then `jj git push` and loop back to watch CI again. **You get up to two auto-fix attempts.**
   - If the failure reveals a real issue that needs discussion, or if you've already used both auto-fix attempts: stop and report the situation.
 
 **7b. Verify CodeRabbit resolutions**
@@ -236,7 +238,7 @@ After the push, CodeRabbit should auto-resolve threads for issues we fixed. Give
 
 **7c. Check for new CodeRabbit comments**
 
-The new push may trigger a fresh CodeRabbit review with new findings. **CodeRabbit is always expected on `mirendev/` repos** — do not bail early assuming it's not set up. Poll for it (up to 5 minutes, every 30 seconds):
+The new push may trigger a fresh CodeRabbit review with new findings. **CodeRabbit is always expected on `mirendev/` repos**. Do not bail early assuming it's not set up. Poll for it (up to 5 minutes, every 30 seconds):
 
 ```bash
 gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \

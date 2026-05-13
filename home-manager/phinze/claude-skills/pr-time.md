@@ -56,11 +56,14 @@ Let's get this work shipped. Tidy the rev stack, rebase on latest trunk, open a 
    - **Existing bookmark on this stack**: `jj tug` moves the closest non-trunk ancestor bookmark to `@-` (or to `@` if `@` itself is the tip rev with no empty rev above it; adjust the target if needed)
    - **No bookmark yet**: pick the branch name (often inferrable from the workspace dir or a Linear issue), then `jj bookmark create <branch-name> -r @-`
 
-   Then push and open:
-   ```
+   Then push and open. `gh pr create` reads git's current branch to default `--head`, and in a colocated jj repo that still reports whatever branch git was on (usually `main`), not the jj bookmark we just moved. So pass `--head` explicitly using the bookmark sitting at `@-`:
+   ```bash
    jj git push           # add -N (--allow-new) if pushing a new bookmark for the first time
-   gh pr create          # uses the bookmark you just pushed as the head ref
+   gh pr create \
+     --head "$(jj log -r '@-' --no-graph -T 'bookmarks.join(\",\")')" \
+     --title "..." --body "..."
    ```
+   Edge case: if `@-` has multiple bookmarks, the inline command emits them comma-joined and gh will reject it. Rare; pick one and pass it manually if you hit it.
 
 8. **Babysit the PR**: After the PR is created, stick around and shepherd it through CI and automated review. This phase is fully autonomous. No need to check in unless something needs human judgment.
 
