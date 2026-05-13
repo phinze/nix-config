@@ -12,6 +12,7 @@ let
       git
       coreutils
       gnugrep
+      gh # git credential helper shells out to `gh auth git-credential`
     ];
     text = ''
       cd "${config.home.homeDirectory}/src/github.com/phinze/memex"
