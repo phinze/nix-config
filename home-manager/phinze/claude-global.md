@@ -149,5 +149,10 @@ If the daily file doesn't exist, create it with frontmatter:
     date: YYYY-MM-DD
     ---
 
-Do not auto-commit after writing. Commits are noisy and race-prone with
-parallel sessions; the human sweeps the memex repo manually.
+Diary lines ride along in the auto-sync. Leave them uncommitted and the
+hourly `memex-autocommit` cron will roll them into a `Sync:` wrapper
+commit. Anything more substantial (sketches in `Projects/Ideas/`, PIM
+docs, novel patterns) deserves an explicit commit with a real message
+before the cron picks it up. "Sync:" is fine as a wrapper for diary
+appends but a poor message for prose you'd later want to bisect or
+blame.
