@@ -514,6 +514,91 @@
           claude --dangerously-skip-permissions -p /whatsup
         '';
       };
+
+      fish_jj_prompt = {
+        description = "Print jj prompt segment: closest-bookmark, change_id, * for undescribed, description, state markers";
+        body = ''
+          if not command -sq jj
+              return 1
+          end
+          if not jj root --quiet >/dev/null 2>&1
+              return 1
+          end
+
+          # Find the bookmark to show: closest non-trunk ancestor first
+          # (so feature branches surface), falling back to include trunk
+          # so we still see "main" when sitting on it directly. Matches
+          # the logic in the `jj tug` alias.
+          set -l bookmark_name (jj log --ignore-working-copy --no-graph --color never \
+              -r 'latest(heads(::@ & bookmarks()) ~ trunk(), 1)' \
+              -T 'bookmarks.join(",")' 2>/dev/null)
+          if test -z "$bookmark_name"
+              set bookmark_name (jj log --ignore-working-copy --no-graph --color never \
+                  -r 'latest(heads(::@ & bookmarks()), 1)' \
+                  -T 'bookmarks.join(",")' 2>/dev/null)
+          end
+
+          # Render the rest of @'s info
+          set -l rest (jj log --ignore-working-copy --no-graph --color never -r @ -T '
+            separate(" ",
+              change_id.shortest(),
+              if(empty, "", if(description.first_line(), "", "*")),
+              if(description.first_line(),
+                surround("\"", "\"",
+                  if(description.first_line().substr(0, 24).starts_with(description.first_line()),
+                    description.first_line().substr(0, 24),
+                    description.first_line().substr(0, 23) ++ "…"))),
+              if(conflict, "(conflict)"),
+              if(divergent, "(divergent)"),
+              if(hidden, "(hidden)"))
+          ')
+
+          if test -n "$bookmark_name"
+              printf '%s %s\n' "$bookmark_name" "$rest"
+          else
+              echo $rest
+          end
+        '';
+      };
+
+      _pure_prompt_git = {
+        description = "Override pure's git segment: render jj info in jj repos, git otherwise";
+        body = ''
+          set ABORT_FEATURE 2
+
+          if set --query pure_enable_git; and test "$pure_enable_git" != true
+              return
+          end
+
+          # jj-first: render fish_jj_prompt when in a jj repo (workspaces
+          # and colocated), tinted with pure's branch color for consistency.
+          if command -sq jj; and jj root --quiet >/dev/null 2>&1
+              set --local jj_info (fish_jj_prompt)
+              set --local color (_pure_set_color $pure_color_git_branch)
+              echo "$color$jj_info"
+              return
+          end
+
+          # Pure's original git rendering. Re-sync if upstream pure changes
+          # _pure_prompt_git's segment composition.
+          if not type -q --no-functions git
+              return $ABORT_FEATURE
+          end
+
+          set --local is_git_repository (command git rev-parse --is-inside-work-tree 2>/dev/null)
+
+          if test -n "$is_git_repository"
+              set --local git_prompt (_pure_prompt_git_branch)(_pure_prompt_git_dirty)(_pure_prompt_git_stash)
+              set --local git_pending_commits (_pure_prompt_git_pending_commits)
+
+              if test (_pure_string_width $git_pending_commits) -ne 0
+                  set --append git_prompt $git_pending_commits
+              end
+
+              echo $git_prompt
+          end
+        '';
+      };
     };
 
     interactiveShellInit = lib.concatLines [
