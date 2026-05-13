@@ -13,11 +13,18 @@ email = "phinze@phinze.com"
 [--scope.user]
 email = "paul@miren.dev"
 
+# `auto-track-bookmarks` (without "created") is the modern superset of
+# `auto-track-created-bookmarks`: it covers both locally-created bookmarks
+# AND bookmarks imported via `jj git init`/`jj git fetch`. Without this,
+# fresh `jj git init` runs print a hint asking you to manually
+# `jj bookmark track` each remote ref. The "*" pattern matches everything;
+# the noise in `jj bookmark list` is fine because `jj tug` and the fish
+# prompt only ever surface the closest-ancestor bookmark anyway.
 [remotes.origin]
-auto-track-created-bookmarks = "*"
+auto-track-bookmarks = "*"
 
 [remotes.mine]
-auto-track-created-bookmarks = "*"
+auto-track-bookmarks = "*"
 
 [ui]
 # Side-by-side delta when the terminal is wide enough, plain delta otherwise
