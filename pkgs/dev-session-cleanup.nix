@@ -14,6 +14,7 @@ let
       gnugrep
       gnused
       jq
+      jujutsu
       procps
       tmux
     ]
@@ -44,12 +45,12 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
         shift 2
         ;;
       --help|-h)
-        echo "Usage: dev-session-cleanup [--dry-run|-n] [--phase liveness|worktrees|claude] [--max-idle SECONDS]"
+        echo "Usage: dev-session-cleanup [--dry-run|-n] [--phase liveness|worktrees|jj-workspaces|claude] [--max-idle SECONDS]"
         echo ""
-        echo "Nightly cleanup of stale dev sessions and merged git branches."
+        echo "Nightly cleanup of stale dev sessions, merged git branches, and jj workspaces."
         echo ""
         echo "  --dry-run, -n              Show what would be done without acting"
-        echo "  --phase liveness|worktrees|claude"
+        echo "  --phase liveness|worktrees|jj-workspaces|claude"
         echo "                             Run only the specified phase"
         echo "  --max-idle SECONDS         Max idle time before reaping (default: 86400 = 24h)"
         exit 0
@@ -288,7 +289,13 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
             log_ok "Removed $branch_name"
           fi
         else
-          # No worktree — just delete the branch
+          # No git worktree. But this bookmark might live in a jj workspace
+          # under ~/workspaces/$repo_name/$branch_name — leave it for Phase 2b
+          # so the workspace, tmux session, and bookmark are torn down together.
+          if [ -d "$HOME/workspaces/$repo_name/$branch_name/.jj" ]; then
+            continue
+          fi
+
           if [ "$DRY_RUN" = true ]; then
             log_ok "Would delete $branch_name (merged, no worktree)"
           else
@@ -302,6 +309,127 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
     done < <(ghq list --full-path)
 
     log "Phase 2 complete: $branches_removed branches across $repos_trimmed repos"
+  }
+
+  # ─── Phase 2b: jj workspace reaping ───────────────────────────────────
+
+  phase_jj_workspaces() {
+    log "Phase 2b: Reaping merged jj workspaces under ~/workspaces"
+
+    if [ ! -d "$HOME/workspaces" ]; then
+      log "  No ~/workspaces directory; skipping"
+      return
+    fi
+
+    local visited=0
+    local removed=0
+
+    while IFS= read -r jj_dir; do
+      [ -z "$jj_dir" ] && continue
+      visited=$((visited + 1))
+
+      local workspace_path
+      workspace_path=$(dirname "$jj_dir")
+
+      # Path shape: ~/workspaces/<host>/<owner>/<repo>/<branch...>
+      local ws_relpath="''${workspace_path#$HOME/workspaces/}"
+      local parts
+      IFS='/' read -ra parts <<< "$ws_relpath"
+      if [ "''${#parts[@]}" -lt 4 ]; then
+        log_warn "Skipping $workspace_path — unexpected path shape"
+        continue
+      fi
+
+      local host="''${parts[0]}"
+      local owner="''${parts[1]}"
+      local repo="''${parts[2]}"
+      # Branch may contain slashes (e.g., phinze/foo) — rejoin trailing segments
+      local branch_name
+      branch_name=$(IFS=/; echo "''${parts[*]:3}")
+      local main_repo="$HOME/src/$host/$owner/$repo"
+
+      if [ ! -d "$main_repo/.jj" ]; then
+        log_warn "Skipping $branch_name — main repo $main_repo missing or not colocated"
+        continue
+      fi
+
+      # Determine merge state. Consider "done" if either:
+      #   (a) the bookmark no longer exists in the main repo (orphan workspace), or
+      #   (b) the bookmark commit is an ancestor of trunk() (FF/rebase-merged).
+      # Squash-merges aren't caught here — same blind spot as Phase 2.
+      local bookmark_exists=true
+      if ! jj -R "$main_repo" log -r "$branch_name" --no-graph -T '"x"' 2>/dev/null | grep -q .; then
+        bookmark_exists=false
+      fi
+
+      local is_done=false
+      if [ "$bookmark_exists" = false ]; then
+        is_done=true
+      elif jj -R "$main_repo" log -r "$branch_name & ::trunk()" --no-graph -T '"x"' 2>/dev/null | grep -q .; then
+        is_done=true
+      fi
+
+      if [ "$is_done" = false ]; then
+        continue
+      fi
+
+      # Working-copy safety: skip if @ has a non-empty diff.
+      if jj -R "$workspace_path" log -r '@ & ~empty()' --no-graph -T '"x"' 2>/dev/null | grep -q .; then
+        log_warn "Skipping $branch_name — jj workspace @ has uncommitted changes"
+        continue
+      fi
+
+      # Tmux session name per jpickup formula: ~ prefix, lowercase,
+      # spaces/dots/colons → hyphens. Slashes are kept (tmux allows them).
+      local session_name="''${workspace_path/#$HOME/~}"
+      session_name="''${session_name// /-}"
+      session_name="''${session_name//./-}"
+      session_name="''${session_name//:/-}"
+      session_name="''${session_name,,}"
+
+      if is_session_active "$session_name"; then
+        local idle_seconds idle_hours
+        idle_seconds=$(get_session_idle "$session_name")
+        idle_hours=$((idle_seconds / 3600))
+        log_warn "Skipping $branch_name — active session (idle ''${idle_hours}h)"
+        continue
+      fi
+
+      if tmux has-session -t "$session_name" 2>/dev/null; then
+        if [ "$DRY_RUN" = true ]; then
+          log_ok "Would kill tmux session: $session_name"
+        else
+          tmux kill-session -t "$session_name" 2>/dev/null || true
+        fi
+      fi
+
+      if command -v iso &>/dev/null && [ -d "$workspace_path/.iso" ]; then
+        if [ "$DRY_RUN" = false ]; then
+          (cd "$workspace_path" && iso stop --all-sessions 2>/dev/null) || true
+        fi
+      fi
+
+      # jj workspace names flatten slashes to hyphens (jpickup convention).
+      local ws_name="''${branch_name//\//-}"
+
+      if [ "$DRY_RUN" = true ]; then
+        log_ok "Would forget jj workspace $ws_name + remove $workspace_path"
+        if [ "$bookmark_exists" = true ]; then
+          log_ok "Would forget bookmark $branch_name in $main_repo"
+        fi
+      else
+        jj -R "$main_repo" workspace forget "$ws_name" 2>/dev/null || true
+        rm -rf "$workspace_path"
+        if [ "$bookmark_exists" = true ]; then
+          jj -R "$main_repo" bookmark forget "$branch_name" 2>/dev/null || true
+        fi
+        log_ok "Removed jj workspace for $branch_name"
+      fi
+
+      removed=$((removed + 1))
+    done < <(find "$HOME/workspaces" -name .jj -type d -prune 2>/dev/null)
+
+    log "Phase 2b complete: $removed of $visited workspaces removed"
   }
 
   # ─── Phase 3: Stale Claude Code reaping ───────────────────────────────
@@ -387,6 +515,10 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
 
   if [ -z "$PHASE" ] || [ "$PHASE" = "worktrees" ]; then
     phase_worktrees || log_warn "Phase 2 (worktrees) encountered errors"
+  fi
+
+  if [ -z "$PHASE" ] || [ "$PHASE" = "jj-workspaces" ]; then
+    phase_jj_workspaces || log_warn "Phase 2b (jj-workspaces) encountered errors"
   fi
 
   if [ -z "$PHASE" ] || [ "$PHASE" = "claude" ]; then
