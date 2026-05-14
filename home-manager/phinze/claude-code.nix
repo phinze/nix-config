@@ -315,7 +315,8 @@ in
   };
 
   # Claude Code slash commands (skills stored in separate files for easier editing)
-  home.file.".claude/commands/whatsup.md".source = ./claude-skills/whatsup.md;
+  home.file.".claude/commands/whatsup-home.md".source = ./claude-skills/whatsup-home.md;
+  home.file.".claude/commands/whatsup-work.md".source = ./claude-skills/whatsup-work.md;
   home.file.".claude/commands/pr-time.md".source = ./claude-skills/pr-time.md;
   home.file.".claude/commands/address-pr-review.md".source = ./claude-skills/address-pr-review.md;
   home.file.".claude/commands/review-pr.md".source = ./claude-skills/review-pr.md;

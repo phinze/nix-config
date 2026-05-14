@@ -508,13 +508,6 @@
         body = builtins.readFile ./fish-functions/jreview.fish;
       };
 
-      whatsup = {
-        description = "Get Claude to summarize your active work context";
-        body = ''
-          claude --dangerously-skip-permissions -p /whatsup
-        '';
-      };
-
       fish_jj_prompt = {
         description = "Print jj prompt segment: closest-bookmark, change_id, * for undescribed, description, state markers";
         body = ''
