@@ -16,10 +16,7 @@
         # Host-specific packages for phinze-mrn-mbp
         extraPackages = [ ];
         # Host-specific homebrew casks for phinze-mrn-mbp
-        extraCasks = [
-          "gather"
-          "linear-linear"
-        ];
+        extraCasks = [ ];
         isMemexHost = true;
       };
     };
