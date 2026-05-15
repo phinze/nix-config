@@ -104,13 +104,10 @@ end
 
 # Step 8: For new sessions, split layout and launch Claude
 if test $is_new_session -eq 1
-    # Split: poor-man's diff watcher on the right. Lumen's jj backend doesn't
-    # snapshot the working copy or refresh its loaded repo, so `lumen diff -w`
-    # renders an empty diff forever in a jj workspace (see
-    # memex/Projects/Ideas/review-first-diff-tool.md). `jj diff` auto-snapshots
-    # as a side effect, so polling it shows live edits.
-    tmux split-window -h -t "$session_name" -c "$workspace_path" \
-        "fish -c 'while true; clear; jj diff --color=always; sleep 2; end'"
+    # Split: recto on the right. jj-first diff viewer with notify-driven
+    # auto-refresh, so the diff updates as the agent saves files in the
+    # left pane.
+    tmux split-window -h -t "$session_name" -c "$workspace_path" recto
     tmux select-pane -t "$session_name:0.0"
 
     tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP (it may take a few seconds to connect) to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter

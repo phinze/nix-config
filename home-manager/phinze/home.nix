@@ -133,6 +133,7 @@
       hunkdiff # Review-first terminal diff viewer for agentic coders
       ilmari # tmux popup radar for agent panes (Codex, Claude Code, etc.)
       lumen # Visual git diff viewer in the terminal
+      recto # jj-first terminal diff viewer for reviewing agent-authored changes
       unstable.jujutsu # jj VCS, trying it out alongside git
       unstable.jjui # TUI frontend for jj
       jq
