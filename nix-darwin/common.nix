@@ -180,6 +180,7 @@ in
     "meetingbar"
     "obs"
     "obsidian"
+    "ollama-app"
     "orcaslicer"
     "raycast"
     "rectangle"
