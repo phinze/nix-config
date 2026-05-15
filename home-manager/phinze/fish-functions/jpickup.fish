@@ -73,6 +73,14 @@ if not test -d "$workspace_path"
     # Workspace names can't contain slashes; flatten for the --name arg
     set -l ws_name (string replace -a "/" "-" "$branch_name")
 
+    # If a workspace with this name is already registered but its directory
+    # is gone, it's an orphan (likely from a cleanup that removed the dir but
+    # not the registration). Forget it so we can recreate at the same path.
+    if jj -R "$main_repo" workspace list 2>/dev/null | string match -q "$ws_name: *"
+        echo "Forgetting orphan jj workspace '$ws_name' before recreate"
+        jj -R "$main_repo" workspace forget "$ws_name" 2>/dev/null
+    end
+
     mkdir -p (dirname "$workspace_path")
     if not jj -R "$main_repo" workspace add --revision "$start_rev" --name "$ws_name" "$workspace_path"
         echo "Failed to create jj workspace for $branch_name"
