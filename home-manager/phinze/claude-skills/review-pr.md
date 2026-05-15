@@ -67,14 +67,12 @@ Think hard and carefully about the code changes.
      a drive-by. Mention what we focused on or how deep we went. The vibe is
      "two people sat down and thought about this together" — but don't use a
      canned template. Let the phrasing fit the review naturally.
-   - **Pronouns and voice**: The review posts under the user's GitHub account.
-     Use "Claude and [user's first name]" (e.g., "Claude and Paul here").
-     The user is a real person with opinions and feelings about the work —
-     let those come through explicitly. If the user expressed admiration,
-     excitement, or concerns during the walkthrough, attribute those to them
-     by name. Claude provides technical analysis and design observations.
-     The reader should be able to tell who thinks what — not a weird amalgam
-     where it's unclear whether a compliment is from a human or a bot.
+   - **Pronouns and voice**: The review posts under the user's GitHub account
+     and should read as collaborative: Claude's analysis plus the user's
+     judgment, with attribution clear enough that the reader can tell who
+     thinks what. If the user expressed admiration, excitement, or concerns
+     during the walkthrough, attribute those to them by name. Vary the
+     opening; don't lean on a fixed phrase like "Claude and Paul here."
    - Draft a short **top-level comment** summarizing the review
    - Draft **inline comments** for specific lines, formatted as:
 
