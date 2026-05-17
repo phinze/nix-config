@@ -54,6 +54,23 @@
     clean.extraArgs = "--nogcroots --keep 3";
   };
 
+  # Memory pressure handling. The combination keeps the box alive when one
+  # workload (typically a runaway Claude session) tries to take it down:
+  #   - zram gives us compressed-RAM swap, so reclaim is fast and the box
+  #     stays responsive under pressure instead of thrashing on disk swap.
+  #   - systemd-oomd watches user-slice PSI and kills the largest cgroup
+  #     (i.e. the offending tmux-spawn scope) at ~20s of sustained pressure,
+  #     before kernel OOM has a chance to flail.
+  # No per-session memory cap: a single session can grow as needed; only
+  # under genuine system-wide pressure does anyone get evicted.
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+  };
+  systemd.oomd = {
+    enableUserSlices = true;
+  };
+
   # Disable the firewall since we're in a VM and we want to make it
   # easy to visit stuff in here. We only use NAT networking anyways.
   networking.firewall.enable = false;
