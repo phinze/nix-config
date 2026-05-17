@@ -101,12 +101,10 @@ end
 
 # Step 8: Launch Claude for new sessions; for existing ones, notify and switch
 if test $is_new_session -eq 1
-    # Split: lumen diff on the right (PR view via gh pr diff), Claude on the left.
-    # Pass the full PR URL so lumen doesn't need to resolve repo via `gh repo view` —
-    # a fresh jj workspace has no .git and direnv hasn't allowed the stub .envrc yet,
-    # so GH_REPO isn't set on the first run.
-    tmux split-window -h -t "$session_name" -c "$workspace_path" \
-        "lumen diff --pr https://github.com/$owner/$repo/pull/$pr_number --theme catppuccin-mocha"
+    # Split: recto on the right, showing the full PR diff against trunk().
+    # Pane cwd is the freshly-created jj workspace, so recto reads local jj
+    # state (no GitHub round-trip needed).
+    tmux split-window -h -t "$session_name" -c "$workspace_path" "recto --base 'trunk()'"
     tmux select-pane -t "$session_name:0.0"
 
     tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated jj workspace; skip branch verification'" Enter
