@@ -38,6 +38,8 @@ Exceptions:
 - Bulk triage or batch operations where we've already agreed on the pattern
 - When a skill's own instructions already handle the review flow (e.g. pr-time)
 - Read-only operations (fetching, searching, listing) never need approval
+- Local notes-to-self that nobody else will read (milestone diary appends,
+  scratch files). Just write them.
 
 Default: **draft it, show me, then send after I say go.**
 
@@ -123,19 +125,25 @@ version-controlled file in the nix-config repo
 
 ## Milestone Diary
 
-At milestone moments during a session, append a one-line entry to
+When something happens worth noting later, append a one-line entry to
 `~/src/github.com/phinze/memex/Daily/YYYY-MM-DD.md` (today's date).
 Lightweight replacement for the retired eod automation: drop a line as
 things happen, instead of trawling transcripts later.
+
+**Just write the entry. Don't ask first.** These are notes-to-self, not
+co-authored prose. Treat it like a recap impulse during a quiet moment:
+quietly observe, append the line, move on. If you misjudge and log
+something I'd rather you hadn't, the worst case is a stray line in a
+`Sync:` commit that I delete. That asymmetry is fine — interrupting flow
+to confirm a diary entry costs more than the occasional miss.
 
 Format: `- HH:MM <area> - <observation>` where HH:MM is Central Time.
 Use `TZ=America/Chicago date +%H:%M` so the time is correct from any
 machine.
 
-What counts as a milestone:
+What counts as worth noting:
 - PR opened or merged
 - A decision worth remembering (architectural choice, direction change)
-- A sketch added to `memex/Projects/Ideas/`
 - A novel pattern landed in `nix-config`
 - An incident triaged or resolved
 
