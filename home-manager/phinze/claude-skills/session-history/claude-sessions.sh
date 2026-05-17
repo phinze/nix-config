@@ -47,6 +47,7 @@ Commands:
   list [--all | path] [--days N]    List recent sessions, most recent first
   search <term> [--all | path] [--days N]
                                     Search sessions for a term (uses rg)
+  peek <session> <term> [chars]     Bounded context (default 150 chars each side) around matches
   bash <session> [filter]           Extract Bash commands from a session
   extract <session> <type>          Extract content: user, assistant, bash, tools
   search-bash <term> [--all | path] [--days N]
@@ -158,6 +159,27 @@ cmd_list() {
   fi
   stat_mtime_paths "$dir"/*.jsonl 2>/dev/null | sort -rn | awk 'NR<=20 {print $2}' \
     | maybe_filter_days
+}
+
+# Bounded context around matches in a session. JSONL entries can be MB long
+# (tool results, file reads, attachments are inlined), so a bare `grep -B/-A`
+# can return multi-MB lines per match and blow up the caller's context.
+# Default 150 chars of surrounding context on each side of each match.
+cmd_peek() {
+  local session="${1:?session file required}"
+  local term="${2:?search term required}"
+  local n="${3:-150}"
+  awk -v term="$term" -v n="$n" '
+  {
+    start = 1
+    while ((i = index(substr($0, start), term)) > 0) {
+      pos = start + i - 1
+      a = pos - n; if (a < 1) a = 1
+      b = pos + length(term) + n - 1; if (b > length($0)) b = length($0)
+      print substr($0, a, b - a + 1)
+      start = pos + length(term)
+    }
+  }' "$session"
 }
 
 # Search for a term across sessions
@@ -403,6 +425,7 @@ case "$command" in
   dir)            session_dir "$@" ;;
   list)           cmd_list "$@" ;;
   search)         cmd_search "$@" ;;
+  peek)           cmd_peek "$@" ;;
   bash)           cmd_bash "$@" ;;
   extract)        cmd_extract "$@" ;;
   search-bash)    cmd_search_bash "$@" ;;

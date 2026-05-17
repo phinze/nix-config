@@ -21,6 +21,7 @@ usage.
 claude-sessions.sh dir [path]                              # session dir for a project
 claude-sessions.sh list [--all | path] [--days N]          # recent sessions
 claude-sessions.sh search <term> [--all | path] [--days N] # find sessions by content
+claude-sessions.sh peek <session> <term> [chars]           # bounded context around matches
 claude-sessions.sh bash <session> [filter]                 # extract Bash commands
 claude-sessions.sh extract <session> <type>                # type: user, assistant, bash, tools
 claude-sessions.sh search-bash <term> [--all | path] [--days N]
@@ -47,6 +48,11 @@ The directory name is the absolute project path with both `/` and `.`
 replaced by `-` (leading one included, so names start with `-`). Reversing
 this is lossy, so the script reads the literal `cwd` field out of the JSONL
 for display instead.
+
+Each JSONL entry is a single line that can be megabytes long — tool
+results, file reads, and attachments are inlined. Filename-only searches
+(`search`) and field-extracting `jq` queries are cheap; matching or
+extracting whole lines is not.
 
 ## Process
 
