@@ -101,10 +101,11 @@ end
 
 # Step 8: Launch Claude for new sessions; for existing ones, notify and switch
 if test $is_new_session -eq 1
-    # Split: recto on the right, showing the full PR diff against trunk().
-    # Pane cwd is the freshly-created jj workspace, so recto reads local jj
-    # state (no GitHub round-trip needed).
-    tmux split-window -h -t "$session_name" -c "$workspace_path" "recto --base 'trunk()'"
+    # Split: recto on the right in --pr mode, so the diff shows just what's
+    # on the branch (merge-base against trunk) — not upstream-since-fork
+    # noise. Pane cwd is the freshly-created jj workspace, so recto reads
+    # local jj state (no GitHub round-trip needed).
+    tmux split-window -h -t "$session_name" -c "$workspace_path" "recto --pr"
     tmux select-pane -t "$session_name:0.0"
 
     tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions '/review-pr $pr_number — you are already on the PR branch in a dedicated jj workspace; skip branch verification'" Enter

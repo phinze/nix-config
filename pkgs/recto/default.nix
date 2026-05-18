@@ -5,13 +5,13 @@
 }:
 rustPlatform.buildRustPackage {
   pname = "recto";
-  version = "0-unstable-2026-05-17";
+  version = "0-unstable-2026-05-18";
 
   src = fetchFromGitHub {
     owner = "phinze";
     repo = "recto";
-    rev = "682583cd4379793b4dda75bad53adeaa2d73d39a";
-    hash = "sha256-4lrFN4Gl94tu3HsqLE3QJYX+TXwiETI9gz0HMzQNE80=";
+    rev = "cb10b285a501060da1734847f9d346ec6fa300cc";
+    hash = "sha256-2pXiAOZ5xQVHV5NCABvSWHPj66NYY5N75QW9g4TMS6Y=";
   };
 
   cargoHash = "sha256-H8+VGKHHRXQHhK0Ky9RL3rWpynAWc5DFqCVDn2fix+Q=";
