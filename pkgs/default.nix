@@ -17,6 +17,5 @@ pkgs: rec {
   coderabbit = pkgs.callPackage ./coderabbit { };
   linearis = pkgs.callPackage ./linearis { };
   osc-copy = pkgs.callPackage ./osc-copy { };
-  synckick = pkgs.callPackage ./synckick.nix { };
   whoson = pkgs.callPackage ./whoson.nix { };
 }
