@@ -150,10 +150,19 @@ in
   homebrew.global.autoUpdate = true;
 
   homebrew.taps = [
+    {
+      name = "jundot/omlx";
+      clone_target = "https://github.com/jundot/omlx";
+    }
   ];
 
   homebrew.brews = [
     "media-control"
+    {
+      name = "jundot/omlx/omlx";
+      start_service = true;
+      restart_service = "changed";
+    }
   ];
 
   homebrew.casks = [
@@ -180,7 +189,6 @@ in
     "meetingbar"
     "obs"
     "obsidian"
-    "ollama-app"
     "orcaslicer"
     "raycast"
     "rectangle"
