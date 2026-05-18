@@ -306,6 +306,9 @@ in
   home.file.".claude/skills/tuicr/tuicr-wrapper.sh".source =
     "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
 
+  # jj skill: version control playbook, auto-loads on any jj/git-adjacent work
+  home.file.".claude/skills/jj/SKILL.md".source = ./claude-skills/jj/SKILL.md;
+
   # session-history skill: search/summarize Claude Code session JSONL files
   home.file.".claude/skills/session-history/SKILL.md".source =
     ./claude-skills/session-history/SKILL.md;
