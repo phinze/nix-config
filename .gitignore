@@ -4,3 +4,6 @@ result-*
 
 # Local tmp dir for misc working files
 tmp/
+
+# Antigravity CLI per-cwd state (symlink into ~/.gemini/config/projects/)
+.antigravitycli/

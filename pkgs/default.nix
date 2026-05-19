@@ -22,6 +22,7 @@ pkgs: rec {
   # recto uses 2024 edition + let-chains, so build against unstable
   recto = pkgs.unstable.callPackage ./recto { };
   coderabbit = pkgs.callPackage ./coderabbit { };
+  antigravity-cli = pkgs.callPackage ./antigravity-cli { };
   linearis = pkgs.callPackage ./linearis { };
   osc-copy = pkgs.callPackage ./osc-copy { };
   whoson = pkgs.callPackage ./whoson.nix { };

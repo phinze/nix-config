@@ -122,6 +122,7 @@
   home.packages =
     with pkgs;
     [
+      antigravity-cli # Google Antigravity CLI (agy) — burns GCP startup credits
       ccusage # Analyze Claude Code token usage and costs
       coderabbit # AI-powered code review CLI
       delta # Syntax-highlighting pager for git
