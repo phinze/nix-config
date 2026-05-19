@@ -50,6 +50,13 @@ to git when jj genuinely has no equivalent. The `jj` skill has the full
 playbook — verbs, workspace handling, destructive-op rules, and the
 semantic-commit workflow.
 
+You should actively drive the VCS process by preparing descriptions and
+drafting revisions for our changes. However, before running any command
+that modifies revision history or sets descriptions (like `jj describe`
+or `git commit`), show me a draft of your proposed message and wait for
+my go-ahead. Keep descriptions concise, focus heavily on the "why"
+behind the change, and make sure any non-obvious design choices are clear.
+
 ## Memory Policy
 
 Do not write to per-project memory files (`~/.claude/projects/*/memory/`).
