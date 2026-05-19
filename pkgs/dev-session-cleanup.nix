@@ -1,6 +1,7 @@
 {
   pkgs,
   gwq,
+  jujutsu,
 }:
 let
   runtimeDeps =
@@ -14,11 +15,13 @@ let
       gnugrep
       gnused
       jq
-      jujutsu
       procps
       tmux
     ]
-    ++ [ gwq ];
+    ++ [
+      gwq
+      jujutsu
+    ];
 in
 pkgs.writeShellScriptBin "dev-session-cleanup" ''
   set -uo pipefail
@@ -353,29 +356,48 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
         continue
       fi
 
-      # Determine merge state. Consider "done" if either:
-      #   (a) the bookmark no longer exists in the main repo (orphan workspace), or
-      #   (b) the bookmark commit is an ancestor of trunk() (FF/rebase-merged).
-      # Squash-merges aren't caught here — same blind spot as Phase 2.
-      local bookmark_exists=true
-      if ! jj -R "$main_repo" log -r "$branch_name" --no-graph -T '"x"' 2>/dev/null | grep -q .; then
-        bookmark_exists=false
+      # Merge state. Only reap when the bookmark positively exists AND its
+      # commit is an ancestor of trunk() (FF/rebase-merged). A missing
+      # bookmark is NOT a green light — it might be an unpushed workspace
+      # with local WIP. Better to leak an orphan workspace dir than to nuke
+      # in-progress work. Squash-merges aren't caught here — same blind spot
+      # as Phase 2. Fail-closed on jj errors (e.g., version skew between the
+      # script's bundled jj and the repo's on-disk format).
+      local bm_check bm_rc
+      bm_check=$(jj -R "$main_repo" log -r "$branch_name" --no-graph -T '"x"' 2>&1)
+      bm_rc=$?
+      if [ "$bm_rc" -ne 0 ]; then
+        log_warn "Skipping $branch_name — jj log failed in $main_repo: $bm_check"
+        continue
       fi
-
-      local is_done=false
-      if [ "$bookmark_exists" = false ]; then
-        is_done=true
-      elif jj -R "$main_repo" log -r "$branch_name & ::trunk()" --no-graph -T '"x"' 2>/dev/null | grep -q .; then
-        is_done=true
+      if [ -z "$bm_check" ]; then
+        log_warn "Skipping $branch_name — bookmark missing in main repo (possible unpushed WIP)"
+        continue
       fi
-
-      if [ "$is_done" = false ]; then
+      local trunk_check trunk_rc
+      trunk_check=$(jj -R "$main_repo" log -r "$branch_name & ::trunk()" --no-graph -T '"x"' 2>&1)
+      trunk_rc=$?
+      if [ "$trunk_rc" -ne 0 ]; then
+        log_warn "Skipping $branch_name — jj trunk-ancestry check failed: $trunk_check"
+        continue
+      fi
+      if [ -z "$trunk_check" ]; then
         continue
       fi
 
-      # Working-copy safety: skip if @ has a non-empty diff.
-      if jj -R "$workspace_path" log -r '@ & ~empty()' --no-graph -T '"x"' 2>/dev/null | grep -q .; then
-        log_warn "Skipping $branch_name — jj workspace @ has uncommitted changes"
+      # Working-copy safety: skip if there's any non-empty commit reachable
+      # from @ that isn't already on trunk. Catches plain WIP at @ as well
+      # as the "jj new on top of WIP" pattern where @ is empty but @- holds
+      # the changes. Fail-closed: if jj errors for any reason, skip.
+      local wip_check wip_rc
+      wip_check=$(jj -R "$workspace_path" log -r '::@ & ~empty() & ~::trunk()' --no-graph -T '"x"' 2>&1)
+      wip_rc=$?
+      if [ "$wip_rc" -ne 0 ]; then
+        log_warn "Skipping $branch_name — jj log failed (workspace state unclear): $wip_check"
+        continue
+      fi
+      if [ -n "$wip_check" ]; then
+        log_warn "Skipping $branch_name — jj workspace has uncommitted/unmerged work"
         continue
       fi
 
