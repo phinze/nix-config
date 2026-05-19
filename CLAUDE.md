@@ -94,19 +94,6 @@ nix-prefetch-url <url> | xargs -I {} nix hash to-sri --type sha256 {}
 
 This converts the base32 hash from `nix-prefetch-url` to the SRI format (`sha256-...=`) that Nix derivations expect.
 
-## Clipboard Access
-
-Use `pbcopy` to copy text to the user's system clipboard. Always use a heredoc — piping from `echo` or `printf` results in 0 bytes reaching pbcopy in this environment:
-```bash
-cat <<'EOF' | pbcopy
-Text to copy here.
-Quotes, apostrophes, and special characters all work.
-EOF
-```
-For copying file contents: `cat file.txt | pbcopy`
-
-This works on both macOS (native) and NixOS (via OSC 52 through SSH/tmux).
-
 ## Claude Code Configuration
 
 This repo is the source of truth for Claude Code configuration. Skills, CLAUDE.md files, and settings are managed declaratively via home-manager in `home-manager/phinze/claude-code.nix` and deployed as symlinks.

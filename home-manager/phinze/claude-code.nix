@@ -350,6 +350,11 @@ in
   # jj skill: version control playbook, auto-loads on any jj/git-adjacent work
   home.file.".claude/skills/jj/SKILL.md".source = ./claude-skills/jj/SKILL.md;
 
+  # clipboard skill: steer copy/clipboard asks to the one reliable invocation
+  # (heredoc into pbcopy) instead of probing for xclip/xsel/wl-copy or
+  # falling back to /tmp files and tmux load-buffer.
+  home.file.".claude/skills/clipboard/SKILL.md".source = ./claude-skills/clipboard/SKILL.md;
+
   # session-history skill: search/summarize Claude Code session JSONL files
   home.file.".claude/skills/session-history/SKILL.md".source =
     ./claude-skills/session-history/SKILL.md;
