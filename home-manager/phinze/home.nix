@@ -24,6 +24,8 @@
     inputs.sophon.homeManagerModules.default
     # Claude Code configuration (package + statusline)
     ./claude-code.nix
+    # Antigravity CLI configuration (wrapped package + statusline + plugins)
+    ./antigravity-code.nix
     # Karabiner-Elements for keyboard remapping (incl. R400 → Handy)
     ./karabiner.nix
     # Tmux terminal multiplexer
@@ -113,6 +115,10 @@
     # Claude Code shorthand
     cld = "claude --dangerously-skip-permissions";
     cldr = "claude --dangerously-skip-permissions --resume";
+
+    # Antigravity CLI shorthand
+    agy = "agy --dangerously-skip-permissions";
+    agyr = "agy --dangerously-skip-permissions --continue";
   };
 
   home.sessionVariables = {
@@ -122,7 +128,6 @@
   home.packages =
     with pkgs;
     [
-      antigravity-cli # Google Antigravity CLI (agy) — burns GCP startup credits
       ccusage # Analyze Claude Code token usage and costs
       coderabbit # AI-powered code review CLI
       delta # Syntax-highlighting pager for git
