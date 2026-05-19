@@ -123,6 +123,25 @@ let
 
     echo "$out"
   '';
+
+  antigravitySettingsJson = builtins.toJSON {
+    colorScheme = "tokyo night";
+    enableTelemetry = false;
+    gcp = {
+      project = "phinze-sandbox-462120";
+      location = "us";
+    };
+    model = "Gemini 3.5 Flash";
+    trustedWorkspaces = [
+      "${config.home.homeDirectory}/src/github.com/phinze/nix-config"
+    ];
+    statusLine = {
+      type = "command";
+      command = "${antigravity-statusline}";
+    };
+  };
+
+  antigravitySettingsFile = pkgs.writeText "antigravity-settings.json" antigravitySettingsJson;
 in
 {
   # Add the wrapped antigravity-cli to packages
@@ -130,26 +149,7 @@ in
     antigravity-cli-wrapped
   ];
 
-  # Antigravity CLI declarative settings
-  home.file.".gemini/antigravity-cli/settings.json" = {
-    text = builtins.toJSON {
-      colorScheme = "tokyo night";
-      enableTelemetry = false;
-      gcp = {
-        project = "phinze-sandbox-462120";
-        location = "us";
-      };
-      model = "Gemini 3.5 Flash";
-      trustedWorkspaces = [
-        "${config.home.homeDirectory}/src/github.com/phinze/nix-config"
-      ];
-      statusLine = {
-        type = "command";
-        command = "${antigravity-statusline}";
-      };
-    };
-    force = true;
-  };
+  # Note: Antigravity settings.json is installed as a mutable file via activation script below.
 
   # Define custom personal-setup Claude plugin bundling all your personal skills and commands
   home.file.".claude/plugins/personal-setup/.claude-plugin/plugin.json" = {
@@ -181,8 +181,13 @@ in
   home.file.".claude/plugins/personal-setup/commands/address-pr-review.md".source = ./claude-skills/address-pr-review.md;
   home.file.".claude/plugins/personal-setup/commands/review-pr.md".source = ./claude-skills/review-pr.md;
 
+  # Activation script to write Antigravity settings as a mutable file
+  home.activation.antigravitySettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    $DRY_RUN_CMD install -D -m 644 ${antigravitySettingsFile} ${config.home.homeDirectory}/.gemini/antigravity-cli/settings.json
+  '';
+
   # Activation script to automatically run 'agy plugin import' for all required plugins
-  home.activation.antigravityImportPlugins = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" ] ''
+  home.activation.antigravityImportPlugins = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" "antigravitySettings" ] ''
     # Wait for Claude plugin files to be written first, then run agy plugin import
     # This automatically syncs all your personal setups, mpc-servers, skills and custom commands into agy
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/personal-setup
