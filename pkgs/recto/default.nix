@@ -5,16 +5,16 @@
 }:
 rustPlatform.buildRustPackage {
   pname = "recto";
-  version = "0-unstable-2026-05-18";
+  version = "0-unstable-2026-05-19";
 
   src = fetchFromGitHub {
     owner = "phinze";
     repo = "recto";
-    rev = "82e876724792f33193c7047a4e88da1214dc864b";
-    hash = "sha256-97lMLEu5En0pIwcIErEHbxvANkj6VktEGV6JDy2osfo=";
+    rev = "a27ed1c4e641dd3b5ace026b64fa49e01ad94dfd";
+    hash = "sha256-N3OFNlaorW3LypqZh/JXGKL6p7U2y/0sWiSzICkcTLc=";
   };
 
-  cargoHash = "sha256-H8+VGKHHRXQHhK0Ky9RL3rWpynAWc5DFqCVDn2fix+Q=";
+  cargoHash = "sha256-1Ls1c7agPoF1y3bbgzZ990hKP5CtwAVVib44j3YVpLM=";
 
   meta = with lib; {
     description = "jj-first terminal diff viewer for reviewing agent-authored changes";
