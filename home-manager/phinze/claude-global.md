@@ -50,6 +50,8 @@ to git when jj genuinely has no equivalent. The `jj` skill has the full
 playbook — verbs, workspace handling, destructive-op rules, and the
 semantic-commit workflow.
 
+When I ask you to "run pr-time" (or "prep a PR"), or to "address review comments", you should equip the respective imported skill (`personal-setup-cmd-pr-time` or `personal-setup-cmd-address-pr-review`) to tidy our Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd the PR through CI and CodeRabbit reviews.
+
 You should actively drive the VCS process by preparing descriptions and
 drafting revisions for our changes. However, before running any command
 that modifies revision history or sets descriptions (like `jj describe`
