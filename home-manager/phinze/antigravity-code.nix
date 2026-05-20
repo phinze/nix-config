@@ -151,35 +151,72 @@ in
 
   # Note: Antigravity settings.json is installed as a mutable file via activation script below.
 
-  # Define custom personal-setup Claude plugin bundling all your personal skills and commands
-  home.file.".claude/plugins/personal-setup/.claude-plugin/plugin.json" = {
+  # Native nix-lsp plugin configuration
+  home.file.".gemini/antigravity-cli/plugins/nix-lsp/plugin.json" = {
+    text = builtins.toJSON {
+      name = "nix-lsp";
+    };
+  };
+
+  home.file.".gemini/antigravity-cli/plugins/nix-lsp/lsp_config.json" = {
+    text = builtins.toJSON {
+      nixd = {
+        command = "nixd";
+        extensionToLanguage = {
+          ".nix" = "nix";
+        };
+      };
+    };
+  };
+
+  # Native coderabbit plugin configuration
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/plugin.json" = {
+    text = builtins.toJSON {
+      name = "coderabbit";
+    };
+  };
+
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/agents".source = "${inputs.claude-plugin-coderabbit}/agents";
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/code-review".source = "${inputs.claude-plugin-coderabbit}/skills/code-review";
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/review/SKILL.md".source = "${inputs.claude-plugin-coderabbit}/commands/review.md";
+
+  # Native miren plugin configuration
+  home.file.".gemini/antigravity-cli/plugins/miren/plugin.json" = {
+    text = builtins.toJSON {
+      name = "miren";
+    };
+  };
+
+  home.file.".gemini/antigravity-cli/plugins/miren/agents".source = "${inputs.claude-plugin-miren-skills}/plugins/miren/agents";
+  home.file.".gemini/antigravity-cli/plugins/miren/skills".source = "${inputs.claude-plugin-miren-skills}/plugins/miren/skills";
+
+  # Native personal-setup plugin configuration
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/plugin.json" = {
     text = builtins.toJSON {
       name = "personal-setup";
-      version = "1.0.0";
-      description = "Paul's personal custom skills and commands";
     };
   };
 
   # Skills
-  home.file.".claude/plugins/personal-setup/skills/tuicr/SKILL.md".source = "${inputs.tuicr}/skills/tuicr/SKILL.md";
-  home.file.".claude/plugins/personal-setup/skills/tuicr/tuicr-wrapper.sh".source = "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/SKILL.md".source = "${inputs.tuicr}/skills/tuicr/SKILL.md";
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/tuicr-wrapper.sh".source = "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
 
-  home.file.".claude/plugins/personal-setup/skills/jj/SKILL.md".source = ./claude-skills/jj/SKILL.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/jj/SKILL.md".source = ./claude-skills/jj/SKILL.md;
 
-  home.file.".claude/plugins/personal-setup/skills/clipboard/SKILL.md".source = ./claude-skills/clipboard/SKILL.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/clipboard/SKILL.md".source = ./claude-skills/clipboard/SKILL.md;
 
-  home.file.".claude/plugins/personal-setup/skills/session-history/SKILL.md".source = ./claude-skills/session-history/SKILL.md;
-  home.file.".claude/plugins/personal-setup/skills/session-history/claude-sessions.sh" = {
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/SKILL.md".source = ./claude-skills/session-history/SKILL.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/claude-sessions.sh" = {
     source = ./claude-skills/session-history/claude-sessions.sh;
     executable = true;
   };
 
-  # Commands (converted to skills automatically by agy plugin import)
-  home.file.".claude/plugins/personal-setup/commands/whatsup-home.md".source = ./claude-skills/whatsup-home.md;
-  home.file.".claude/plugins/personal-setup/commands/whatsup-work.md".source = ./claude-skills/whatsup-work.md;
-  home.file.".claude/plugins/personal-setup/commands/pr-time.md".source = ./claude-skills/pr-time.md;
-  home.file.".claude/plugins/personal-setup/commands/address-pr-review.md".source = ./claude-skills/address-pr-review.md;
-  home.file.".claude/plugins/personal-setup/commands/review-pr.md".source = ./claude-skills/review-pr.md;
+  # Custom personal commands mapped natively as prefix-free skills
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home/SKILL.md".source = ./claude-skills/whatsup-home.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work/SKILL.md".source = ./claude-skills/whatsup-work.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time/SKILL.md".source = ./claude-skills/pr-time.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review/SKILL.md".source = ./claude-skills/address-pr-review.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr/SKILL.md".source = ./claude-skills/review-pr.md;
 
   # Native Antigravity Linear MCP plugin configuration
   home.file.".gemini/antigravity-cli/plugins/linear-mcp/plugin.json" = {
@@ -201,15 +238,5 @@ in
   # Activation script to write Antigravity settings as a mutable file
   home.activation.antigravitySettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD install -D -m 644 ${antigravitySettingsFile} ${config.home.homeDirectory}/.gemini/antigravity-cli/settings.json
-  '';
-
-  # Activation script to automatically run 'agy plugin import' for all required plugins
-  home.activation.antigravityImportPlugins = lib.hm.dag.entryAfter [ "writeBoundary" "linkGeneration" "antigravitySettings" ] ''
-    # Wait for Claude plugin files to be written first, then run agy plugin import
-    # This automatically syncs all your personal setups, mpc-servers, skills and custom commands into agy
-    $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/personal-setup
-    $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/nix-lsp
-    $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/miren
-    $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/coderabbit
   '';
 }
