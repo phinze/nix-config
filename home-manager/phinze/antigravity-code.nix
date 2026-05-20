@@ -181,6 +181,23 @@ in
   home.file.".claude/plugins/personal-setup/commands/address-pr-review.md".source = ./claude-skills/address-pr-review.md;
   home.file.".claude/plugins/personal-setup/commands/review-pr.md".source = ./claude-skills/review-pr.md;
 
+  # Native Antigravity Linear MCP plugin configuration
+  home.file.".gemini/antigravity-cli/plugins/linear-mcp/plugin.json" = {
+    text = builtins.toJSON {
+      name = "linear-mcp";
+    };
+  };
+
+  home.file.".gemini/antigravity-cli/plugins/linear-mcp/mcp_config.json" = {
+    text = builtins.toJSON {
+      mcpServers = {
+        linear = {
+          serverUrl = "https://mcp.linear.app/mcp";
+        };
+      };
+    };
+  };
+
   # Activation script to write Antigravity settings as a mutable file
   home.activation.antigravitySettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD install -D -m 644 ${antigravitySettingsFile} ${config.home.homeDirectory}/.gemini/antigravity-cli/settings.json
@@ -194,6 +211,5 @@ in
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/nix-lsp
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/miren
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/coderabbit
-    $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/linear-mcp
   '';
 }

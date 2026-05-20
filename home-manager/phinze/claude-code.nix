@@ -378,7 +378,6 @@ in
         linear = {
           type = "http";
           url = "https://mcp.linear.app/mcp";
-          serverUrl = "https://mcp.linear.app/mcp";
         };
       };
     };
