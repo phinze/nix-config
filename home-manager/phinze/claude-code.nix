@@ -22,7 +22,7 @@ let
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/claude \
-        --suffix PATH : ${lib.makeBinPath (fallbackLsps ++ [ pkgs.nodejs ])} \
+        --suffix PATH : ${lib.makeBinPath fallbackLsps} \
         --set DISABLE_UPDATES 1
     '';
   };
@@ -376,11 +376,9 @@ in
     text = builtins.toJSON {
       mcpServers = {
         linear = {
-          command = "sh";
-          args = [
-            "-c"
-            "if [ -n \"$LINEAR_ACCESS_TOKEN\" ]; then exec npx -y mcp-remote https://mcp.linear.app/mcp --header \"Authorization: Bearer $LINEAR_ACCESS_TOKEN\"; else exec npx -y mcp-remote https://mcp.linear.app/mcp; fi"
-          ];
+          type = "http";
+          url = "https://mcp.linear.app/mcp";
+          serverUrl = "https://mcp.linear.app/mcp";
         };
       };
     };

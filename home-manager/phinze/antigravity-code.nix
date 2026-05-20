@@ -20,7 +20,7 @@ let
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/agy \
-        --suffix PATH : ${lib.makeBinPath (fallbackLsps ++ [ pkgs.nodejs ])}
+        --suffix PATH : ${lib.makeBinPath fallbackLsps}
     '';
   };
 
