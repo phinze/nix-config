@@ -376,11 +376,10 @@ in
     text = builtins.toJSON {
       mcpServers = {
         linear = {
-          command = "npx";
+          command = "sh";
           args = [
-            "-y"
-            "mcp-remote"
-            "https://mcp.linear.app/mcp"
+            "-c"
+            "if [ -n \"$LINEAR_ACCESS_TOKEN\" ]; then exec npx -y mcp-remote https://mcp.linear.app/mcp --header \"Authorization: Bearer $LINEAR_ACCESS_TOKEN\"; else exec npx -y mcp-remote https://mcp.linear.app/mcp; fi"
           ];
         };
       };
