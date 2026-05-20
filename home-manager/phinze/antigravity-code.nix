@@ -20,7 +20,7 @@ let
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/agy \
-        --suffix PATH : ${lib.makeBinPath fallbackLsps}
+        --suffix PATH : ${lib.makeBinPath (fallbackLsps ++ [ pkgs.nodejs ])}
     '';
   };
 
@@ -194,5 +194,6 @@ in
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/nix-lsp
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/miren
     $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/coderabbit
+    $DRY_RUN_CMD ${antigravity-cli-wrapped}/bin/agy plugin import ~/.claude/plugins/linear-mcp
   '';
 }

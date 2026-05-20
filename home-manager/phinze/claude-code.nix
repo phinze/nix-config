@@ -22,7 +22,7 @@ let
     buildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       wrapProgram $out/bin/claude \
-        --suffix PATH : ${lib.makeBinPath fallbackLsps} \
+        --suffix PATH : ${lib.makeBinPath (fallbackLsps ++ [ pkgs.nodejs ])} \
         --set DISABLE_UPDATES 1
     '';
   };
@@ -159,6 +159,7 @@ in
         "nix-lsp" = true; # Custom plugin defined below
         "coderabbit" = true; # CodeRabbit AI code review (standalone, not in a marketplace)
         "miren@miren" = true; # Miren CLI skills (public miren-skills repo)
+        "linear-mcp" = true; # Custom remote Linear MCP plugin
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         # sourcekit-lsp comes from Xcode, only available on macOS
@@ -361,6 +362,29 @@ in
   home.file.".claude/skills/session-history/claude-sessions.sh" = {
     source = ./claude-skills/session-history/claude-sessions.sh;
     executable = true;
+  };
+
+  # Custom Linear MCP plugin (via official remote hosted endpoint)
+  home.file.".claude/plugins/linear-mcp/.claude-plugin/plugin.json" = {
+    text = builtins.toJSON {
+      name = "linear-mcp";
+      version = "1.0.0";
+      description = "Linear MCP server for issue tracking and management";
+    };
+  };
+  home.file.".claude/plugins/linear-mcp/.mcp.json" = {
+    text = builtins.toJSON {
+      mcpServers = {
+        linear = {
+          command = "npx";
+          args = [
+            "-y"
+            "mcp-remote"
+            "https://mcp.linear.app/mcp"
+          ];
+        };
+      };
+    };
   };
 
   # Claude Code slash commands (skills stored in separate files for easier editing)
