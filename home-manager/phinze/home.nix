@@ -674,6 +674,7 @@
     };
     ignores = [
       ".direnv"
+      ".antigravitycli/"
     ];
     includes = [
       {
