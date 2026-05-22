@@ -136,6 +136,9 @@ in
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)
     pkgs.poppler_utils # pdftoppm/pdftotext so Read tool can open PDFs
+    # snap: capture a macOS window to /tmp by app+title. Lives in PATH (not
+    # a fish function) so subagents shelling out via bash can call it too.
+    (pkgs.writeShellScriptBin "snap" (builtins.readFile ./scripts/snap.sh))
   ];
 
   # Ignore SWT (Simple Work Tracker) directories globally
@@ -355,6 +358,9 @@ in
   # (heredoc into pbcopy) instead of probing for xclip/xsel/wl-copy or
   # falling back to /tmp files and tmux load-buffer.
   home.file.".claude/skills/clipboard/SKILL.md".source = ./claude-skills/clipboard/SKILL.md;
+
+  # snap skill: capture a macOS window to /tmp by app+title without focus-stealing
+  home.file.".claude/skills/snap/SKILL.md".source = ./claude-skills/snap/SKILL.md;
 
   # session-history skill: search/summarize Claude Code session JSONL files
   home.file.".claude/skills/session-history/SKILL.md".source =

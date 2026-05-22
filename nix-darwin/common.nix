@@ -154,10 +154,15 @@ in
       name = "jundot/omlx";
       clone_target = "https://github.com/jundot/omlx";
     }
+    {
+      name = "smokris/getwindowid";
+      clone_target = "https://github.com/smokris/homebrew-getwindowid";
+    }
   ];
 
   homebrew.brews = [
     "media-control"
+    "smokris/getwindowid/getwindowid"
     {
       name = "jundot/omlx/omlx";
       start_service = true;
