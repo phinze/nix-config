@@ -2,8 +2,9 @@
 set -eu
 
 usage() {
-  echo "usage: snap <app-name> <title-substring>" >&2
+  echo "usage: snap <app-name> <window-title>" >&2
   echo "       snap --list <app-name>" >&2
+  echo "  window-title is matched exactly; use --list to find it" >&2
   exit 2
 }
 
@@ -19,7 +20,7 @@ if [ $# -lt 1 ]; then usage; fi
 if [ "$1" = --list ]; then
   if [ $# -lt 2 ]; then usage; fi
   require_getwindowid
-  exec getwindowid --list "$2"
+  exec getwindowid "$2" --list
 fi
 
 if [ $# -lt 2 ]; then usage; fi

@@ -11,7 +11,7 @@ UI and another session needs to look at it.
 
 ## Invocation
 
-    snap <app-name> <title-substring>
+    snap <app-name> <window-title>
 
 Both args required. `snap` resolves the window's CGWindowID via
 `getwindowid`, captures its compositor surface via `screencapture -l
@@ -21,19 +21,24 @@ path. Pass that path to the Read tool to view the result.
 `snap` is a shell script on PATH (installed via home-manager), so it
 works the same from fish, bash, or any subagent shell.
 
-## Examples
+## Find the title first
 
-    snap 'Google Chrome' 'localhost'
-    snap Safari 'GitHub'
-    snap Ghostty 'main'
-
-## When you don't know the title
+Title matching is **exact** — substrings don't work. Almost always
+start with `--list` to discover the exact title for the window you
+want:
 
     snap --list <app-name>
 
-Lists every window for that app with its title and id. Use this any
-time `snap` returns "no window matching" — title matching is exact and
-case-sensitive.
+Output looks like:
+
+    "phosphor-canvas" size=900x632 id=134630
+
+Then capture with the title verbatim:
+
+    snap PhosphorCanvas phosphor-canvas
+
+The app's bundle name (first arg) and the window's title (second arg)
+are often different — `PhosphorCanvas` vs `phosphor-canvas` above.
 
 ## Why it works without focus
 
