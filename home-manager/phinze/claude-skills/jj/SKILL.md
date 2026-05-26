@@ -15,6 +15,17 @@ command, use fileset syntax: `jj diff '~package-lock.json'` or
 - When asked to start work on something and you're on an empty commit with
   no description, set a short description before editing files. Refine it
   as the work clarifies.
+- **`jj new` before editing, not after.** Auto-snapshot folds working-copy
+  changes into `@` on the next jj command. When `@` is a described/finished
+  rev (a milestone you just landed, or one I asked you to leave alone),
+  edits leak into it silently and the only way out is a post-hoc split.
+  When starting a new logical chunk on top of a finished rev, create the
+  child first: `jj new` (optionally with `-m '<msg>'`), then edit. If
+  you've already smooshed, recover by finding the op id where the parent
+  was last in its intended state (`jj op log`), use `jj --at-op <op-id>
+  file show -r <rev> <path>` to read its content per file, restore those
+  files in place to let auto-snapshot clean the parent on the next jj
+  command, then `jj new` and re-apply your edits from a stash.
 - To trace the origin of a line: `jj file annotate <file> | grep
   '<pattern>'`, then `jj log -r <id>` for context. If that rev is a
   refactor or rename, repeat with `-r <id>-` (and the old path if it moved)
