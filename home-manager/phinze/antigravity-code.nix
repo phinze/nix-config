@@ -142,24 +142,15 @@ let
   };
 
   antigravitySettingsFile = pkgs.writeText "antigravity-settings.json" antigravitySettingsJson;
-in
-{
-  # Add the wrapped antigravity-cli to packages
-  home.packages = [
-    antigravity-cli-wrapped
-  ];
 
-  # Note: Antigravity settings.json is installed as a mutable file via activation script below.
-
-  # Native nix-lsp plugin configuration
-  home.file.".gemini/antigravity-cli/plugins/nix-lsp/plugin.json" = {
-    text = builtins.toJSON {
+  # Mutable JSON config files: agy rewrites these at runtime (pretty-prints,
+  # normalizes), so they need to be regular files rather than nix-store
+  # symlinks. Same pattern as settings.json above (see 31bc298).
+  mutableJsonConfigs = {
+    "plugins/nix-lsp/plugin.json" = {
       name = "nix-lsp";
     };
-  };
-
-  home.file.".gemini/antigravity-cli/plugins/nix-lsp/lsp_config.json" = {
-    text = builtins.toJSON {
+    "plugins/nix-lsp/lsp_config.json" = {
       nixd = {
         command = "nixd";
         extensionToLanguage = {
@@ -167,66 +158,19 @@ in
         };
       };
     };
-  };
-
-  # Native coderabbit plugin configuration
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/plugin.json" = {
-    text = builtins.toJSON {
+    "plugins/coderabbit/plugin.json" = {
       name = "coderabbit";
     };
-  };
-
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/agents".source = "${inputs.claude-plugin-coderabbit}/agents";
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/code-review".source = "${inputs.claude-plugin-coderabbit}/skills/code-review";
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/review/SKILL.md".source = "${inputs.claude-plugin-coderabbit}/commands/review.md";
-
-  # Native miren plugin configuration
-  home.file.".gemini/antigravity-cli/plugins/miren/plugin.json" = {
-    text = builtins.toJSON {
+    "plugins/miren/plugin.json" = {
       name = "miren";
     };
-  };
-
-  home.file.".gemini/antigravity-cli/plugins/miren/agents".source = "${inputs.claude-plugin-miren-skills}/plugins/miren/agents";
-  home.file.".gemini/antigravity-cli/plugins/miren/skills".source = "${inputs.claude-plugin-miren-skills}/plugins/miren/skills";
-
-  # Native personal-setup plugin configuration
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/plugin.json" = {
-    text = builtins.toJSON {
+    "plugins/personal-setup/plugin.json" = {
       name = "personal-setup";
     };
-  };
-
-  # Skills
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/SKILL.md".source = "${inputs.tuicr}/skills/tuicr/SKILL.md";
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/tuicr-wrapper.sh".source = "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
-
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/jj/SKILL.md".source = ./claude-skills/jj/SKILL.md;
-
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/clipboard/SKILL.md".source = ./claude-skills/clipboard/SKILL.md;
-
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/SKILL.md".source = ./claude-skills/session-history/SKILL.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/claude-sessions.sh" = {
-    source = ./claude-skills/session-history/claude-sessions.sh;
-    executable = true;
-  };
-
-  # Custom personal commands mapped natively as prefix-free skills
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home/SKILL.md".source = ./claude-skills/whatsup-home.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work/SKILL.md".source = ./claude-skills/whatsup-work.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time/SKILL.md".source = ./claude-skills/pr-time.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review/SKILL.md".source = ./claude-skills/address-pr-review.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr/SKILL.md".source = ./claude-skills/review-pr.md;
-
-  # Native Antigravity Linear MCP plugin configuration
-  home.file.".gemini/antigravity-cli/plugins/linear-mcp/plugin.json" = {
-    text = builtins.toJSON {
+    "plugins/linear-mcp/plugin.json" = {
       name = "linear-mcp";
     };
-  };
-
-  home.file.".gemini/antigravity-cli/plugins/linear-mcp/mcp_config.json" = {
-    text = builtins.toJSON {
+    "plugins/linear-mcp/mcp_config.json" = {
       mcpServers = {
         linear = {
           serverUrl = "https://mcp.linear.app/mcp";
@@ -235,8 +179,74 @@ in
     };
   };
 
-  # Activation script to write Antigravity settings as a mutable file
-  home.activation.antigravitySettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  mkMutableJson =
+    relPath: content:
+    pkgs.writeText (builtins.replaceStrings [ "/" ] [ "-" ] relPath) (builtins.toJSON content);
+
+  installMutableJsonLine =
+    relPath: content:
+    "$DRY_RUN_CMD install -D -m 644 ${mkMutableJson relPath content} ${config.home.homeDirectory}/.gemini/antigravity-cli/${relPath}";
+in
+{
+  # Add the wrapped antigravity-cli to packages
+  home.packages = [
+    antigravity-cli-wrapped
+  ];
+
+  # Note: All antigravity-cli JSON config files (settings.json, plugin.json,
+  # mcp_config.json, lsp_config.json) are installed as mutable files via the
+  # activation script below. Skill and agent directories remain HM-managed
+  # symlinks since agy treats them as read-only inputs.
+
+  # coderabbit plugin: skills + agents directories
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/agents".source =
+    "${inputs.claude-plugin-coderabbit}/agents";
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/code-review".source =
+    "${inputs.claude-plugin-coderabbit}/skills/code-review";
+  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/review/SKILL.md".source =
+    "${inputs.claude-plugin-coderabbit}/commands/review.md";
+
+  # miren plugin: skills + agents directories
+  home.file.".gemini/antigravity-cli/plugins/miren/agents".source =
+    "${inputs.claude-plugin-miren-skills}/plugins/miren/agents";
+  home.file.".gemini/antigravity-cli/plugins/miren/skills".source =
+    "${inputs.claude-plugin-miren-skills}/plugins/miren/skills";
+
+  # personal-setup plugin: skills
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/SKILL.md".source =
+    "${inputs.tuicr}/skills/tuicr/SKILL.md";
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/tuicr-wrapper.sh".source =
+    "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
+
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/jj/SKILL.md".source =
+    ./claude-skills/jj/SKILL.md;
+
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/clipboard/SKILL.md".source =
+    ./claude-skills/clipboard/SKILL.md;
+
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/SKILL.md".source =
+    ./claude-skills/session-history/SKILL.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/claude-sessions.sh" =
+    {
+      source = ./claude-skills/session-history/claude-sessions.sh;
+      executable = true;
+    };
+
+  # Custom personal commands mapped natively as prefix-free skills
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home/SKILL.md".source =
+    ./claude-skills/whatsup-home.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work/SKILL.md".source =
+    ./claude-skills/whatsup-work.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time/SKILL.md".source =
+    ./claude-skills/pr-time.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review/SKILL.md".source =
+    ./claude-skills/address-pr-review.md;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr/SKILL.md".source =
+    ./claude-skills/review-pr.md;
+
+  # Install all mutable JSON config files as regular files.
+  home.activation.antigravityMutableConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     $DRY_RUN_CMD install -D -m 644 ${antigravitySettingsFile} ${config.home.homeDirectory}/.gemini/antigravity-cli/settings.json
+    ${lib.concatStringsSep "\n    " (lib.mapAttrsToList installMutableJsonLine mutableJsonConfigs)}
   '';
 }
