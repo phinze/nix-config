@@ -600,6 +600,15 @@
           end
         '';
       };
+    }
+    // lib.optionalAttrs (osConfig.networking.hostName == "foxtrotbase") {
+      df = {
+        description = "df that skips fuse.sshfs to avoid hangs when the laptop is asleep";
+        body = ''
+          echo "fyi skipping sshfs" >&2
+          command df -x fuse.sshfs $argv
+        '';
+      };
     };
 
     interactiveShellInit = lib.concatLines [
