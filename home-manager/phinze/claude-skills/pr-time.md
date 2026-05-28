@@ -58,7 +58,7 @@ Let's get this work shipped. Tidy the rev stack, rebase on latest trunk, open a 
 
    Then push and open. `gh pr create` reads git's current branch to default `--head`, and in a colocated jj repo that still reports whatever branch git was on (usually `main`), not the jj bookmark we just moved. So pass `--head` explicitly using the bookmark sitting at `@-`:
    ```bash
-   jj git push           # add -N (--allow-new) if pushing a new bookmark for the first time
+   jj git push
    gh pr create \
      --head "$(jj log -r '@-' --no-graph -T 'bookmarks.join(\",\")')" \
      --title "..." --body "..."
