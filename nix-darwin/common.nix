@@ -200,6 +200,7 @@ in
     "rocket"
     "screenflow"
     "slack"
+    "steam"
     "tailscale-app"
     "zed"
     "zen"
