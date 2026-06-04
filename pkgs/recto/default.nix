@@ -10,11 +10,11 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "phinze";
     repo = "recto";
-    rev = "cd5ddc482421251aec6c5dfa10b4ed26268e6950";
-    hash = "sha256-tO/Mj5kQGNkVSWJdUfFr7Via1TNnFA8aEvQ1XSKi+9s=";
+    rev = "dbfca8d8c6c4e7aea30841f054f21edbaf0dcb02";
+    hash = "sha256-VAW/PF2Pv9AqcFvA4eQuCzMDcz8mr5ptCR2KcGZ6WZM=";
   };
 
-  cargoHash = "sha256-WP0lWXhDC3Gb4S5Z1FdCLLKL11wefNs+EC4Mr0dlH6c=";
+  cargoHash = "sha256-3SfCwRriHI9NaVM0M2WPVswSy/oUcGzN5im2qAkz1Ms=";
 
   meta = with lib; {
     description = "jj-first terminal diff viewer for reviewing agent-authored changes";
