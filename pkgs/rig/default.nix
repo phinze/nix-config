@@ -10,8 +10,8 @@ buildGoModule {
   src = fetchFromGitHub {
     owner = "phinze";
     repo = "rig";
-    rev = "a74f5d58c4872a12c8c447f380fa3448e7815fca";
-    hash = "sha256-QETzE9VFOdXjiYbsMWYehwvXc7BwYGh1w6mADWmia+A=";
+    rev = "4aea1961a43f2045ad501ea3200d45d92f09c630";
+    hash = "sha256-NDer9VvHbGSXQB9CAY4NEmPmQn8lQ5WAMzwibpz0FuA=";
   };
 
   vendorHash = "sha256-76yvZ8MhGnJhkfBALS/MYAeEmkOcLX0VKu1zTtPLhxo=";
