@@ -82,6 +82,7 @@
       outputs.overlays.unstable-packages
       outputs.overlays.nixvim
       outputs.overlays.recto
+      outputs.overlays.rig
 
       # Claude Code 2.0 overlay
       inputs.claude-code-nix.overlays.default
@@ -236,46 +237,15 @@
     #   - rig (flat): ~/workspaces/<slug>/<repo>/...  → owner/repo read out of
     #     the rig's .rig.toml [repos] table (the flat path can't encode it).
     #   - legacy:     ~/workspaces/<host>/<owner>/<repo>/...  → parsed from path.
+    # Loaded before every .envrc. All workspace-layout and manifest knowledge
+    # lives in rig itself: `rig env` prints export lines for the cwd (rig
+    # identity, GH_REPO, including the legacy ~/workspaces/<host>/<owner>/
+    # <repo> path-parse) and prints nothing outside a workspace. This has to
+    # happen in the stdlib rather than rig-written .envrc files: direnv loads
+    # only the nearest .envrc (no cascade), so a repo shipping its own .envrc
+    # (nix devshells) would shadow anything the basedir exports.
     stdlib = ''
-      __gh_repo_from_rig() {
-        local dir="$PWD" base=""
-        while [[ "$dir" == "$HOME/workspaces/"* ]]; do
-          if [[ -f "$dir/.rig.toml" ]]; then base="$dir"; break; fi
-          dir="''${dir%/*}"
-        done
-        [[ -z "$base" ]] && return 1
-        local rel="''${PWD#$base/}"
-        local sub="''${rel%%/*}"
-        [[ -z "$sub" ]] && return 1
-        local nwo
-        nwo="$(awk -v key="$sub" '
-          /^\[repos\]/ { inrepos = 1; next }
-          /^\[/        { inrepos = 0 }
-          inrepos {
-            eq = index($0, "=")
-            if (eq == 0) next
-            k = substr($0, 1, eq - 1); gsub(/[ \t]/, "", k)
-            if (k == key) {
-              v = substr($0, eq + 1); gsub(/[ \t"]/, "", v)
-              print v; exit
-            }
-          }
-        ' "$base/.rig.toml")"
-        [[ -n "$nwo" ]] || return 1
-        export GH_REPO="$nwo"
-      }
-
-      __gh_repo_from_workspace() {
-        [[ "$PWD" == "$HOME/workspaces/"* ]] || return
-        __gh_repo_from_rig && return
-        local rel="''${PWD#$HOME/workspaces/}"
-        local _host owner repo _rest
-        IFS=/ read -r _host owner repo _rest <<< "$rel"
-        if [[ -n "$owner" && -n "$repo" ]]; then
-          export GH_REPO="$owner/$repo"
-        fi
-      }
-      __gh_repo_from_workspace
+      has rig && eval "$(rig env 2>/dev/null)"
     '';
 
     # Auto-allow direnv for trusted organizations (repos and worktrees)

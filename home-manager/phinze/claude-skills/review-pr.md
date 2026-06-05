@@ -63,17 +63,29 @@ Think hard and carefully about the code changes.
    - Keep our inline comments focused on things the automated tools didn't catch
 
 6. **Draft the review**:
-   - Open with a brief line that signals this was a collaborative review, not
-     a drive-by. Mention what we focused on or how deep we went. The vibe is
-     "two people sat down and thought about this together" — but don't use a
-     canned template. Let the phrasing fit the review naturally.
+   - **Lead with the verdict.** The first sentence is the most load-bearing
+     finding or the overall call, not a roll call ("Claude and Paul here")
+     or a methodology recital ("we traced..."). Attach evidence to claims
+     instead of front-loading it: "auth chain fails closed everywhere
+     (traced end to end, including the Ctrl-C flush path)" beats "we
+     traced the auth chain end to end. It's solid."
+   - **Sign off with `--p+🤖`.** That's the standing marker that Claude was
+     involved; no per-review announcement needed. Mention Claude by name in
+     the body only when attribution is doing real work for a specific
+     judgment (e.g., "Claude rebuilt the token model from scratch before
+     we reviewed").
    - **Pronouns and voice**: The review posts under the user's GitHub account
      and should read as collaborative: Claude's analysis plus the user's
-     judgment, with attribution clear enough that the reader can tell who
-     thinks what. If the user expressed admiration, excitement, or concerns
-     during the walkthrough, attribute those to them by name. Vary the
-     opening; don't lean on a fixed phrase like "Claude and Paul here."
-   - Draft a short **top-level comment** summarizing the review
+     judgment. If the user expressed admiration, excitement, or concerns
+     during the walkthrough, that should come through in the prose.
+   - Draft a short **top-level comment** summarizing the review. Default
+     shape: a few sentences. When there are multiple inline comments, add
+     a triage line so the author knows where to start (e.g., "inline
+     notes below; the org-boundary one is the only one with teeth").
+     Long-form architectural discussion belongs in inline comments,
+     follow-up tickets, or a direct conversation — not the review body.
+     A longer top-level is fine only when every paragraph is verified
+     and load-bearing.
    - Draft **inline comments** for specific lines, formatted as:
 
 ~~~markdown
@@ -93,6 +105,10 @@ Your comment text here...
      APPROVE with comments; we trust authors to address or consciously skip
      feedback. Use REQUEST_CHANGES only when there's a specific blocking
      concern, and clearly explain what needs to be resolved.
+   - **If we're taking the pen** (pushing commits to the branch), the
+     review that announces it should be REQUEST_CHANGES from the start so
+     the mechanical state matches the intent — no approve-then-flip dance.
+     Flip to APPROVE once our commits have landed.
 
 8. **Post when ready**:
    - When I say to post, use `gh api` to submit:
@@ -110,10 +126,30 @@ gh api repos/{owner}/{repo}/pulls/{number}/reviews \
 EOF
 ```
 
-**Tone**: Be playful. Genuine enthusiasm when something's clever, a little
-weirdness where it fits. Use "we" in the spirit of collective code
-ownership (e.g., "we could handle..." not "you should..."). Skip nitpicks.
-The review should feel like it was fun to write.
+**Tone: respect the reader.** Every choice in the review serves the
+person who has to act on it. That cashes out three ways:
+
+- **Don't make claims we haven't verified.** "We traced the auth chain"
+  means we traced it. If something is a hunch or an open question, frame
+  it as one. Confidence labels help the reader triage; they aren't
+  hedging.
+- **Don't write three sentences when one will do.** But don't
+  over-compress either: if meaning or intent requires decoding, the
+  compression failed just as badly as padding would have. The test is a
+  single read: the author should come away knowing what we think and
+  what to do about it.
+- **Say operational things plainly.** "We're going to push commits,
+  hold off merging" is a coordination signal, not prose. It goes in the
+  first sentence, in plain words, never inside a joke or metaphor.
+
+Friendly, fun, and informal lives in how individual sentences are
+phrased, not in how many there are. Genuine enthusiasm when something's
+clever. Humor is a garnish (a line, an emoji), never the structure;
+extended bits and themes are out — we once lost a real "we're taking
+the pen" signal inside one and collided with the author's own pushes.
+
+Use "we" in the spirit of collective code ownership (e.g., "we could
+handle..." not "you should..."). Skip nitpicks.
 
 When drafting, distill the user's voice from the walkthrough discussion
 and let it come through in the review. If they were excited about

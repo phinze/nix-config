@@ -48,4 +48,9 @@
     recto = inputs.recto.packages.${final.system}.default;
   };
 
+  # rig likewise ships its own flake package.
+  rig = final: _prev: {
+    rig = inputs.rig.packages.${final.system}.default;
+  };
+
 }

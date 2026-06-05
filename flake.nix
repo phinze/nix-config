@@ -32,6 +32,12 @@
     recto.inputs.nixpkgs.follows = "nixpkgs-unstable";
     recto.inputs.flake-utils.follows = "flake-utils";
 
+    # rig's go.mod floors at go 1.26.2; stable nixpkgs is behind, so follow
+    # unstable.
+    rig.url = "github:phinze/rig";
+    rig.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    rig.inputs.flake-utils.follows = "flake-utils";
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     zen-browser.url = "github:FBIGlowie/zen-browser-flake";
