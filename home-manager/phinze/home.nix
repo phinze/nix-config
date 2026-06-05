@@ -140,6 +140,7 @@
       ilmari # tmux popup radar for agent panes (Codex, Claude Code, etc.)
       lumen # Visual git diff viewer in the terminal
       recto # jj-first terminal diff viewer for reviewing agent-authored changes
+      rig # workspace tool for task-shaped multi-repo work (subsumes jpickup/jreview)
       unstable.jujutsu # jj VCS, trying it out alongside git
       unstable.jjui # TUI frontend for jj
       jq
@@ -227,18 +228,50 @@
     nix-direnv.enable = true;
     silent = true;
 
-    # Loaded before every .envrc. When the cwd is under a jj workspace
-    # (~/workspaces/<host>/<owner>/<repo>/...), auto-export GH_REPO so gh
-    # works without git context. A non-default jj workspace has no .git.
+    # Loaded before every .envrc. When the cwd is under a jj workspace,
+    # auto-export GH_REPO so gh works without git context (a non-default jj
+    # workspace has no .git). Two layouts are supported during the rig
+    # transition:
+    #   - rig (flat): ~/workspaces/<slug>/<repo>/...  → owner/repo read out of
+    #     the rig's .rig.toml [repos] table (the flat path can't encode it).
+    #   - legacy:     ~/workspaces/<host>/<owner>/<repo>/...  → parsed from path.
     stdlib = ''
+      __gh_repo_from_rig() {
+        local dir="$PWD" base=""
+        while [[ "$dir" == "$HOME/workspaces/"* ]]; do
+          if [[ -f "$dir/.rig.toml" ]]; then base="$dir"; break; fi
+          dir="''${dir%/*}"
+        done
+        [[ -z "$base" ]] && return 1
+        local rel="''${PWD#$base/}"
+        local sub="''${rel%%/*}"
+        [[ -z "$sub" ]] && return 1
+        local nwo
+        nwo="$(awk -v key="$sub" '
+          /^\[repos\]/ { inrepos = 1; next }
+          /^\[/        { inrepos = 0 }
+          inrepos {
+            eq = index($0, "=")
+            if (eq == 0) next
+            k = substr($0, 1, eq - 1); gsub(/[ \t]/, "", k)
+            if (k == key) {
+              v = substr($0, eq + 1); gsub(/[ \t"]/, "", v)
+              print v; exit
+            }
+          }
+        ' "$base/.rig.toml")"
+        [[ -n "$nwo" ]] || return 1
+        export GH_REPO="$nwo"
+      }
+
       __gh_repo_from_workspace() {
-        if [[ "$PWD" == "$HOME/workspaces/"* ]]; then
-          local rel="''${PWD#$HOME/workspaces/}"
-          local _host owner repo _rest
-          IFS=/ read -r _host owner repo _rest <<< "$rel"
-          if [[ -n "$owner" && -n "$repo" ]]; then
-            export GH_REPO="$owner/$repo"
-          fi
+        [[ "$PWD" == "$HOME/workspaces/"* ]] || return
+        __gh_repo_from_rig && return
+        local rel="''${PWD#$HOME/workspaces/}"
+        local _host owner repo _rest
+        IFS=/ read -r _host owner repo _rest <<< "$rel"
+        if [[ -n "$owner" && -n "$repo" ]]; then
+          export GH_REPO="$owner/$repo"
         fi
       }
       __gh_repo_from_workspace
@@ -254,9 +287,9 @@
           # Worktree directories managed by gwq
           "${config.home.homeDirectory}/worktrees/github.com/phinze"
           "${config.home.homeDirectory}/worktrees/github.com/mirendev"
-          # jj workspaces created by jpickup/jreview
-          "${config.home.homeDirectory}/workspaces/github.com/phinze"
-          "${config.home.homeDirectory}/workspaces/github.com/mirendev"
+          # jj workspaces: rig's flat ~/workspaces/<slug>/ shape plus the
+          # legacy ~/workspaces/<host>/<owner>/<repo>/ from jpickup/jreview.
+          "${config.home.homeDirectory}/workspaces"
         ];
       };
     };
@@ -506,6 +539,10 @@
         body = builtins.readFile ./fish-functions/review.fish;
       };
 
+      # TODO(rig-transition, added 2026-06-05): the `rig` package now covers
+      # both of these (rig up / rig review). Keeping them as a fallback for a
+      # short shakedown period; remove jpickup/jreview (and their .fish files)
+      # once rig has proven out in daily use.
       jpickup = {
         description = "Pick up a Linear issue with jj: create workspace, tmux session, and start Claude";
         body = builtins.readFile ./fish-functions/jpickup.fish;
