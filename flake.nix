@@ -26,6 +26,12 @@
     bankshot.inputs.nixpkgs.follows = "nixpkgs-unstable";
     bankshot.inputs.flake-utils.follows = "flake-utils";
 
+    # recto builds against unstable (2024 edition + let-chains), so follow
+    # nixpkgs-unstable to keep one rustc in the closure.
+    recto.url = "github:phinze/recto";
+    recto.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    recto.inputs.flake-utils.follows = "flake-utils";
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
     zen-browser.url = "github:FBIGlowie/zen-browser-flake";

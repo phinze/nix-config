@@ -19,8 +19,6 @@ pkgs: rec {
   git-trim = pkgs.callPackage ./git-trim.nix { inherit gwq; };
   ccometixline = pkgs.callPackage ./ccometixline.nix { };
   pageres-cli = pkgs.callPackage ./pageres-cli { };
-  # recto uses 2024 edition + let-chains, so build against unstable
-  recto = pkgs.unstable.callPackage ./recto { };
   # rig's go.mod floors at go 1.26.2; stable nixpkgs is behind, so use unstable.
   rig = pkgs.unstable.callPackage ./rig { };
   coderabbit = pkgs.callPackage ./coderabbit { };

@@ -760,6 +760,29 @@
         "type": "github"
       }
     },
+    "recto": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780680180,
+        "narHash": "sha256-ueAyYJkhZhTBXCMN0sEgrQtPYeGi6DDCzQqIvgX9qjc=",
+        "owner": "phinze",
+        "repo": "recto",
+        "rev": "ac03c219e4aa6a7f3e620a17a8e413948e92cad2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phinze",
+        "repo": "recto",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "atuin": "atuin",
@@ -782,6 +805,7 @@
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim-config": "nixvim-config",
+        "recto": "recto",
         "sophon": "sophon",
         "systems": "systems_6",
         "tuicr": "tuicr",

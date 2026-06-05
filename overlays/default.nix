@@ -42,4 +42,10 @@
     nixvim = inputs.nixvim-config.packages.${_prev.system}.default;
   };
 
+  # recto ships its own flake package; pull it from the input rather than
+  # re-packaging it here.
+  recto = final: _prev: {
+    recto = inputs.recto.packages.${final.system}.default;
+  };
+
 }

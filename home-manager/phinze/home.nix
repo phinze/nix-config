@@ -81,6 +81,7 @@
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
       outputs.overlays.nixvim
+      outputs.overlays.recto
 
       # Claude Code 2.0 overlay
       inputs.claude-code-nix.overlays.default
