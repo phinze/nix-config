@@ -154,20 +154,9 @@ in
       };
       includeCoAuthoredBy = false;
       skipDangerousModePermissionPrompt = true;
-      # Enable LSP plugins: official ones + custom nix-lsp
-      enabledPlugins = {
-        "gopls-lsp@claude-plugins-official" = true;
-        "clangd-lsp@claude-plugins-official" = true;
-        "frontend-design@claude-plugins-official" = true;
-        "nix-lsp" = true; # Custom plugin defined below
-        "coderabbit" = true; # CodeRabbit AI code review (standalone, not in a marketplace)
-        "miren@miren" = true; # Miren CLI skills (public miren-skills repo)
-        "linear-mcp" = true; # Custom remote Linear MCP plugin
-      }
-      // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        # sourcekit-lsp comes from Xcode, only available on macOS
-        "swift-lsp@claude-plugins-official" = true;
-      };
+      # Plugins auto-load from ~/.claude/skills/<name>/ (each carries a
+      # .claude-plugin/plugin.json) as of Claude Code 2.1.157. No enabledPlugins
+      # block, marketplace registry, or installed_plugins.json needed anymore.
       hooks =
         let
           # Wire sophon into every known Claude Code hook event.
@@ -216,120 +205,84 @@ in
     force = true;
   };
 
-  # Declarative plugin registry and marketplace config.
-  # Both files are mutable (not symlinks) because Claude Code writes to them at runtime.
-  # Our activation seeds them on each rebuild; Claude Code may update them between rebuilds.
-  home.activation.claudePluginFiles =
-    let
-      homeDir = config.home.homeDirectory;
-      pluginsDir = "${homeDir}/.claude/plugins";
-      officialRev = inputs.claude-plugins-official.rev;
-      mirenSkillsRev = inputs.claude-plugin-miren-skills.rev;
-      mkPlugin =
-        name:
-        { gitCommitSha }:
-        {
-          scope = "user";
-          installPath = "${pluginsDir}/${name}";
-          version = "1.0.0";
-          installedAt = "2026-01-01T00:00:00.000Z";
-          lastUpdated = "2026-01-01T00:00:00.000Z";
-          inherit gitCommitSha;
-        };
-      # Only marketplace plugins go in the registry (key = plugin@marketplace).
-      # Standalone plugins (coderabbit, nix-lsp) work via enabledPlugins + directory presence.
-      basePlugins = {
-        "gopls-lsp@claude-plugins-official" = [ (mkPlugin "gopls-lsp" { gitCommitSha = officialRev; }) ];
-        "clangd-lsp@claude-plugins-official" = [ (mkPlugin "clangd-lsp" { gitCommitSha = officialRev; }) ];
-        "frontend-design@claude-plugins-official" = [
-          (mkPlugin "frontend-design" { gitCommitSha = officialRev; })
-        ];
-        "miren@miren" = [
-          (mkPlugin "miren" { gitCommitSha = mirenSkillsRev; })
-        ];
-      };
-      darwinPlugins = lib.optionalAttrs pkgs.stdenv.isDarwin {
-        "swift-lsp@claude-plugins-official" = [ (mkPlugin "swift-lsp" { gitCommitSha = officialRev; }) ];
-      };
-      registryJson = builtins.toJSON {
-        version = 2;
-        plugins = basePlugins // darwinPlugins;
-      };
-      registryFile = pkgs.writeText "installed_plugins.json" registryJson;
+  # Skills-directory plugins (Claude Code 2.1.157+): any dir under
+  # ~/.claude/skills/<name>/ that carries a .claude-plugin/plugin.json loads
+  # automatically as <name>@skills-dir — no marketplace, no installed_plugins.json,
+  # no enabledPlugins entry. This replaces the old registry + activation machinery.
 
-      # Marketplace registry — tells Claude Code where to find plugin catalogs.
-      # Marketplace dirs under plugins/marketplaces/ are git clones managed by Claude Code;
-      # we just seed the index so it knows they exist on fresh machines.
-      mkMarketplace = name: repo: {
-        source = {
-          source = "github";
-          inherit repo;
-        };
-        installLocation = "${pluginsDir}/marketplaces/${name}";
-        lastUpdated = "2026-01-01T00:00:00.000Z";
-      };
-      marketplaces = {
-        "claude-plugins-official" =
-          mkMarketplace "claude-plugins-official" "anthropics/claude-plugins-official";
-        "miren" = mkMarketplace "miren" "mirendev/miren-skills";
-      };
-      marketplacesFile = pkgs.writeText "known_marketplaces.json" (builtins.toJSON marketplaces);
-    in
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      install -m 644 ${registryFile} ${pluginsDir}/installed_plugins.json
-      install -m 644 ${marketplacesFile} ${pluginsDir}/known_marketplaces.json
-    '';
-
-  # Marketplace plugins (symlinked from flake inputs)
-  home.file.".claude/plugins/gopls-lsp".source =
-    "${inputs.claude-plugins-official}/plugins/gopls-lsp";
-  home.file.".claude/plugins/clangd-lsp".source =
-    "${inputs.claude-plugins-official}/plugins/clangd-lsp";
-  home.file.".claude/plugins/frontend-design".source =
+  # Plugins whose upstream dir is already self-contained — symlink straight in.
+  home.file.".claude/skills/frontend-design".source =
     "${inputs.claude-plugins-official}/plugins/frontend-design";
-  home.file.".claude/plugins/coderabbit".source = inputs.claude-plugin-coderabbit;
-  home.file.".claude/plugins/miren".source = "${inputs.claude-plugin-miren-skills}/plugins/miren";
-  # swift-lsp only useful on macOS (sourcekit-lsp comes from Xcode)
-  home.file.".claude/plugins/swift-lsp" = lib.mkIf pkgs.stdenv.isDarwin {
-    source = "${inputs.claude-plugins-official}/plugins/swift-lsp";
-  };
+  home.file.".claude/skills/coderabbit".source = inputs.claude-plugin-coderabbit;
+  home.file.".claude/skills/miren".source = "${inputs.claude-plugin-miren-skills}/plugins/miren";
 
-  # Custom Nix LSP plugin (not in official marketplace)
-  home.file.".claude/plugins/nix-lsp/.claude-plugin/plugin.json" = {
-    text = builtins.toJSON {
-      name = "nix-lsp";
-      version = "1.0.0";
-      description = "Nix language server (nixd) for code intelligence";
+  # Official LSP plugins: the upstream plugin dirs ship only a README (their
+  # lspServers config lives in the marketplace catalog, not the dir), so we author
+  # self-contained skills-dir plugins from the same config. These configs are tiny
+  # and stable, so hand-maintaining them is cheaper than the marketplace machinery.
+  home.file.".claude/skills/gopls-lsp/.claude-plugin/plugin.json".text = builtins.toJSON {
+    name = "gopls-lsp";
+    version = "1.0.0";
+    description = "Go language server (gopls) for code intelligence";
+  };
+  home.file.".claude/skills/gopls-lsp/.lsp.json".text = builtins.toJSON {
+    gopls = {
+      command = "gopls";
+      extensionToLanguage.".go" = "go";
     };
   };
-  home.file.".claude/plugins/nix-lsp/.lsp.json" = {
-    text = builtins.toJSON {
-      nixd = {
-        command = "nixd";
-        extensionToLanguage = {
-          ".nix" = "nix";
-        };
+
+  home.file.".claude/skills/clangd-lsp/.claude-plugin/plugin.json".text = builtins.toJSON {
+    name = "clangd-lsp";
+    version = "1.0.0";
+    description = "C/C++ language server (clangd) for code intelligence";
+  };
+  home.file.".claude/skills/clangd-lsp/.lsp.json".text = builtins.toJSON {
+    clangd = {
+      command = "clangd";
+      args = [ "--background-index" ];
+      extensionToLanguage = {
+        ".c" = "c";
+        ".h" = "c";
+        ".cpp" = "cpp";
+        ".cc" = "cpp";
+        ".cxx" = "cpp";
+        ".hpp" = "cpp";
+        ".hxx" = "cpp";
+        ".C" = "cpp";
+        ".H" = "cpp";
       };
     };
   };
-  home.file.".claude/plugins/nix-lsp/README.md" = {
-    text = ''
-      # nix-lsp
 
-      Nix language server (nixd) for Claude Code, providing code intelligence for Nix files.
+  # swift-lsp only useful on macOS (sourcekit-lsp comes from Xcode).
+  home.file.".claude/skills/swift-lsp/.claude-plugin/plugin.json" = lib.mkIf pkgs.stdenv.isDarwin {
+    text = builtins.toJSON {
+      name = "swift-lsp";
+      version = "1.0.0";
+      description = "Swift language server (SourceKit-LSP) for code intelligence";
+    };
+  };
+  home.file.".claude/skills/swift-lsp/.lsp.json" = lib.mkIf pkgs.stdenv.isDarwin {
+    text = builtins.toJSON {
+      "sourcekit-lsp" = {
+        command = "sourcekit-lsp";
+        extensionToLanguage.".swift" = "swift";
+      };
+    };
+  };
 
-      ## Supported Extensions
-      `.nix`
-
-      ## Installation
-
-      nixd should be available in your PATH, either via:
-      - Project devShell (recommended for version matching)
-      - Fallback from claude-code wrapper
-
-      ## More Information
-      - [nixd GitHub](https://github.com/nix-community/nixd)
-    '';
+  # Custom Nix LSP plugin (nixd), authored in-tree.
+  home.file.".claude/skills/nix-lsp/.claude-plugin/plugin.json".text = builtins.toJSON {
+    name = "nix-lsp";
+    version = "1.0.0";
+    description = "Nix language server (nixd) for code intelligence";
+  };
+  home.file.".claude/skills/nix-lsp/.lsp.json".text = builtins.toJSON {
+    nixd = {
+      command = "nixd";
+      extensionToLanguage.".nix" = "nix";
+    };
   };
 
   # Global CLAUDE.md (personal preferences and policies applied to all sessions)
@@ -374,21 +327,17 @@ in
     executable = true;
   };
 
-  # Custom Linear MCP plugin (via official remote hosted endpoint)
-  home.file.".claude/plugins/linear-mcp/.claude-plugin/plugin.json" = {
-    text = builtins.toJSON {
-      name = "linear-mcp";
-      version = "1.0.0";
-      description = "Linear MCP server for issue tracking and management";
-    };
+  # Custom Linear MCP plugin (via official remote hosted endpoint).
+  home.file.".claude/skills/linear-mcp/.claude-plugin/plugin.json".text = builtins.toJSON {
+    name = "linear-mcp";
+    version = "1.0.0";
+    description = "Linear MCP server for issue tracking and management";
   };
-  home.file.".claude/plugins/linear-mcp/.mcp.json" = {
-    text = builtins.toJSON {
-      mcpServers = {
-        linear = {
-          type = "http";
-          url = "https://mcp.linear.app/mcp";
-        };
+  home.file.".claude/skills/linear-mcp/.mcp.json".text = builtins.toJSON {
+    mcpServers = {
+      linear = {
+        type = "http";
+        url = "https://mcp.linear.app/mcp";
       };
     };
   };
