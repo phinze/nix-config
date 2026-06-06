@@ -316,8 +316,10 @@ in
   home.file.".claude/skills/snap/SKILL.md".source = ./claude-skills/snap/SKILL.md;
 
   # recto skill: drive a running recto diff viewer (focus/highlight a span,
-  # clear, ping) so companion sessions can point the user at exact lines.
-  home.file.".claude/skills/recto/SKILL.md".source = ./claude-skills/recto/SKILL.md;
+  # annotate tour steps, clear, ping) so companion sessions can point the user
+  # at exact lines. Ships from the recto flake input — same pinned rev as the
+  # binary, so the skill always documents the CLI that's actually installed.
+  home.file.".claude/skills/recto/SKILL.md".source = "${inputs.recto}/skills/recto/SKILL.md";
 
   # session-history skill: search/summarize Claude Code session JSONL files
   home.file.".claude/skills/session-history/SKILL.md".source =
