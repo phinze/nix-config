@@ -146,6 +146,12 @@ in
   # Remove homebrew things unmanaged by nix
   homebrew.onActivation.cleanup = "uninstall";
 
+  # Homebrew deprecated bare `--cleanup`; `brew bundle install --cleanup` now
+  # demands an explicit confirmation flag or it aborts activation. nix-darwin
+  # still emits the old form (fix pending in LnL7/nix-darwin#1789), so force it
+  # here. Drop this once that PR lands and we bump the pin.
+  homebrew.onActivation.extraFlags = [ "--force-cleanup" ];
+
   # Autoupdate everything homebrew
   homebrew.global.autoUpdate = true;
 

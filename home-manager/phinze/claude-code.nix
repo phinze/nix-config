@@ -135,7 +135,7 @@ in
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)
-    pkgs.poppler_utils # pdftoppm/pdftotext so Read tool can open PDFs
+    pkgs.poppler-utils # pdftoppm/pdftotext so Read tool can open PDFs
     # snap: capture a macOS window to /tmp by app+title. Lives in PATH (not
     # a fish function) so subagents shelling out via bash can call it too.
     (pkgs.writeShellScriptBin "snap" (builtins.readFile ./scripts/snap.sh))

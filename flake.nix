@@ -2,7 +2,7 @@
   description = "Phinze's nix configs";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
     systems.url = "github:nix-systems/default";
@@ -11,12 +11,12 @@
     flake-utils.inputs.systems.follows = "systems";
 
     # Home manager
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     nixvim-config.url = "github:phinze/nixvim-config";
 
-    nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-25.05";
+    nix-darwin.url = "github:LnL7/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     nix-index-database.url = "github:nix-community/nix-index-database";
@@ -40,12 +40,8 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
-    zen-browser.url = "github:FBIGlowie/zen-browser-flake";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake";
     zen-browser.inputs.nixpkgs.follows = "nixpkgs-unstable";
-
-    claude-desktop.url = "github:phinze/claude-desktop-linux-flake/fix-fhs-desktop-file";
-    claude-desktop.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    claude-desktop.inputs.flake-utils.follows = "flake-utils";
 
     double-agent.url = "github:phinze/double-agent";
     double-agent.inputs.nixpkgs.follows = "nixpkgs-unstable";

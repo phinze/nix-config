@@ -14,20 +14,16 @@
   lib,
   ...
 }: {
-  # Hardware watchdog - forces reboot if system hangs during shutdown
-  # This is the ultimate backstop that guarantees reboot within 3 minutes
-  systemd.watchdog = {
-    # Time before watchdog forces a reboot during shutdown/reboot
-    rebootTime = "3min";
-    # Runtime watchdog disabled (would reboot on any system hang, not just shutdown)
-    # runtimeTime = "0";
-  };
+  systemd.settings.Manager = {
+    # Hardware watchdog - forces reboot if system hangs during shutdown.
+    # This is the ultimate backstop that guarantees reboot within 3 minutes.
+    # (Runtime watchdog left unset; it would reboot on any hang, not just shutdown.)
+    RebootWatchdogSec = "3min";
 
-  # Reduce default service stop timeout
-  # Services get 30 seconds to stop gracefully before SIGKILL
-  systemd.extraConfig = ''
-    DefaultTimeoutStopSec=30s
-  '';
+    # Reduce default service stop timeout: services get 30 seconds to stop
+    # gracefully before SIGKILL.
+    DefaultTimeoutStopSec = "30s";
+  };
 
   # Enable SysRq keys for emergency recovery
   # Value 1 = enable all SysRq functions
