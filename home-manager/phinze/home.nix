@@ -289,6 +289,11 @@
     ];
 
     functions = {
+      # Override the default greeting function with an empty body to silence
+      # the welcome message. Survives fish upgrades that reset universal vars
+      # (e.g. the fish 4.x rewrite), since it ships as a config-managed file.
+      fish_greeting = "";
+
       ghq = {
         description = "wraps ghq utility to provide 'look' subcommand which cds to repo";
         body = ''
