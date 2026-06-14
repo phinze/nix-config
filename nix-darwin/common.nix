@@ -190,6 +190,7 @@ in
     "finicky"
     "firefox"
     "ghostty"
+    "godot"
     "google-chrome"
     "granola"
     "istat-menus"
