@@ -681,19 +681,7 @@
 
   programs.git = {
     enable = true;
-    userName = "Paul Hinze";
-    userEmail = "phinze@phinze.com";
     signing.signByDefault = true;
-    aliases = {
-      co = "checkout";
-      st = "status";
-      trim = "!git-trim";
-      wt = "!gwq";
-      wtl = "!gwq list --json | jq -r '.[] | \"\\(.branch) (\\(.path))\"'";
-      wtc = "!gwq create";
-      wtd = "!gwq delete";
-      wts = "!gwq switch";
-    };
     ignores = [
       ".direnv"
       ".antigravitycli/"
@@ -708,7 +696,19 @@
         };
       }
     ];
-    extraConfig = {
+    settings = {
+      user.name = "Paul Hinze";
+      user.email = "phinze@phinze.com";
+      alias = {
+        co = "checkout";
+        st = "status";
+        trim = "!git-trim";
+        wt = "!gwq";
+        wtl = "!gwq list --json | jq -r '.[] | \"\\(.branch) (\\(.path))\"'";
+        wtc = "!gwq create";
+        wtd = "!gwq delete";
+        wts = "!gwq switch";
+      };
       branch.autosetuprebase = "always";
       color.ui = true;
       core.askPass = ""; # needs to be empty to use terminal for ask pass
@@ -769,17 +769,44 @@
 
   programs.ssh = {
     enable = true;
-    controlMaster = lib.mkIf (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) "auto";
-    controlPath = lib.mkIf (
-      pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)
-    ) "/tmp/ssh_mux_%h_%p_%r";
-    controlPersist = lib.mkIf (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) "10m";
-    matchBlocks = {
-      "foxtrotbase" = {
-        forwardAgent = true;
+
+    # Opt out of home-manager's legacy `Host *` defaults and declare the ones
+    # we actually want under settings."*" ourselves. Keeping enableDefaultConfig
+    # on emits a deprecation warning; this is the upstream-recommended migration.
+    enableDefaultConfig = false;
+
+    settings = {
+      "*" = {
+        # The defaults home-manager used to inject via enableDefaultConfig.
+        # Left as mkDefault so other modules can still override per-host.
+        ForwardAgent = lib.mkDefault false;
+        AddKeysToAgent = lib.mkDefault "no";
+        Compression = lib.mkDefault false;
+        ServerAliveInterval = lib.mkDefault 0;
+        ServerAliveCountMax = lib.mkDefault 3;
+        HashKnownHosts = lib.mkDefault false;
+        UserKnownHostsFile = lib.mkDefault "~/.ssh/known_hosts";
+        ControlMaster = lib.mkDefault "no";
+        ControlPath = lib.mkDefault "~/.ssh/master-%r@%n:%p";
+        ControlPersist = lib.mkDefault "no";
+      }
+      // lib.optionalAttrs (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) {
+        ControlMaster = "auto";
+        ControlPath = "/tmp/ssh_mux_%h_%p_%r";
+        ControlPersist = "10m";
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        remoteForwards = [
+        IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
+      }
+      // lib.optionalAttrs (pkgs.stdenv.isLinux && (nodeConfig.isGraphical or false)) {
+        IdentityAgent = "\"~/.1password/agent.sock\"";
+      };
+
+      "foxtrotbase" = {
+        ForwardAgent = true;
+      }
+      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        RemoteForward = [
           {
             bind.address = "/home/phinze/.bankshot.sock";
             host.address = "/Users/phinze/.bankshot.sock";
@@ -788,34 +815,21 @@
       };
 
       "pixiu" = {
-        user = "root";
+        User = "root";
       };
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
       # Only set up RemoteCommand for interactive sessions (no CLI command).
-      # Uses Match command "" so that `ssh foxtrotbase 'cmd'` works normally.
-      "foxtrotbase-interactive" = {
-        match = ''host foxtrotbase command ""'';
-        extraOptions = {
-          # Suppress focus-event noise during SSH connection:
-          # 1. stty -echo: prevent echoing of focus events already in flight
-          # 2. printf '\e[?1004l': tell terminal to stop sending focus events
-          # The login shell (exec $SHELL) restores terminal settings.
-          RemoteCommand = "stty -echo 2>/dev/null; printf '\\e[?1004l'; bankshot monitor reconcile >/dev/null 2>&1 || true; exec \$SHELL -l";
-          RequestTTY = "yes";
-        };
-      };
-      "*" = {
-        extraOptions = {
-          IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
-        };
-      };
-    }
-    // lib.optionalAttrs (pkgs.stdenv.isLinux && (nodeConfig.isGraphical or false)) {
-      "*" = {
-        extraOptions = {
-          IdentityAgent = "\"~/.1password/agent.sock\"";
-        };
+      # The `command ""` predicate means `ssh foxtrotbase 'cmd'` still works
+      # normally. The attribute name is used verbatim as the block header
+      # because it starts with `Match `.
+      "Match host foxtrotbase command \"\"" = {
+        # Suppress focus-event noise during SSH connection:
+        # 1. stty -echo: prevent echoing of focus events already in flight
+        # 2. printf '\e[?1004l': tell terminal to stop sending focus events
+        # The login shell (exec $SHELL) restores terminal settings.
+        RemoteCommand = "stty -echo 2>/dev/null; printf '\\e[?1004l'; bankshot monitor reconcile >/dev/null 2>&1 || true; exec \$SHELL -l";
+        RequestTTY = "yes";
       };
     };
   };

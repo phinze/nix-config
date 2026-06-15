@@ -3,7 +3,7 @@
 # Single source of truth for SSH signing keys. Derives:
 # - git-ssh-sign wrapper: dynamically selects signing key from SSH agent
 # - programs.git.signing.key
-# - programs.git.extraConfig."gpg \"ssh\"".program
+# - programs.git.settings."gpg \"ssh\"".program
 # - ~/.ssh/allowed_signers (generated from keys × emails)
 { config, lib, pkgs, ... }:
 let
@@ -63,7 +63,7 @@ in
     # git-ssh-sign wrapper overrides the key; git just needs a non-empty value
     programs.git.signing.key = "dynamic";
 
-    programs.git.extraConfig = {
+    programs.git.settings = {
       gpg.format = "ssh";
       "gpg \"ssh\"" = {
         program = "${gitSshSign}/bin/git-ssh-sign";
