@@ -26,6 +26,18 @@
         })
       else
         prev._1password-gui;
+
+    # nixpkgs' session-wizard wraps bin/t with makeWrapper but never runs
+    # patchShebangs on the underlying script, so .t-wrapped keeps its upstream
+    # `#!/bin/bash` shebang. That works on FHS distros but NixOS has no
+    # /bin/bash, so the popup dies with "bad interpreter". Patch the shebangs.
+    tmuxPlugins = prev.tmuxPlugins // {
+      session-wizard = prev.tmuxPlugins.session-wizard.overrideAttrs (oldAttrs: {
+        postInstall = (oldAttrs.postInstall or "") + ''
+          patchShebangs --build $target/bin
+        '';
+      });
+    };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will
