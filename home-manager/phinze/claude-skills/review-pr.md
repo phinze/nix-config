@@ -59,7 +59,10 @@ Think hard and carefully about the code changes.
    - Run `gh api repos/{owner}/{repo}/pulls/{number}/comments` to fetch existing review comments
    - Identify comments from automated code review tools (e.g., bot usernames)
    - Note which of our findings overlap with automated reviewers' findings
-   - For overlapping findings, reference agreement in the top-level summary rather than restating inline
+   - This overlap is mostly for our own triage, so we don't restate inline what
+     a bot already caught. It rarely belongs in the posted review at all —
+     mention a bot only when the agreement or disagreement actually changes the
+     verdict.
    - Keep our inline comments focused on things the automated tools didn't catch
 
 6. **Draft the review**:
@@ -100,6 +103,14 @@ Your comment text here...
    - **Check each inline comment against the actual current code** (not just
      the diff). Multi-commit PRs may have fixed issues in later commits.
      Read the file at the target line to confirm the comment still applies.
+   - **Verify a flagged issue can actually occur at runtime, not just that it
+     exists in the code's type-space.** Before raising (or worse, contributing
+     a fix for) a problem, trace whether any real path reaches it. We once
+     drafted and tested a fix for a "recurring error log" that couldn't fire
+     under the actual single-subnet allocator — the condition existed in the
+     types but no production path produced it. A guard for an unreachable case
+     is speculative code, and a review comment claiming an observed problem
+     that can't happen is just wrong.
    - Confirm the event type with the user. Almost always either **APPROVE**
      or **REQUEST_CHANGES** — never COMMENT (it's a non-action). Default to
      APPROVE with comments; we trust authors to address or consciously skip
@@ -141,6 +152,13 @@ person who has to act on it. That cashes out three ways:
 - **Say operational things plainly.** "We're going to push commits,
   hold off merging" is a coordination signal, not prose. It goes in the
   first sentence, in plain words, never inside a joke or metaphor.
+- **Most of the analysis is for you, not the review.** The depth you go
+  to build confidence — tracing call chains, sizing a concurrency
+  question, drafting a fix you then abandon — usually earns no words in
+  the post. Trace deep, post narrow. An hour-long review and a
+  five-minute one can both correctly land as "LGTM"; the work shows up as
+  the *confidence* behind the verdict, not as paragraphs proving you did
+  it.
 
 Friendly, fun, and informal lives in how individual sentences are
 phrased, not in how many there are. Genuine enthusiasm when something's
@@ -150,6 +168,11 @@ the pen" signal inside one and collided with the author's own pushes.
 
 Use "we" in the spirit of collective code ownership (e.g., "we could
 handle..." not "you should..."). Skip nitpicks.
+
+**Don't narrate the change back to the author.** Walking through what
+each part of the PR does just restates their own description — they wrote
+it, they know it. Spend words only on judgment, gaps, and things they
+can't see from their own diff.
 
 When drafting, distill the user's voice from the walkthrough discussion
 and let it come through in the review. If they were excited about
@@ -161,3 +184,7 @@ Focus on:
 - Questions that clarify intent
 - Potential issues or edge cases
 - Suggestions worth making
+
+If tracing already answered a question, don't pose it as a question —
+that makes the author re-derive what you already know. State it as an
+observation, or if it just confirms things are fine, cut it.
