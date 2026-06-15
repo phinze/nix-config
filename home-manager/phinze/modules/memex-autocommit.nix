@@ -32,20 +32,26 @@ let
         exit 1
       fi
 
-      # Reconcile with remote BEFORE committing so local sync commits never
-      # stack up against a stale base. --autostash handles dirty working tree.
-      # Tolerate fetch failure (offline is OK; we'll still try to rebase
-      # against the locally-known origin/main).
-      git fetch --quiet || true
-      if ! git rebase --autostash origin/main; then
-        echo "memex-autocommit: rebase failed, aborting" >&2
-        git rebase --abort
-        exit 1
-      fi
-
+      # Commit local changes BEFORE rebasing. This is load-bearing: untracked
+      # files (new Daily entries) that share a path with something on origin
+      # will block the rebase's checkout ("would be overwritten by checkout"),
+      # and --autostash only stashes tracked changes, so it can't save us.
+      # Committing first turns them tracked, so the rebase can always proceed
+      # and divergent days get reconciled via the merge driver instead.
       git add -A
       if ! git diff --cached --quiet; then
         git commit --no-gpg-sign -m "Sync: $(TZ=America/Chicago date '+%Y-%m-%d %H:%M')"
+      fi
+
+      # Now reconcile with remote. Two machines editing the same day's diary is
+      # expected; `.gitattributes` marks Daily/*.md as merge=union so git keeps
+      # both sides' entries automatically rather than producing conflict markers.
+      # Tolerate fetch failure (offline is OK; rebase against the known origin).
+      git fetch --quiet || true
+      if ! git rebase origin/main; then
+        echo "memex-autocommit: rebase failed, aborting" >&2
+        git rebase --abort
+        exit 1
       fi
 
       git push
