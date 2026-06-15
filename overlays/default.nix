@@ -44,25 +44,25 @@
   # be accessible through 'pkgs.unstable'
   unstable-packages = final: _prev: {
     unstable = import inputs.nixpkgs-unstable {
-      system = final.system;
+      system = final.stdenv.hostPlatform.system;
       config.allowUnfree = true;
     };
   };
 
   # My configured copy of neovim
   nixvim = final: _prev: {
-    nixvim = inputs.nixvim-config.packages.${_prev.system}.default;
+    nixvim = inputs.nixvim-config.packages.${_prev.stdenv.hostPlatform.system}.default;
   };
 
   # recto ships its own flake package; pull it from the input rather than
   # re-packaging it here.
   recto = final: _prev: {
-    recto = inputs.recto.packages.${final.system}.default;
+    recto = inputs.recto.packages.${final.stdenv.hostPlatform.system}.default;
   };
 
   # rig likewise ships its own flake package.
   rig = final: _prev: {
-    rig = inputs.rig.packages.${final.system}.default;
+    rig = inputs.rig.packages.${final.stdenv.hostPlatform.system}.default;
   };
 
 }

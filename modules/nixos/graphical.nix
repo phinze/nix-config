@@ -74,7 +74,7 @@
     gnome-extension-manager
     dconf-editor # For debugging GNOME settings
     gnomeExtensions.appindicator # System tray support for 1Password and other apps
-    inputs.zen-browser.packages.${pkgs.system}.default
+    inputs.zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
     slack
     discord
     zoom-us

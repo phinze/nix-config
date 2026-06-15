@@ -131,7 +131,7 @@ in
   # Claude Code package with LSP fallbacks
   home.packages = [
     claude-code-wrapped
-    inputs.tuicr.defaultPackage.${pkgs.system} # Terminal UI for reviewing agent diffs locally
+    inputs.tuicr.defaultPackage.${pkgs.stdenv.hostPlatform.system} # Terminal UI for reviewing agent diffs locally
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)

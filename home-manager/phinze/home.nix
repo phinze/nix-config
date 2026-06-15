@@ -136,7 +136,7 @@
       ghq # Clone repos into dir structure
       git-trim # Smart cleanup of merged branches with worktree awareness
       google-cloud-sdk # I want to run gcloud from anywhere
-      inputs.multipass.packages.${pkgs.system}.default # GCP Workload Identity Federation auth CLI
+      inputs.multipass.packages.${pkgs.stdenv.hostPlatform.system}.default # GCP Workload Identity Federation auth CLI
       gwq # Git worktree manager that works with ghq
       hunkdiff # Review-first terminal diff viewer for agentic coders
       ilmari # tmux popup radar for agent panes (Codex, Claude Code, etc.)
@@ -167,13 +167,13 @@
     # Private packages that require gh authentication
     # Note: Include by default; bootstrap users can set SKIP_PRIVATE_PACKAGES=1
     ++ lib.optionals ((builtins.getEnv "SKIP_PRIVATE_PACKAGES") != "1") [
-      inputs.iso.packages.${pkgs.system}.default # Isolated Docker environment
+      inputs.iso.packages.${pkgs.stdenv.hostPlatform.system}.default # Isolated Docker environment
     ]
     ++ (nodeConfig.extraPackages or [ ]);
 
   programs.atuin = {
     enable = true;
-    package = inputs.atuin.packages.${pkgs.system}.atuin;
+    package = inputs.atuin.packages.${pkgs.stdenv.hostPlatform.system}.atuin;
     settings = {
       # Nix will handle updates tyvm
       update_check = false;
