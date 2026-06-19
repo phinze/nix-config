@@ -38,6 +38,25 @@
         '';
       });
     };
+
+    # foreign-env's import loop runs `set -gx` on every inherited env var. When a
+    # name isn't a valid fish identifier, fish 4 hard-errors and aborts the whole
+    # import, so a single bad name takes out shell startup. gcloud is a repeat
+    # offender: it exports CLOUDSDK_VMWARE_NODE-TYPE (and would export
+    # CLOUDSDK_SECRETS_REPLICATION-POLICY) with a hyphen in the name, because its
+    # property->env-var generator doesn't sanitize. Patch the plugin to skip
+    # names fish can't represent. We patch the src rather than the build output
+    # because home-manager consumes foreign-env.src directly while the NixOS
+    # programs.fish module uses the built plugin; this fixes both.
+    # Upstream gcloud bug: https://issuetracker.google.com/issues/522635666
+    fishPlugins = prev.fishPlugins // {
+      foreign-env = prev.fishPlugins.foreign-env.overrideAttrs (oldAttrs: {
+        src = prev.applyPatches {
+          inherit (oldAttrs) src;
+          patches = [ ./foreign-env-skip-invalid-names.patch ];
+        };
+      });
+    };
   };
 
   # When applied, the unstable nixpkgs set (declared in the flake inputs) will

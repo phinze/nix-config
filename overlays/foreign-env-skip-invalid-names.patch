@@ -1,0 +1,14 @@
+--- a/functions/fenv.main.fish
++++ b/functions/fenv.main.fish
+@@ -24,6 +24,11 @@
+ function fenv.main
+   bash -c "$argv && env -0 >&31" 31>| while read -l -z env_var
+     set -l kv (string split -m 1 = $env_var); or continue
++    # Skip names fish cannot represent as variables. gcloud exports
++    # CLOUDSDK_VMWARE_NODE-TYPE (hyphen), and importing it aborts the whole
++    # loop under fish 4. Upstream gcloud bug:
++    # https://issuetracker.google.com/issues/522635666
++    string match -rq '^[A-Za-z_][A-Za-z0-9_]*$' -- $kv[1]; or continue
+     # Skip read-only variables
+     contains $kv[1] _ SHLVL PWD; and continue
+     string match -rq '^BASH_.*%%$' $kv[1]; and continue
