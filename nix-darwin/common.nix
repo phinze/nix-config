@@ -15,6 +15,7 @@ in
 {
   imports = [
     ../modules/darwin/colima.nix
+    ../modules/darwin/cmux.nix
   ];
   environment.systemPackages = [
     pkgs.mosh
@@ -185,7 +186,6 @@ in
     "blackhole-2ch"
     "claude"
     "cleanshot"
-    "cmux"
     "discord"
     "elgato-control-center"
     "finicky"
