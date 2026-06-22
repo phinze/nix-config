@@ -185,6 +185,7 @@ in
     "blackhole-2ch"
     "claude"
     "cleanshot"
+    "cmux"
     "discord"
     "elgato-control-center"
     "finicky"
