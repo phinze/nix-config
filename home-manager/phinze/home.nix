@@ -138,7 +138,6 @@
       ghq # Clone repos into dir structure
       git-trim # Smart cleanup of merged branches with worktree awareness
       google-cloud-sdk # I want to run gcloud from anywhere
-      inputs.multipass.packages.${pkgs.stdenv.hostPlatform.system}.default # GCP Workload Identity Federation auth CLI
       gwq # Git worktree manager that works with ghq
       hunkdiff # Review-first terminal diff viewer for agentic coders
       ilmari # tmux popup radar for agent panes (Codex, Claude Code, etc.)
@@ -166,9 +165,14 @@
     ++ lib.optionals pkgs.stdenv.isLinux [
       osc-copy # Provides pbcopy/xclip/xsel via OSC 52 for clipboard access through SSH/tmux
     ]
-    # Private packages that require gh authentication
-    # Note: Include by default; bootstrap users can set SKIP_PRIVATE_PACKAGES=1
+    # Private packages whose flake inputs need gh auth to fetch. Included by
+    # default. The bootstrap (before gh is authenticated) skips them with
+    # SKIP_PRIVATE_PACKAGES=1, but builtins.getEnv only reads the environment
+    # under impure eval, so the bootstrap MUST also pass --impure. Under the
+    # pure eval that nh/darwin-rebuild do normally, getEnv returns "" and the
+    # default (include) holds.
     ++ lib.optionals ((builtins.getEnv "SKIP_PRIVATE_PACKAGES") != "1") [
+      inputs.multipass.packages.${pkgs.stdenv.hostPlatform.system}.default # GCP Workload Identity Federation auth CLI
       inputs.iso.packages.${pkgs.stdenv.hostPlatform.system}.default # Isolated Docker environment
     ]
     ++ (nodeConfig.extraPackages or [ ]);

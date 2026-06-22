@@ -25,17 +25,19 @@ nh darwin switch .    # macOS
 When setting up a new machine before `gh auth login` has been run, you can skip private packages:
 
 ```bash
-# Skip private packages during initial setup
-SKIP_PRIVATE_PACKAGES=1 nh os switch .
+# Skip private packages during initial setup.
+# --impure is required: builtins.getEnv only reads the environment under
+# impure eval, so without it the variable is silently ignored.
+SKIP_PRIVATE_PACKAGES=1 nh os switch . -- --impure
 
 # After setup, authenticate with GitHub
 gh auth login
 
-# Rebuild to include private packages
+# Rebuild to include private packages (normal pure eval, no flags)
 nh os switch .
 ```
 
-The private packages are conditionally included via `builtins.getEnv "SKIP_PRIVATE_PACKAGES"` check in the home-manager configuration.
+The private packages are conditionally included via a `builtins.getEnv "SKIP_PRIVATE_PACKAGES"` check in the home-manager configuration. Because `getEnv` returns `""` under normal pure evaluation, the variable only takes effect when paired with `--impure` during bootstrap; every other rebuild evaluates purely and includes the private packages.
 
 ## Using this repo
 
