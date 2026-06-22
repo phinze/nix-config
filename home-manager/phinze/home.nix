@@ -42,6 +42,8 @@
     ./modules/dev-cleanup.nix
     # Hourly memex commit+push (gated by nodeConfig.isMemexHost)
     ./modules/memex-autocommit.nix
+    # Ghostty + cmux terminal theming on macOS (reads ~/.config/ghostty/config)
+    ./ghostty.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
