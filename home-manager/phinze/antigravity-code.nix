@@ -213,11 +213,6 @@ in
     "${inputs.claude-plugin-miren-skills}/plugins/miren/skills";
 
   # personal-setup plugin: skills
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/SKILL.md".source =
-    "${inputs.tuicr}/skills/tuicr/SKILL.md";
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/tuicr/tuicr-wrapper.sh".source =
-    "${inputs.tuicr}/skills/tuicr/tuicr-wrapper.sh";
-
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/jj/SKILL.md".source =
     ./claude-skills/jj/SKILL.md;
 
