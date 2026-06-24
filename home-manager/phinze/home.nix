@@ -768,6 +768,22 @@
 
   programs.zoxide.enable = true;
 
+  # Periodic store GC on the Mac. The NixOS hosts get this from their
+  # system-level programs.nh; darwin has no nh module under Determinate Nix,
+  # so we run the same janitor here in home-manager. nh just shells out to the
+  # nix CLI, which sidesteps Determinate's ownership of the daemon. Without it
+  # the store grew unbounded until it hit the APFS 65,535 link-count ceiling,
+  # which is what rotted this machine in June 2026 (3-6s shell starts from
+  # lstat'ing a 65k-entry store). Weekly `nh clean user`, keeping 3 generations.
+  #
+  # Note: darwin's launchd agent appends clean.extraArgs as a single argv
+  # element, so use clap's --flag=value form (--keep=3, not "--keep 3").
+  programs.nh = lib.mkIf pkgs.stdenv.isDarwin {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--keep=3";
+  };
+
   # Finicky configuration for URL routing (macOS only)
   home.file.".finicky.ts" = lib.mkIf pkgs.stdenv.isDarwin {
     source = ./finicky.ts;
