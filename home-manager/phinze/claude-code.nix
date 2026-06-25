@@ -153,6 +153,12 @@ in
       };
       includeCoAuthoredBy = false;
       skipDangerousModePermissionPrompt = true;
+      # Opt into the fullscreen (flicker-free) renderer. Defining `tui` at all
+      # also permanently silences the "Try the new fullscreen renderer?" upsell:
+      # its relevance check short-circuits to false whenever this setting is set
+      # (the seen-count cap that's supposed to limit it to 3 shows never persists
+      # in ~/.claude.json, so the nag fires every session until `tui` is defined).
+      tui = "fullscreen";
       # Plugins auto-load from ~/.claude/skills/<name>/ (each carries a
       # .claude-plugin/plugin.json) as of Claude Code 2.1.157. No enabledPlugins
       # block, marketplace registry, or installed_plugins.json needed anymore.
