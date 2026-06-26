@@ -59,6 +59,14 @@
           threats = [
             "https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/wildcard/tif.txt"
           ];
+          # "Focus mode" Ulysses-pact list. Normally empty; the blocky-allowlist
+          # app on miren01 fills it with scroll-traps while focus mode is toggled
+          # on, then empties it again on release. Deliberately a *separate* group
+          # from `ads` so the temporary-allow escape hatch (which only whitelists
+          # against `ads`) can't be used to dodge a focus block.
+          focus = [
+            "https://dns.inze.ph/focuslist.txt"
+          ];
         };
         allowlists = {
           ads = [
@@ -69,6 +77,7 @@
         clientGroupsBlock.default = [
           "ads"
           "threats"
+          "focus"
         ];
         blockType = "zeroIp";
         blockTTL = "1m";
