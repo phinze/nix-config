@@ -210,6 +210,7 @@ in
     "slack"
     "steam"
     "tailscale-app"
+    "teamviewer"
     "zed"
     "zen"
     "zoom"
