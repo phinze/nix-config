@@ -430,109 +430,20 @@
         '';
       };
 
+      # pickup/review are thin wrappers over `rig`, which owns the whole
+      # task-shaped workflow now: resolve the issue/PR, drop a jj workspace
+      # under ~/workspaces/<slug>/, spawn the tmux + recto + Claude layout, and
+      # tear it down later via `rig reap`. The old git-worktree bodies (and the
+      # jpickup/jreview jj siblings that bridged the migration) retired
+      # 2026-06-26 once rig proved out in daily use. jj supremacy confirmed.
       pickup = {
-        description = "Pick up a Linear issue: create worktree, tmux session, and start Claude";
-        body = ''
-          # Step 1: Resolve issue identifier
-          set -l identifier
-
-          if test (count $argv) -eq 0
-              # No args: list recent issues via fzf
-              set -l selection (linearis issues list --limit 25 2>/dev/null | jq -r '.[] | "\(.identifier)\t\(.state.name)\t\(.title)"' | fzf --height=40% --reverse --with-nth=1,2,3 --delimiter='\t' --prompt="Pick issue: ")
-              if test -z "$selection"
-                  return 0
-              end
-              set identifier (echo "$selection" | cut -f1)
-          else if string match -qr '^[A-Z]+-[0-9]+$' $argv[1]
-              # Direct issue identifier (e.g. MIR-664)
-              set identifier $argv[1]
-          else
-              # Search query
-              set -l selection (linearis issues search "$argv" 2>/dev/null | jq -r '.[] | "\(.identifier)\t\(.state.name)\t\(.title)"' | fzf --height=40% --reverse --with-nth=1,2,3 --delimiter='\t' --prompt="Pick issue: ")
-              if test -z "$selection"
-                  return 0
-              end
-              set identifier (echo "$selection" | cut -f1)
-          end
-
-          # Step 2: Get branch name from Linear
-          set -l branch_name (linearis issues read $identifier 2>/dev/null | jq -r '.branchName // empty')
-          if test -z "$branch_name"
-              echo "No branch name found for $identifier"
-              return 1
-          end
-
-          # Step 3: Create or find worktree
-          set -l worktree_path (gwq get $branch_name 2>/dev/null)
-
-          if test -z "$worktree_path"
-              # Worktree doesn't exist, create it
-              git fetch origin main --quiet 2>/dev/null
-              if git show-ref --verify --quiet refs/heads/$branch_name 2>/dev/null; or git ls-remote --heads origin $branch_name 2>/dev/null | grep -q .
-                  gwq add $branch_name 2>/dev/null
-              else
-                  git branch $branch_name origin/main 2>/dev/null
-                  gwq add $branch_name 2>/dev/null
-              end
-
-              if test $status -ne 0
-                  echo "Failed to create worktree for $branch_name"
-                  return 1
-              end
-
-              set worktree_path (gwq get $branch_name 2>/dev/null)
-          end
-
-          # Step 4: Compute tmux session name (matches session-wizard --full-path)
-          set -l session_name (string replace "$HOME" "~" "$worktree_path")
-          set session_name (string replace -a " " "-" $session_name)
-          set session_name (string replace -a "." "-" $session_name)
-          set session_name (string replace -a ":" "-" $session_name)
-          set session_name (string lower $session_name)
-
-          # Step 5: Create tmux session if it doesn't exist
-          set -l is_new_session 0
-          if not tmux has-session -t "$session_name" 2>/dev/null
-              tmux new-session -d -s "$session_name" -c "$worktree_path"
-              set is_new_session 1
-          end
-
-          # Step 6: For new sessions, create split layout and launch Claude
-          if test $is_new_session -eq 1
-              # Split: lumen diff on the right (auto-refresh on file changes), Claude on the left
-              tmux split-window -h -t "$session_name" -c "$worktree_path" \
-                  "lumen diff -w --theme catppuccin-mocha"
-              tmux select-pane -t "$session_name:0.0"
-
-              tmux send-keys -t "$session_name:0.0" "claude --dangerously-skip-permissions 'Picking up $identifier — use the Linear MCP (it may take a few seconds to connect) to read the issue, mark it In Progress and assigned to me, then help me plan.'" Enter
-          end
-
-          # Step 7: Switch to session
-          if test -n "$TMUX"
-              tmux switch-client -t "$session_name"
-          else
-              tmux attach -t "$session_name"
-          end
-        '';
+        description = "Pick up a Linear issue with rig (jj workspace, tmux, Claude)";
+        body = "rig up $argv";
       };
 
       review = {
-        description = "Review a GitHub PR: create worktree, tmux session, and start Claude";
-        body = builtins.readFile ./fish-functions/review.fish;
-      };
-
-      # TODO(rig-transition, added 2026-06-05): the `rig` package now covers
-      # both of these (rig up / rig review). Keeping them as a fallback for a
-      # short shakedown period; remove jpickup/jreview (and their .fish files)
-      # once rig has proven out in daily use.
-      jpickup = {
-        description = "Pick up a Linear issue with jj: create workspace, tmux session, and start Claude";
-        body = builtins.readFile ./fish-functions/jpickup.fish;
-      };
-
-      jreview = {
-        description = "Review a GitHub PR with jj: create workspace, tmux session, and start Claude";
-        body = builtins.readFile ./fish-functions/jreview.fish;
+        description = "Review a GitHub PR with rig (jj workspace, tmux, Claude)";
+        body = "rig review $argv";
       };
 
       fish_jj_prompt = {
