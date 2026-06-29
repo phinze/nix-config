@@ -588,6 +588,12 @@
 
   programs.home-manager.enable = true;
 
+  # Skip building the home-manager manual. It pulls in an options.json doc
+  # whose declaration sites embed the raw nixpkgs store path without context
+  # (an upstream home-manager/nixpkgs quirk), which prints a build warning.
+  # We read HM docs on the web anyway, so drop the man pages and the warning.
+  manual.manpages.enable = false;
+
   programs.htop = {
     enable = true;
     settings = {

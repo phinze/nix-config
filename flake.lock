@@ -56,11 +56,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777145754,
-        "narHash": "sha256-cV5dir547xay6UxotBvaKQfV/C+9AqQWB25ZpUi+CXQ=",
+        "lastModified": 1782763965,
+        "narHash": "sha256-I67IOfeoGxJ8tzNoPQL9FSI+ewoD0uFyO4n5yRT/ZZQ=",
         "owner": "phinze",
         "repo": "belowdeck",
-        "rev": "8b882ac9ec60dd45d239a8a259ccfd7653f42e19",
+        "rev": "42da76e7d7a93ad6fae782e10771b00d641012ac",
         "type": "github"
       },
       "original": {
@@ -79,11 +79,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1775225013,
-        "narHash": "sha256-v3kAPreA5dTlIIcymjCV2kNe5dZbdivK1YIaSPKX1r4=",
+        "lastModified": 1782764049,
+        "narHash": "sha256-WBgie0h4qtO2VfBcwXvNLc3A7i2VswskGhJKGMTd6Fc=",
         "owner": "phinze",
         "repo": "camlink-fix",
-        "rev": "b7583b94c66fd2496771ca8381efb1f7aad9733e",
+        "rev": "f2327cd59f3fc4aed1ff60e10372d024e346aa93",
         "type": "github"
       },
       "original": {
