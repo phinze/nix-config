@@ -165,6 +165,10 @@ in
       name = "smokris/getwindowid";
       clone_target = "https://github.com/smokris/homebrew-getwindowid";
     }
+    {
+      name = "mirendev/tap";
+      clone_target = "https://github.com/mirendev/homebrew-tap";
+    }
   ];
 
   homebrew.brews = [
@@ -200,6 +204,7 @@ in
     "keymapp"
     "libreoffice"
     "meetingbar"
+    "mirendev/tap/miren" # Miren deploy CLI, via the tap declared above
     "obs"
     "obsidian"
     "orcaslicer"
