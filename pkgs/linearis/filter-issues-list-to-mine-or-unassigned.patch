@@ -1,0 +1,24 @@
+Scope `linearis issues list` to actionable pickup candidates: exclude issues
+explicitly assigned to other people, while still surfacing unassigned issues
+and my own. Keeps the existing "not completed" filter and updatedAt ordering.
+
+Used by rig's no-arg `up` picker, which lists the 25 most recently updated
+issues; without this filter a busy teammate's issues crowd out mine. `isMe`
+resolves against the API token server-side, so no extra identity lookup.
+
+This is a local behavior change with no upstream PR; it's opinionated for a
+single-user workflow and unlikely to be accepted upstream as a default.
+
+--- a/src/queries/issues.ts
++++ b/src/queries/issues.ts
+@@ -26,6 +26,10 @@ export const GET_ISSUES_QUERY = `
+       orderBy: $orderBy
+       filter: {
+         state: { type: { neq: "completed" } }
++        or: [
++          { assignee: { null: true } }
++          { assignee: { isMe: { eq: true } } }
++        ]
+       }
+     ) {
+       nodes {

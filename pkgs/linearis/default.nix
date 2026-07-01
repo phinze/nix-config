@@ -21,6 +21,8 @@ buildNpmPackage rec {
     # Fix crash when comment.user is null (deleted users, integrations).
     # Remove once czottmann/linearis#38 is released.
     ./fix-null-comment-user.patch
+    # Scope `issues list` to mine-or-unassigned (drives rig's up picker).
+    ./filter-issues-list-to-mine-or-unassigned.patch
   ];
 
   postPatch = ''
