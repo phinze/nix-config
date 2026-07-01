@@ -25,6 +25,19 @@ export default {
         profile: "Work",
       },
     },
+    {
+      // gcloud CLI OAuth - route work Google auth to the Chrome Work profile,
+      // which is already signed into the work account. 32555940559 is the
+      // fixed, public Google Cloud SDK OAuth client ID, so this only diverts
+      // gcloud's own login flow; personal accounts.google.com visits stay put.
+      match: (url) =>
+        url.host === "accounts.google.com" &&
+        url.search?.client_id?.startsWith("32555940559"),
+      browser: {
+        name: "Google Chrome",
+        profile: "Work",
+      },
+    },
   ],
 
   rewrite: [
