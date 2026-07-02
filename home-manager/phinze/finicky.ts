@@ -32,7 +32,7 @@ export default {
       // gcloud's own login flow; personal accounts.google.com visits stay put.
       match: (url) =>
         url.host === "accounts.google.com" &&
-        url.search?.client_id?.startsWith("32555940559"),
+        url.searchParams.get("client_id")?.startsWith("32555940559"),
       browser: {
         name: "Google Chrome",
         profile: "Work",
