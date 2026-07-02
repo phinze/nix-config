@@ -37,6 +37,10 @@ diff-formatter = ":git"
 [revsets]
 # Default log shows a bit more ancestry than jj's built-in
 log = "present(@) | ancestors(immutable_heads().., 4) | present(trunk()) | divergent()"
+# `jj bookmark advance` targets the parent of the working copy by default, not
+# @ itself. @ is usually the empty WIP commit you don't want a branch pointing
+# at. This makes `jj bookmark a` a near drop-in for the `tug` alias below.
+bookmark-advance-to = "@-"
 
 [revset-aliases]
 # Treat commits not authored by me as immutable. The `trunk()..` bit limits
