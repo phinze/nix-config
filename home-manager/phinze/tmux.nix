@@ -102,8 +102,9 @@
     extraConfig = ''
       bind r source-file ~/.config/tmux/tmux.conf \; display "reloaded"
 
-      # ilmari: popup radar for agent panes (Codex, Claude Code, OpenCode, ...)
-      bind-key i display-popup -E -w 90% -h 85% "ilmari"
+      # rig radar: popup board over every rig — in-flight rigs to switch to,
+      # parked rigs ranked by review status; enter switches or wakes
+      bind-key i display-popup -E -w 90% -h 85% "rig radar"
 
       # Set terminal/tab title to "【 hostname 】› session" (last 2 path segments of session name)
       set-option -g set-titles on

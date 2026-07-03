@@ -140,7 +140,6 @@
       google-cloud-sdk # I want to run gcloud from anywhere
       gwq # Git worktree manager that works with ghq
       hunkdiff # Review-first terminal diff viewer for agentic coders
-      ilmari # tmux popup radar for agent panes (Codex, Claude Code, etc.)
       lumen # Visual git diff viewer in the terminal
       recto # jj-first terminal diff viewer for reviewing agent-authored changes
       rig # workspace tool for task-shaped multi-repo work (subsumes jpickup/jreview)

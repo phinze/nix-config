@@ -4,8 +4,6 @@ pkgs: rec {
   ccusage = pkgs.callPackage ./ccusage { };
   gwq = pkgs.callPackage ./gwq { };
   hunkdiff = pkgs.callPackage ./hunkdiff { };
-  # ilmari pulls Rust deps that require rustc 1.88+, so build against unstable
-  ilmari = pkgs.unstable.callPackage ./ilmari { };
   # lumen's genai dep uses `if let && ` chains stabilized in rustc 1.88, build against unstable
   lumen = pkgs.unstable.callPackage ./lumen { };
   # Use unstable jujutsu so the reap script can read repos the user is
