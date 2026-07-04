@@ -104,7 +104,7 @@
 
       # rig radar: popup board over every rig — in-flight rigs to switch to,
       # parked rigs ranked by review status; enter switches or wakes
-      bind-key i display-popup -E -w 80% -h 60% "rig radar"
+      bind-key i display-popup -E -w 80% -h 80% "rig radar"
 
       # Set terminal/tab title to "【 hostname 】› session" (last 2 path segments of session name)
       set-option -g set-titles on
