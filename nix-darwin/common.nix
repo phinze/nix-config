@@ -144,14 +144,14 @@ in
 
   homebrew.enable = true;
 
-  # Remove homebrew things unmanaged by nix
+  # Remove homebrew things unmanaged by nix. As of nix-darwin's #1789/#1805
+  # (in our pin since the 2026-06-18 bump), the module emits `--force-cleanup`
+  # itself for "uninstall", so we no longer hand-force that flag. That same
+  # change stamps `trusted: true` onto our non-official tap entries in the
+  # generated Brewfile, satisfying Homebrew 6's HOMEBREW_REQUIRE_TAP_TRUST
+  # gate declaratively (brew bundle persists it to trust.json for us), so
+  # there's no more manual `brew trust`.
   homebrew.onActivation.cleanup = "uninstall";
-
-  # Homebrew deprecated bare `--cleanup`; `brew bundle install --cleanup` now
-  # demands an explicit confirmation flag or it aborts activation. nix-darwin
-  # still emits the old form (fix pending in LnL7/nix-darwin#1789), so force it
-  # here. Drop this once that PR lands and we bump the pin.
-  homebrew.onActivation.extraFlags = [ "--force-cleanup" ];
 
   # Autoupdate everything homebrew
   homebrew.global.autoUpdate = true;
