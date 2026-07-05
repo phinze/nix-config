@@ -43,6 +43,24 @@ Exceptions:
 
 Default: **draft it, show me, then send after I say go.**
 
+## Upstream OSS Work
+
+Contributions to repos we don't own (PRs, issues, comments on other
+people's projects) get extra care on top of the draft-first rule:
+
+- **Confirm the send separately.** Never batch "post the upstream PR"
+  into a larger approval. Even if the draft was part of an approved
+  bundle of work, pause before the actual send and confirm it
+  explicitly — it's our name in someone else's house, and there's no
+  force-push on a first impression.
+- **No unverified claims.** Every factual statement (what was tested,
+  on what hardware, what was observed) must be something we actually
+  did. If verification only covered part of the change, say exactly
+  that — "builds and unit tests pass; the device I/O path hasn't been
+  exercised yet" is a perfectly good sentence.
+- **Review the final artifact, not a paraphrase.** The draft shown for
+  approval should be the exact title and body as they'll appear.
+
 ## Version Control
 
 I use jj (Jujutsu) for version control. Reach for jj first; only fall back
