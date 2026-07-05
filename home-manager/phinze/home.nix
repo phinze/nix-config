@@ -85,6 +85,7 @@
       outputs.overlays.nixvim
       outputs.overlays.recto
       outputs.overlays.rig
+      outputs.overlays.pim
 
       # Claude Code 2.0 overlay
       inputs.claude-code-nix.overlays.default
@@ -127,6 +128,11 @@
 
   home.sessionVariables = {
     EDITOR = "nvim";
+    # pim resolves its config.json, credentials, and tokens from PIM_DATA_DIR.
+    # Point it at the pim-stuff checkout's gitignored .local/ so the globally
+    # installed `pim` works from any directory (the secrets live outside the
+    # nix store and can't be baked into the package).
+    PIM_DATA_DIR = "${config.home.homeDirectory}/src/github.com/phinze/pim-stuff/.local";
   };
 
   home.packages =
@@ -150,6 +156,7 @@
       mtr
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
+      pim # Personal-information CLI (mail, calendar, drive, docs) — see PIM_DATA_DIR below
       opencode # AI coding agent for the terminal, multi-provider
       unstable.fabric-ai # AI framework for augmenting humans
       unstable.deno # JS runtime required by yt-dlp for YouTube signature solving

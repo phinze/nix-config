@@ -84,4 +84,9 @@
     rig = inputs.rig.packages.${final.stdenv.hostPlatform.system}.default;
   };
 
+  # pim (personal-information CLI) likewise ships its own flake package.
+  pim = final: _prev: {
+    pim = inputs.pim-stuff.packages.${final.stdenv.hostPlatform.system}.default;
+  };
+
 }

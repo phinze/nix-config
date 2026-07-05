@@ -59,6 +59,14 @@
     belowdeck.inputs.nixpkgs.follows = "nixpkgs-unstable";
     belowdeck.inputs.flake-utils.follows = "flake-utils";
 
+    # pim-stuff's go.mod floors at go 1.25.5; follow unstable to stay ahead of
+    # stable nixpkgs's Go, matching the rig/recto pattern. It's a private repo,
+    # so use git+https (git credential auth) rather than the github: fetcher,
+    # like the mirendev inputs below.
+    pim-stuff.url = "git+https://github.com/phinze/pim-stuff.git";
+    pim-stuff.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    pim-stuff.inputs.flake-utils.follows = "flake-utils";
+
     atuin.url = "github:atuinsh/atuin";
     atuin.inputs.nixpkgs.follows = "nixpkgs-unstable";
 

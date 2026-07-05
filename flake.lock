@@ -702,6 +702,29 @@
         "type": "github"
       }
     },
+    "pim-stuff": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783265102,
+        "narHash": "sha256-pmmPJy7kT/J07OpC7ztcDSMi4kjNHWI01AzmgxLdxIQ=",
+        "ref": "refs/heads/main",
+        "rev": "590be8054f56488d82286ba698000edba6410a9b",
+        "revCount": 89,
+        "type": "git",
+        "url": "https://github.com/phinze/pim-stuff.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/phinze/pim-stuff.git"
+      }
+    },
     "quake": {
       "inputs": {
         "flake-utils": [
@@ -794,6 +817,7 @@
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim-config": "nixvim-config",
+        "pim-stuff": "pim-stuff",
         "recto": "recto",
         "rig": "rig",
         "sophon": "sophon",

@@ -316,6 +316,12 @@ in
   # binary, so the skill always documents the CLI that's actually installed.
   home.file.".claude/skills/recto/SKILL.md".source = "${inputs.recto}/skills/recto/SKILL.md";
 
+  # pim skill: how to drive the personal-information CLI (mail, calendar, drive,
+  # docs) from any repo. Ships from the pim-stuff flake input — same pinned rev
+  # as the binary, so the skill always documents the CLI that's actually
+  # installed.
+  home.file.".claude/skills/pim/SKILL.md".source = "${inputs.pim-stuff}/skills/pim/SKILL.md";
+
   # session-history skill: search/summarize Claude Code session JSONL files
   home.file.".claude/skills/session-history/SKILL.md".source =
     ./claude-skills/session-history/SKILL.md;
