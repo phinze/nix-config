@@ -61,6 +61,34 @@ people's projects) get extra care on top of the draft-first rule:
 - **Review the final artifact, not a paraphrase.** The draft shown for
   approval should be the exact title and body as they'll appear.
 
+## Command Output
+
+Don't pipe a command's output straight into `head`/`tail` (or `| head -n`,
+`2>&1 | tail`) as your first move. That throws away everything you didn't
+slice, and if you need more you have to re-run the whole command. It also
+defeats the harness's own safety net: Bash output over ~30KB is already
+truncated *and saved to a temp file* you can Read in full, so a manual
+`| head` is usually lossy for no benefit.
+
+Reach for these instead, roughly in order:
+- Let the command run unpiped and let the harness truncate. If it does,
+  Read the saved temp file for the parts you need. No re-run.
+- If you expect a lot of output and want to slice it repeatedly, redirect
+  to a file first. What you redirect depends on what stdout holds:
+  - Diagnostic/human output (builds, tests, logs): `cmd > /tmp/out.txt 2>&1`
+    so error context stays interleaved in order.
+  - Structured data you'll parse (jq/yq/csv): `cmd > /tmp/out.txt` alone.
+    Keep stdout clean for the parser; unredirected stderr still shows up
+    inline in the tool result, so you don't lose the errors or need a
+    second file.
+  Then run `head`/`tail`/`rg`/`jq` against the file as many times as needed.
+- Prefer native tools that paginate without re-running: `Read` (offset/
+  limit) over `cat`/`head`/`tail`, `Grep` over `| grep`.
+
+`| head` is fine when you *genuinely* only want the first N lines and know
+it (e.g. `git log | head -5`), or as a deliberate `rg -m` style bounded
+match. The rule is about not reflexively discarding output you might need.
+
 ## Version Control
 
 I use jj (Jujutsu) for version control. Reach for jj first; only fall back
