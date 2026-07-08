@@ -1,4 +1,13 @@
 { pkgs, ... }:
+let
+  # tmux has two comparison families (see FORMATS in tmux(1)): bare `#{<:a,b}`
+  # compares strings, while `#{e|<:a,b}` compares numbers. Width tests need the
+  # numeric one. `whenWide n s` renders `s` only when the client is at least `n`
+  # columns wide, so the right status sheds modules instead of dominating tiny
+  # screens.
+  narrowerThan = n: "#{e|<:#{client_width},${toString n}}";
+  whenWide = n: s: "#{?${narrowerThan n},,${s}}";
+in
 {
   programs.tmux = {
     enable = true;
@@ -38,9 +47,18 @@
           set -g status-left-length 100
           set -g status-left ""
           set -g @catppuccin_load_text " #(${loadCommand})"
-          set -g status-right "#{E:@catppuccin_status_load}"
+
+          # Collapse the session name to just its basename on narrow clients so
+          # the full ghq path stops eating the bar; the hostname already lives
+          # in the terminal title (set-titles-string below), so it can go first.
+          set -g @catppuccin_session_text " #{?${narrowerThan 120},#{b:session_name},#S}"
+
+          # Tiers by client width: session always shows, host drops below 90,
+          # load below 120.
+          set -g status-right ""
+          set -ag status-right "${whenWide 120 "#{E:@catppuccin_status_load}"}"
           set -ag status-right "#{E:@catppuccin_status_session}"
-          set -ag status-right "#{E:@catppuccin_status_host}"
+          set -ag status-right "${whenWide 90 "#{E:@catppuccin_status_host}"}"
         '';
       }
       {
