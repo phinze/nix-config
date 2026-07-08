@@ -60,6 +60,20 @@ tug = ["util", "exec", "--", "bash", "-c", '''
   jj bookmark move --from "$from" --to '@-'
   ''', 'jj tug']
 
+[templates]
+# `git commit -v` equivalent: pre-fill the description editor with the full
+# git-format diff below the message. The `JJ: ignore-rest` marker tells jj to
+# discard everything after it when parsing the message back out, so the diff is
+# reference-only and never leaks into the description. Reuses the builtin so we
+# keep its Change ID + file-summary header.
+draft_commit_description = '''
+concat(
+  builtin_draft_commit_description,
+  "JJ: ignore-rest\n",
+  diff.git(),
+)
+'''
+
 [template-aliases]
 # Log with diff stats inline for the working copy or empty-description revs.
 # `|` in stat output is swapped to a full-width variant so jjui's line
