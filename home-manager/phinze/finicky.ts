@@ -38,6 +38,44 @@ export default {
         profile: "Work",
       },
     },
+    {
+      // Chicago Tool Library OAuth - route Google auth flows hinting the CTL
+      // org account to the Chrome CTL profile, which is signed into it.
+      // Matches on login_hint (the account), so any CTL app's OAuth flow lands
+      // in the right profile rather than the default browser.
+      match: (url) =>
+        url.host === "accounts.google.com" &&
+        url.searchParams
+          .get("login_hint")
+          ?.endsWith("@chicagotoollibrary.org"),
+      browser: {
+        name: "Google Chrome",
+        profile: "CTL",
+      },
+    },
+    {
+      // Personal Google OAuth - route auth flows hinting the personal account
+      // to the Chrome Personal profile, which is signed into it.
+      match: (url) =>
+        url.host === "accounts.google.com" &&
+        url.searchParams.get("login_hint") === "phinze@phinze.com",
+      browser: {
+        name: "Google Chrome",
+        profile: "Personal",
+      },
+    },
+    {
+      // Work Google OAuth - route auth flows hinting the work account to the
+      // Chrome Work profile. Complements the gcloud client_id match above,
+      // which covers gcloud's own flow (it often omits login_hint).
+      match: (url) =>
+        url.host === "accounts.google.com" &&
+        url.searchParams.get("login_hint") === "paul@miren.dev",
+      browser: {
+        name: "Google Chrome",
+        profile: "Work",
+      },
+    },
   ],
 
   rewrite: [
