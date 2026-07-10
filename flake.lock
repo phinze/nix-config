@@ -161,6 +161,29 @@
         "type": "github"
       }
     },
+    "codex-cli-nix": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783639878,
+        "narHash": "sha256-abnrDpUkNg+/xm859m+9BOfjGDPmnAztQvBaR3596Ps=",
+        "owner": "sadjow",
+        "repo": "codex-cli-nix",
+        "rev": "77438a11367ee33190afe5c6cdf22634eced8e77",
+        "type": "github"
+      },
+      "original": {
+        "owner": "sadjow",
+        "repo": "codex-cli-nix",
+        "type": "github"
+      }
+    },
     "double-agent": {
       "inputs": {
         "flake-utils": [
@@ -806,6 +829,7 @@
         "claude-plugin-coderabbit": "claude-plugin-coderabbit",
         "claude-plugin-miren-skills": "claude-plugin-miren-skills",
         "claude-plugins-official": "claude-plugins-official",
+        "codex-cli-nix": "codex-cli-nix",
         "double-agent": "double-agent",
         "flake-utils": "flake-utils_3",
         "home-manager": "home-manager",

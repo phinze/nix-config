@@ -73,6 +73,10 @@
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
+    codex-cli-nix.url = "github:sadjow/codex-cli-nix";
+    codex-cli-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    codex-cli-nix.inputs.flake-utils.follows = "flake-utils";
+
     claude-plugins-official = {
       url = "github:anthropics/claude-plugins-official";
       flake = false;
@@ -113,20 +117,24 @@
       formatter = eachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
       # Dev shell with repo-local helpers
-      devShells = eachSystem (system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-        nhs = pkgs.writeShellScriptBin "nhs" ''
-          if [[ "$(uname)" == "Darwin" ]]; then
-            nh darwin switch . "$@"
-          else
-            nh os switch . "$@"
-          fi
-        '';
-      in {
-        default = pkgs.mkShell {
-          packages = [ nhs ];
-        };
-      });
+      devShells = eachSystem (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          nhs = pkgs.writeShellScriptBin "nhs" ''
+            if [[ "$(uname)" == "Darwin" ]]; then
+              nh darwin switch . "$@"
+            else
+              nh os switch . "$@"
+            fi
+          '';
+        in
+        {
+          default = pkgs.mkShell {
+            packages = [ nhs ];
+          };
+        }
+      );
 
       # Your custom packages and modifications, exported as overlays
       overlays = import ./overlays { inherit inputs; };

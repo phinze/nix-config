@@ -26,6 +26,8 @@
     ./claude-code.nix
     # Antigravity CLI configuration (wrapped package + statusline + plugins)
     ./antigravity-code.nix
+    # Codex CLI configuration (package + config.toml + AGENTS.md + prompts)
+    ./codex.nix
     # Karabiner-Elements for keyboard remapping (incl. R400 → Handy)
     ./karabiner.nix
     # Tmux terminal multiplexer
@@ -90,6 +92,9 @@
       # Claude Code 2.0 overlay
       inputs.claude-code-nix.overlays.default
 
+      # Codex CLI overlay, tracking OpenAI's native binary faster than nixpkgs
+      inputs.codex-cli-nix.overlays.default
+
       # You can also add overlays exported from other flakes:
       # neovim-nightly-overlay.overlays.default
 
@@ -124,6 +129,12 @@
     # Antigravity CLI shorthand
     agy = "agy --dangerously-skip-permissions";
     agyr = "agy --dangerously-skip-permissions --continue";
+
+    # Codex CLI shorthand. --dangerously-bypass-approvals-and-sandbox is the
+    # exact analog of claude's --dangerously-skip-permissions: no sandbox, no
+    # approval prompts. Plain `codex` stays sandboxed (see codex.nix).
+    cdx = "codex --dangerously-bypass-approvals-and-sandbox";
+    cdxr = "codex resume --dangerously-bypass-approvals-and-sandbox";
   };
 
   home.sessionVariables = {
