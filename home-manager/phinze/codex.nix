@@ -45,16 +45,44 @@ let
   codexConfigFile = (pkgs.formats.toml { }).generate "codex-config.toml" codexConfig;
 
   codexThreadTitle = import ./codex-thread-title.nix { inherit pkgs; };
+
+  # Codex intentionally follows Claude Code's hook payload contract. Keep the
+  # Sophon command provider-specific so it can grow adapter behavior without
+  # guessing which harness emitted an otherwise identical event.
+  sophonHook = {
+    type = "command";
+    command = "${config.services.sophon.hookCommand} --provider codex";
+  };
   threadTitleHook = {
     type = "command";
     command = "${codexThreadTitle}/bin/codex-thread-title";
   };
   codexHooksFile = pkgs.writeText "codex-hooks.json" (
     builtins.toJSON {
-      hooks = {
-        SessionStart = [ { hooks = [ threadTitleHook ]; } ];
-        Stop = [ { hooks = [ threadTitleHook ]; } ];
-      };
+      hooks = builtins.listToAttrs (
+        map
+          (event: {
+            name = event;
+            value = [
+              {
+                hooks = [
+                  sophonHook
+                ]
+                ++ lib.optional (builtins.elem event [
+                  "SessionStart"
+                  "Stop"
+                ]) threadTitleHook;
+              }
+            ];
+          })
+          [
+            "SessionStart"
+            "PermissionRequest"
+            "PreToolUse"
+            "PostToolUse"
+            "Stop"
+          ]
+      );
     }
   );
 

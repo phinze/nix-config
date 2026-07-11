@@ -177,6 +177,31 @@ let
         };
       };
     };
+    "plugins/sophon/plugin.json" = {
+      name = "sophon";
+    };
+    "plugins/sophon/hooks.json" = {
+      sophon = {
+        PreInvocation = [
+          {
+            type = "command";
+            command = "${config.services.sophon.hookCommand} --provider antigravity --event PreInvocation";
+          }
+        ];
+        PostInvocation = [
+          {
+            type = "command";
+            command = "${config.services.sophon.hookCommand} --provider antigravity --event PostInvocation";
+          }
+        ];
+        Stop = [
+          {
+            type = "command";
+            command = "${config.services.sophon.hookCommand} --provider antigravity --event Stop";
+          }
+        ];
+      };
+    };
   };
 
   mkMutableJson =
@@ -194,7 +219,7 @@ in
   ];
 
   # Note: All antigravity-cli JSON config files (settings.json, plugin.json,
-  # mcp_config.json, lsp_config.json) are installed as mutable files via the
+  # mcp_config.json, lsp_config.json, hooks.json) are installed as mutable files via the
   # activation script below. Skill and agent directories remain HM-managed
   # symlinks since agy treats them as read-only inputs.
 
