@@ -26,6 +26,11 @@ let
     # builds/tests/curl don't trip an approval on every run.
     sandbox_workspace_write.network_access = true;
 
+    # Rig gives Codex panes a stable semantic title through lifecycle hooks.
+    # An explicit empty list disables Codex's activity/project OSC renderer so
+    # it does not overwrite that title on every spinner frame.
+    tui.terminal_title = [ ];
+
     tools.web_search = true;
 
     # Linear issue tracking over the official remote MCP endpoint. Same server
@@ -39,6 +44,20 @@ let
 
   codexConfigFile = (pkgs.formats.toml { }).generate "codex-config.toml" codexConfig;
 
+  codexThreadTitle = import ./codex-thread-title.nix { inherit pkgs; };
+  threadTitleHook = {
+    type = "command";
+    command = "${codexThreadTitle}/bin/codex-thread-title";
+  };
+  codexHooksFile = pkgs.writeText "codex-hooks.json" (
+    builtins.toJSON {
+      hooks = {
+        SessionStart = [ { hooks = [ threadTitleHook ]; } ];
+        Stop = [ { hooks = [ threadTitleHook ]; } ];
+      };
+    }
+  );
+
   # Personal slash-commands, reused verbatim from the Claude Code skill sources.
   # In Codex, a markdown file at ~/.codex/prompts/<name>.md becomes /<name>.
   promptCommands = {
@@ -50,13 +69,17 @@ let
   };
 in
 {
-  home.packages = [ pkgs.codex ];
+  home.packages = [
+    pkgs.codex
+    codexThreadTitle
+  ];
 
   home.file =
     # Global instructions (the CLAUDE.md equivalent). Read-only input, so a
     # nix-store symlink is fine.
     {
       ".codex/AGENTS.md".source = ./codex-global.md;
+      ".codex/hooks.json".source = codexHooksFile;
     }
     # Custom prompts / slash-commands.
     // lib.mapAttrs' (name: src: {
