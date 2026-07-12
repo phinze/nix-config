@@ -48,7 +48,10 @@ let
       # both sides' entries automatically rather than producing conflict markers.
       # Tolerate fetch failure (offline is OK; rebase against the known origin).
       git fetch --quiet || true
-      if ! git rebase origin/main; then
+      # Rebasing recreates commits, so the global commit.gpgsign=true setting
+      # applies even though the sync commit above uses --no-gpg-sign. This job
+      # has no interactive signing agent; disable signing for the replay too.
+      if ! git -c commit.gpgsign=false rebase origin/main; then
         echo "memex-autocommit: rebase failed, aborting" >&2
         git rebase --abort
         exit 1
