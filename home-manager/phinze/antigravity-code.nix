@@ -244,6 +244,9 @@ in
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/clipboard/SKILL.md".source =
     ./claude-skills/clipboard/SKILL.md;
 
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/second-opinion".source =
+    ./claude-skills/second-opinion;
+
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/SKILL.md".source =
     ./claude-skills/session-history/SKILL.md;
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/session-history/claude-sessions.sh" =

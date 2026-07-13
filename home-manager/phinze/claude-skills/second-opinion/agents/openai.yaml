@@ -1,0 +1,4 @@
+interface:
+  display_name: "Second Opinion"
+  short_description: "Ask another model to review a code change"
+  default_prompt: "Use $second-opinion to review my working-copy changes."

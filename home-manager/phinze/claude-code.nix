@@ -310,6 +310,10 @@ in
   # snap skill: capture a macOS window to /tmp by app+title without focus-stealing
   home.file.".claude/skills/snap/SKILL.md".source = ./claude-skills/snap/SKILL.md;
 
+  # second-opinion skill: ask a fresh Claude or Codex session to review a jj/git
+  # diff with read-only tools, then verify its findings in the host session.
+  home.file.".claude/skills/second-opinion".source = ./claude-skills/second-opinion;
+
   # recto skill: drive a running recto diff viewer (focus/highlight a span,
   # annotate tour steps, clear, ping) so companion sessions can point the user
   # at exact lines. Ships from the recto flake input — same pinned rev as the

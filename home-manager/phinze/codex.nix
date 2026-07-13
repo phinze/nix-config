@@ -94,6 +94,13 @@ let
     pr-time = ./claude-skills/pr-time.md;
     address-pr-review = ./claude-skills/address-pr-review.md;
     review-pr = ./claude-skills/review-pr.md;
+    # Keep the slash command tiny: it explicitly activates the installed skill,
+    # whose own directory gives Codex a stable base for bundled scripts.
+    second-opinion = pkgs.writeText "second-opinion-prompt.md" ''
+      Use $second-opinion to get an independent code review.
+
+      User request: $ARGUMENTS
+    '';
   };
 in
 {
@@ -108,6 +115,7 @@ in
     {
       ".codex/AGENTS.md".source = ./codex-global.md;
       ".codex/hooks.json".source = codexHooksFile;
+      ".codex/skills/second-opinion".source = ./claude-skills/second-opinion;
     }
     # Custom prompts / slash-commands.
     // lib.mapAttrs' (name: src: {
