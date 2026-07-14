@@ -158,10 +158,6 @@ in
 
   homebrew.taps = [
     {
-      name = "jundot/omlx";
-      clone_target = "https://github.com/jundot/omlx";
-    }
-    {
       name = "smokris/getwindowid";
       clone_target = "https://github.com/smokris/homebrew-getwindowid";
     }
@@ -174,11 +170,6 @@ in
   homebrew.brews = [
     "media-control"
     "smokris/getwindowid/getwindowid"
-    {
-      name = "jundot/omlx/omlx";
-      start_service = true;
-      restart_service = "changed";
-    }
   ];
 
   homebrew.casks = [
