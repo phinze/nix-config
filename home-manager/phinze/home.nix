@@ -268,7 +268,25 @@
     # only the nearest .envrc (no cascade), so a repo shipping its own .envrc
     # (nix devshells) would shadow anything the basedir exports.
     stdlib = ''
-      has rig && eval "$(rig env 2>/dev/null)"
+      _rig_env() {
+        has rig && eval "$(rig env 2>/dev/null)"
+      }
+
+      _rig_env
+
+      # nix-direnv restores a cached environment after this global stdlib has
+      # loaded, which otherwise discards rig's PATH shim and identity exports.
+      # Wrap its public entrypoint and reapply the cwd-derived projection once
+      # the dev shell is in place.
+      if declare -F use_flake >/dev/null; then
+        eval "$(declare -f use_flake | sed '1s/^use_flake /_rig_use_flake /')"
+        use_flake() {
+          local status=0
+          _rig_use_flake "$@" || status=$?
+          _rig_env
+          return "$status"
+        }
+      fi
     '';
 
     # Auto-allow direnv for trusted organizations (repos and worktrees)
