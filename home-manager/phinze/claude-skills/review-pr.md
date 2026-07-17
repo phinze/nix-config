@@ -12,8 +12,22 @@ Think hard and carefully about the code changes.
      run `gh pr view --json number,title` to find it
    - If that fails (no PR for current branch), run `gh pr list` and ask
 
-1. **Fetch PR metadata and ensure the branch is local**:
-   - Run `gh pr view <number> --json number,title,body,author,baseRefName,headRefName,url`
+1. **Fetch PR metadata, claim the review (mutex), and ensure the branch is
+   local**:
+   - Fetch metadata *including current assignees* — we need them to check the
+     lock before we take it:
+     `gh pr view <number> --json number,title,body,author,baseRefName,headRefName,url,assignees`
+   - **Mutex: check, then claim.** The assignee is our soft "I'm reviewing
+     this" lock. It's advisory, not atomic (GitHub won't stop a simultaneous
+     grab), but it's enough to keep two of us off the same PR.
+     - **If someone other than us is already assigned**, that's almost
+       certainly another reviewer holding the lock. Stop and surface it by
+       name — ask whether to pile on or back off, don't silently claim over
+       them. (One exception: the *author* self-assigning their own PR isn't a
+       review claim; note it and carry on.)
+     - **If it's unassigned (or already us)**, take the lock:
+       `gh pr edit <number> --add-assignee @me`. Do this before reading deeply
+       or drafting, so the claim is visible as early as possible.
    - Run `gh pr diff <number>`
    - **Check out the branch locally** if not already on it (`git switch` or
      `gh pr checkout`). Reading the full source files locally — not just the
@@ -66,6 +80,35 @@ Think hard and carefully about the code changes.
    - Keep our inline comments focused on things the automated tools didn't catch
 
 6. **Draft the review**:
+
+   **First, a gate. Run it before writing a word — it's the tone section
+   below, compressed and moved to where it bites. First drafts fail it
+   constantly; that's the whole reason it's up here.**
+
+   - **Propose the verdict, don't offer a menu.** State the call and the
+     leanest form it takes (usually APPROVE, often top-level-only). Fork into
+     options only when genuinely torn, and even then lead with your pick.
+     Don't reach for REQUEST_CHANGES or an approve-then-flip dance unless
+     there's a real blocker.
+   - **Verify each finding now, not in step 7.** A claim doesn't enter the
+     draft until you've traced it to a real runtime path (the reachability
+     test in step 7). We've drafted whole inline comments whose proposed fix
+     couldn't even work — that verification belongs before drafting, so
+     you're the reviewer and the user isn't left being the verifier.
+   - **Cut every sentence that restates the diff or recites our process.** If
+     a sentence tells the author what their own change does, or narrates the
+     tracing ("traced this end to end," "we verified X"), delete it.
+     Confidence lands as the verdict, not as proof-of-work. This is the
+     single most common thing the user deletes.
+   - **Default to two-person-team informal.** Plain, conversational, a little
+     warm. If it reads like a corporate PR review, it's wrong.
+   - **Don't invent context.** No on-call rotation, team size, or process you
+     don't actually know. When unsure, leave it out.
+   - **It's the user's voice, not yours.** Your analytical framing ("the
+     sharp bit is the diagnosis") isn't theirs. Distill what they actually
+     said in the walkthrough — if they were excited or skeptical, that lands.
+
+   Then draft:
    - **Lead with the verdict.** The first sentence is the most load-bearing
      finding or the overall call, not a roll call ("Claude and Paul here")
      or a methodology recital ("we traced..."). Attach evidence to claims
@@ -99,7 +142,9 @@ Your comment text here...
 
    - Use a single line number (not ranges) - this is what the API needs
 
-7. **Verify before posting**:
+7. **Verify before posting** (final re-check — the reachability work should
+   already be done per the step 6 gate; this pass is the last look against the
+   current code before it goes out):
    - **Check each inline comment against the actual current code** (not just
      the diff). Multi-commit PRs may have fixed issues in later commits.
      Read the file at the target line to confirm the comment still applies.
