@@ -3,10 +3,11 @@ set -euo pipefail
 
 # Update a flake input and commit with version info
 # Usage: update-flake-input [-y] <input-name>
+#
+# Always commits when there's an update (the old interactive [y/N] prompt is
+# gone). A leading -y is still accepted for muscle memory but is now a no-op.
 
-auto_commit=false
 if [[ "${1:-}" == "-y" ]]; then
-  auto_commit=true
   shift
 fi
 
@@ -14,7 +15,7 @@ input="${1:-}"
 
 if [[ -z "$input" ]]; then
   echo "Usage: update-flake-input [-y] <input-name>" >&2
-  echo "  -y: Auto-commit without prompting" >&2
+  echo "  -y: accepted for backwards compat; commits always happen now" >&2
   echo "Available inputs: nixvim-config, iso, double-agent, bankshot, claude-code-nix, codex-cli-nix, zen-browser" >&2
   exit 1
 fi
@@ -126,18 +127,21 @@ if [[ "$input" == "claude-code-nix" && "$old_version" != "unknown" && "$new_vers
   fi
 fi
 
-if [[ "$auto_commit" == "true" ]]; then
-  git add flake.lock
-  git commit -m "$commit_msg"
-  echo "Committed!"
-else
-  read -p "Commit this update? [y/N] " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    git add flake.lock
-    git commit -m "$commit_msg"
-    echo "Committed!"
-  else
-    echo "Skipped commit. Changes are in flake.lock"
-  fi
+git add flake.lock
+git commit -m "$commit_msg"
+echo "Committed!"
+
+# If we captured a changelog delta, drop into an interactive Claude session to
+# review whether anything in the changelog means we should tweak our config.
+# Runs *after* the commit, so the update itself is already safely landed; from
+# here you can just tell Claude to go make any change it turns up.
+if [[ -n "${delta:-}" ]] && command -v claude >/dev/null 2>&1; then
+  echo ""
+  echo "Launching Claude to review the changelog for config-relevant changes..."
+  echo ""
+  analysis_prompt="You are reviewing the Claude Code changelog delta below against the Claude Code configuration in this nix-config repo. Read home-manager/phinze/claude-code.nix (the source of truth for our settings.json, plugins, and hooks) and ~/.claude/settings.json (the generated result). We run yolo everywhere (--dangerously-skip-permissions with skipDangerousModePermissionPrompt=true). Identify ONLY changelog entries that are actionable for us: a setting we should add or change, a default that flipped in a way that affects us, a plugin or hook mechanism we use that changed, or a behavior shift worth knowing given how we run. Skip pure bugfixes, memory-leak fixes, and features we do not use. Be concise and lead with the verdict; if nothing is actionable, say exactly that in one line.
+
+Changelog delta:
+$delta"
+  claude --dangerously-skip-permissions "$analysis_prompt"
 fi
