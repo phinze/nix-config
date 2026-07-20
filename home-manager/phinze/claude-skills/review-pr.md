@@ -81,10 +81,52 @@ Think hard and carefully about the code changes.
 
 6. **Draft the review**:
 
-   **First, a gate. Run it before writing a word — it's the tone section
-   below, compressed and moved to where it bites. First drafts fail it
-   constantly; that's the whole reason it's up here.**
+   **Before you draft: whose take is this?** The review carries the *user's*
+   verdict in the *user's* voice — not your analysis with their name on it.
+   The best seed is one line from them: scan the conversation for what they
+   actually think ("clean, love it," "this one worries me," "slotted in
+   nicely"). That line sets the call and the voice; you enhance it with the
+   findings and operational notes that earn their place. Human seeds, agent
+   enhances. If the conversation *doesn't* carry their take — you went deep
+   in mechanics and they never tipped the verdict — **ask for it before
+   drafting; don't infer it.** A real "easy peasy, slotted right in" from
+   them is more signal than the most careful "we went spelunking and it held
+   up" you could write on their behalf.
 
+   **Then a gate — one rule, run before you write a word and again over
+   every sentence you wrote. First drafts fail it constantly; that's the
+   whole reason it's up here.**
+
+   **The rule: a review says only what the author can't already see from
+   their own diff.** They wrote the change, so they know what it does. What
+   they *don't* have is the verdict, the bug you found, the gap they missed,
+   the operational state (needs a rebase, we're taking the pen). That's the
+   review. Recapping the change, reporting that you traced it, telling them
+   you're satisfied — that's either something they already have or something
+   about you, and neither one goes in.
+
+   Two places drafts fail it, both where proof-of-work sneaks back:
+   - **Confidence is the verdict, not a sentence.** "Approved" already says
+     you looked and you're satisfied. The disguises are the tell: if the
+     subject of a sentence is *you* — "I confirmed," "traced this end to
+     end," "looked hard at it," "I'm confident," "the design's the right
+     shape" — it's about your work, not their gap. Make the subject the code
+     ("X holds") or cut the sentence. This is the single most common thing
+     the user deletes, and it keeps its disguises: "looked closely" and
+     "spent real time on this" are the same move in humbler clothes.
+   - **Narrow, not terse.** Cut narration to zero, but keep every real
+     signal: a bug, a rebase requirement, "the two bot nits are legit but
+     optional." Each earns its sentence. Narrow means only-the-load-bearing,
+     not shortest-possible — don't compress a useful pointer out chasing
+     brevity.
+
+   The trap that outlives knowing all this: you build the review by
+   **shrinking the walkthrough you gave the user.** That walkthrough is
+   *supposed* to be thick with "I traced / I confirmed" — correct, for them.
+   But compression keeps the frame, so the proof-of-work rides along. Don't
+   shrink it; re-derive the review from a blank page and the rule.
+
+   Then the operational calls:
    - **Propose the verdict, don't offer a menu.** State the call and the
      leanest form it takes (usually APPROVE, often top-level-only). Fork into
      options only when genuinely torn, and even then lead with your pick.
@@ -95,18 +137,10 @@ Think hard and carefully about the code changes.
      test in step 7). We've drafted whole inline comments whose proposed fix
      couldn't even work — that verification belongs before drafting, so
      you're the reviewer and the user isn't left being the verifier.
-   - **Cut every sentence that restates the diff or recites our process.** If
-     a sentence tells the author what their own change does, or narrates the
-     tracing ("traced this end to end," "we verified X"), delete it.
-     Confidence lands as the verdict, not as proof-of-work. This is the
-     single most common thing the user deletes.
    - **Default to two-person-team informal.** Plain, conversational, a little
      warm. If it reads like a corporate PR review, it's wrong.
    - **Don't invent context.** No on-call rotation, team size, or process you
      don't actually know. When unsure, leave it out.
-   - **It's the user's voice, not yours.** Your analytical framing ("the
-     sharp bit is the diagnosis") isn't theirs. Distill what they actually
-     said in the walkthrough — if they were excited or skeptical, that lands.
 
    Then draft:
    - **Lead with the verdict.** The first sentence is the most load-bearing
@@ -132,6 +166,29 @@ Think hard and carefully about the code changes.
      follow-up tickets, or a direct conversation — not the review body.
      A longer top-level is fine only when every paragraph is verified
      and load-bearing.
+   - **A worked approve, the common case.** You traced for an hour; the post
+     is still short, and that's correct — the tracing became your confidence,
+     not your prose. A draft that fails the rule:
+     > Traced this end to end and it's solid. The helper is the right place
+     > to hang the policy, all three call sites route through it, and I
+     > confirmed the guard covers the only name that matters. Pool logic and
+     > the frozen hash check out. The two nits the bot flagged are worth a
+     > look. Needs a rebase.
+
+     Every sentence there is either about the reviewer ("traced," "I
+     confirmed," "check out") or the author's own change handed back to them
+     ("the helper is the right place," "three call sites"). Strip both, keep
+     only what they can't see from their diff — the verdict, the operational
+     state, and the one pointer that saves them time:
+     > LGTM. Needs a rebase, it's conflicting with main. The two nits biscuit
+     > left inline are both legit but optional, so nothing blocking.
+     >
+     > `--p+🤖`
+
+     That's narrow, not terse: the bot-nit pointer stays, because "where to
+     look and that it's safe to skip" is a real signal the author doesn't
+     have — while the tracing and the recap are gone. A load-bearing finding
+     earns a sentence; a clean approve rarely earns more than three.
    - Draft **inline comments** for specific lines, formatted as:
 
 ~~~markdown
@@ -203,7 +260,8 @@ person who has to act on it. That cashes out three ways:
   the post. Trace deep, post narrow. An hour-long review and a
   five-minute one can both correctly land as "LGTM"; the work shows up as
   the *confidence* behind the verdict, not as paragraphs proving you did
-  it.
+  it. (This is the gate's rule, viewed from the effort side: re-derive the
+  review from the blank page, don't shrink your walkthrough into it.)
 
 Friendly, fun, and informal lives in how individual sentences are
 phrased, not in how many there are. Genuine enthusiasm when something's
@@ -213,11 +271,6 @@ the pen" signal inside one and collided with the author's own pushes.
 
 Use "we" in the spirit of collective code ownership (e.g., "we could
 handle..." not "you should..."). Skip nitpicks.
-
-**Don't narrate the change back to the author.** Walking through what
-each part of the PR does just restates their own description — they wrote
-it, they know it. Spend words only on judgment, gaps, and things they
-can't see from their own diff.
 
 When drafting, distill the user's voice from the walkthrough discussion
 and let it come through in the review. If they were excited about
