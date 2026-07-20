@@ -26,6 +26,10 @@ auto-track-bookmarks = "*"
 [remotes.mine]
 auto-track-bookmarks = "*"
 
+[snapshot]
+# Keep shared-repo workspaces usable when another workspace rewrites their @.
+auto-update-stale = true
+
 [ui]
 # Side-by-side delta when the terminal is wide enough, plain delta otherwise
 pager = ["bash", "-c", '[ "${COLUMNS:-0}" -ge 165 ] && delta --side-by-side || delta']
