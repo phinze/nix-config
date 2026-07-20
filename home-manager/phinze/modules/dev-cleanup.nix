@@ -4,7 +4,36 @@
   ...
 }:
 lib.mkIf pkgs.stdenv.isLinux {
-  home.packages = [ pkgs.dev-session-cleanup ];
+  home.packages = [
+    pkgs.dev-host-cleanup
+    pkgs.dev-session-cleanup
+  ];
+
+  # Fast repair loop for the failure mode that filled foxtrotbase: tmux can
+  # drop a session while one of its systemd pane scopes keeps a daemon alive.
+  # Rig owns the RIG_ID accounting and its durable teardown jobs; this timer
+  # retries those jobs and stops scopes whose manifest is already gone.
+  systemd.user.services.rig-runtime-cleanup = {
+    Unit.Description = "Retry Rig cleanup and stop escaped pane scopes";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe pkgs.rig} reap --runtime-only";
+      Environment = [
+        "TMUX_TMPDIR=%t"
+        "PATH=%h/bin:/etc/profiles/per-user/%u/bin:%h/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin"
+      ];
+    };
+  };
+
+  systemd.user.timers.rig-runtime-cleanup = {
+    Unit.Description = "Repair escaped Rig runtime resources hourly";
+    Timer = {
+      OnBootSec = "10m";
+      OnUnitActiveSec = "1h";
+      RandomizedDelaySec = "5m";
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
 
   systemd.user.services.dev-session-cleanup = {
     Unit = {
@@ -45,5 +74,43 @@ lib.mkIf pkgs.stdenv.isLinux {
     Install = {
       WantedBy = [ "timers.target" ];
     };
+  };
+
+  systemd.user.services.dev-host-cleanup = {
+    Unit.Description = "Prune seven-day-old unused Docker resources";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe pkgs.dev-host-cleanup}";
+    };
+  };
+
+  systemd.user.timers.dev-host-cleanup = {
+    Unit.Description = "Run host development storage cleanup daily";
+    Timer = {
+      OnCalendar = "*-*-* 04:00:00";
+      Persistent = true;
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
+
+  # The daily sweep keeps normal churn bounded. This second trigger is the
+  # seatbelt: once / reaches 80%, run the same conservative seven-day policy
+  # within an hour instead of waiting for the next night.
+  systemd.user.services.dev-disk-pressure-cleanup = {
+    Unit.Description = "Prune old development storage under disk pressure";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe pkgs.dev-host-cleanup} --if-used-pct 80";
+    };
+  };
+
+  systemd.user.timers.dev-disk-pressure-cleanup = {
+    Unit.Description = "Check development disk pressure hourly";
+    Timer = {
+      OnBootSec = "10m";
+      OnUnitActiveSec = "1h";
+      RandomizedDelaySec = "5m";
+    };
+    Install.WantedBy = [ "timers.target" ];
   };
 }

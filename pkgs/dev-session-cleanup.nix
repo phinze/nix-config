@@ -334,6 +334,16 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
       local workspace_path
       workspace_path=$(dirname "$jj_dir")
 
+      # New Rig workspaces are direct children of a manifest-bearing basedir
+      # and have their own fail-closed teardown transaction. Leave them wholly
+      # to `rig reap`; treating them as the old host/owner/repo/branch layout
+      # only produces nightly warnings and risks two reapers racing.
+      local rig_root="''${workspace_path#$HOME/workspaces/}"
+      rig_root="$HOME/workspaces/''${rig_root%%/*}"
+      if [ -f "$rig_root/.rig.toml" ]; then
+        continue
+      fi
+
       # Path shape: ~/workspaces/<host>/<owner>/<repo>/<branch...>
       local ws_relpath="''${workspace_path#$HOME/workspaces/}"
       local parts
@@ -374,6 +384,7 @@ pkgs.writeShellScriptBin "dev-session-cleanup" ''
         log_warn "Skipping $branch_name — bookmark missing in main repo (possible unpushed WIP)"
         continue
       fi
+      local bookmark_exists=true
       local trunk_check trunk_rc
       trunk_check=$(jj -R "$main_repo" log -r "$branch_name & ::trunk()" --no-graph -T '"x"' 2>&1)
       trunk_rc=$?

@@ -14,6 +14,7 @@ pkgs: rec {
     inherit gwq;
     jujutsu = pkgs.unstable.jujutsu;
   };
+  dev-host-cleanup = pkgs.callPackage ./dev-host-cleanup.nix { };
   git-trim = pkgs.callPackage ./git-trim.nix { inherit gwq; };
   ccometixline = pkgs.callPackage ./ccometixline.nix { };
   pageres-cli = pkgs.callPackage ./pageres-cli { };

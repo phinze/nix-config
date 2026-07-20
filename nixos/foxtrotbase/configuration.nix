@@ -47,6 +47,15 @@
   # Docker is a system-level install.
   virtualisation.docker.enable = true;
 
+  # Keep logs from becoming a second disk incident while preserving enough
+  # history for ordinary debugging. The user-level cleanup timers handle
+  # Docker and Rig scratch separately.
+  services.journald.extraConfig = ''
+    SystemMaxUse=1G
+    SystemKeepFree=5G
+    MaxRetentionSec=7day
+  '';
+
   # nh helper with automatic cleanup
   programs.nh = {
     enable = true;
