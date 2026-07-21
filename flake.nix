@@ -89,6 +89,12 @@
       url = "github:mirendev/miren-skills";
       flake = false;
     };
+    # Private repo, so use git+https (git credential auth) rather than the
+    # github: fetcher, like the other mirendev inputs.
+    claude-plugin-miren-team = {
+      url = "git+https://github.com/mirendev/claude-skills.git";
+      flake = false;
+    };
 
     iso.url = "git+https://github.com/mirendev/iso.git";
 

@@ -145,6 +145,22 @@
         "type": "github"
       }
     },
+    "claude-plugin-miren-team": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784643556,
+        "narHash": "sha256-2/AsIh5Q6zBXMNo/X/fK+x7twYew+2XS9kRf82AaUAk=",
+        "ref": "refs/heads/main",
+        "rev": "107e0848ddc2c92d4aa1733d394e895f3ad5ea1a",
+        "revCount": 17,
+        "type": "git",
+        "url": "https://github.com/mirendev/claude-skills.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/mirendev/claude-skills.git"
+      }
+    },
     "claude-plugins-official": {
       "flake": false,
       "locked": {
@@ -828,6 +844,7 @@
         "claude-code-nix": "claude-code-nix",
         "claude-plugin-coderabbit": "claude-plugin-coderabbit",
         "claude-plugin-miren-skills": "claude-plugin-miren-skills",
+        "claude-plugin-miren-team": "claude-plugin-miren-team",
         "claude-plugins-official": "claude-plugins-official",
         "codex-cli-nix": "codex-cli-nix",
         "double-agent": "double-agent",

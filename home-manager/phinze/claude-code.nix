@@ -220,6 +220,7 @@ in
     "${inputs.claude-plugins-official}/plugins/frontend-design";
   home.file.".claude/skills/coderabbit".source = inputs.claude-plugin-coderabbit;
   home.file.".claude/skills/miren".source = "${inputs.claude-plugin-miren-skills}/plugins/miren";
+  home.file.".claude/skills/miren-team".source = inputs.claude-plugin-miren-team;
 
   # Official LSP plugins: the upstream plugin dirs ship only a README (their
   # lspServers config lives in the marketplace catalog, not the dir), so we author
