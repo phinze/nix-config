@@ -252,6 +252,22 @@ Compare the review list against what was there before our push. If a new review 
 
 **Polling mechanics**: Check every 30 seconds. Use `sleep 30` between checks. Keep it simple.
 
+**7d. Flip draft to ready**
+
+Work-repo PRs are opened as drafts (by pr-time) so CodeRabbit reviews before humans get pinged. Once everything above is genuinely clean (7a green, 7b resolutions confirmed, 7c surfaced no new findings), that bot-first pass is done. Check whether the PR is still a draft:
+
+```bash
+gh pr view $PR_NUMBER --json isDraft --jq '.isDraft'
+```
+
+If it is, mark it ready for human review:
+
+```bash
+gh pr ready $PR_NUMBER
+```
+
+This is the moment CODEOWNERS review requests fire, so only reach it when the review is actually clean. If 7c sent you back to Phase 1 for new findings, the flip waits until that loop also lands clean.
+
 ## Response Style
 - Concise and friendly
 - Acknowledge the reviewer's point even when disagreeing

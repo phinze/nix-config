@@ -65,6 +65,12 @@ Let's get this work shipped. Tidy the rev stack, rebase on latest trunk, open a 
    ```
    Edge case: if `@-` has multiple bookmarks, the inline command emits them comma-joined and gh will reject it. Rare; pick one and pass it manually if you hit it.
 
+   **Work repos open as drafts.** On `mirendev/*` repos, open the PR as a draft so CodeRabbit does its pass before any human reviewer gets pinged. CODEOWNERS review requests don't fire until a PR leaves draft, so this keeps the ordering bot-first, humans-after. Check the owner:
+   ```bash
+   gh repo view --json owner --jq '.owner.login'
+   ```
+   If it's `mirendev`, add `--draft` to the `gh pr create` above. CodeRabbit auto-reviews drafts across the org (the `drafts` auto-review setting is on org-wide), so the babysit loop below works unchanged, and step 8b flips the PR to ready once the bot pass is clean. Personal repos (solo, no reviewers) open normally, no draft.
+
 8. **Babysit the PR**: After the PR is created, stick around and shepherd it through CI and automated review. This phase is fully autonomous. No need to check in unless something needs human judgment.
 
    **8a. Watch CI**
@@ -104,7 +110,7 @@ Let's get this work shipped. Tidy the rev stack, rebase on latest trunk, open a 
 
    Poll every 30 seconds. Once the review lands, determine if it has actionable findings:
 
-   - **Clean review**: the review body is just a summary walkthrough with no actionable sections. No nitpick comments, no outside-diff-range warnings, no inline review threads from CodeRabbit. Report that CI is green and CodeRabbit is clean. We're done.
+   - **Clean review**: the review body is just a summary walkthrough with no actionable sections. No nitpick comments, no outside-diff-range warnings, no inline review threads from CodeRabbit. If the PR is still a draft (`gh pr view $PR_NUMBER --json isDraft --jq '.isDraft'`), the bot-first pass is done, so flip it to ready for human review: `gh pr ready $PR_NUMBER`. Report that CI is green, CodeRabbit is clean, and the PR is ready. We're done.
    - **Has real comments**: the review body contains actionable sections (`🧹 Nitpick comments`, `⚠️ Outside diff range comments`) or CodeRabbit left inline review threads. Report what was found and kick off `/address-pr-review` to work through the feedback.
 
 ## Examples
