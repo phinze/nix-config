@@ -13,6 +13,7 @@
       inherit inputs outputs;
       nodeConfig = {
         isMemexHost = true;
+        isFlakeSyncHost = true;
       };
     };
     users = {
