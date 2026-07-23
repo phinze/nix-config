@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780935165,
-        "narHash": "sha256-U1k8+kLyuSIZkDJjIzmMZVwtkB8A+tTqu+vpEKRA5Qo=",
+        "lastModified": 1784825505,
+        "narHash": "sha256-XBZhUZi7UTbhTwPqUbAONYTATLoMTJA8z8LO3fY79Og=",
         "owner": "atuinsh",
         "repo": "atuin",
-        "rev": "bcdf8c8cde31e826000f1b2d6eeaebdd865a07c1",
+        "rev": "fd4c51c1edd98d2fa2d5bae798496e9a2cbe4565",
         "type": "github"
       },
       "original": {
@@ -79,11 +79,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783429078,
-        "narHash": "sha256-NeyPoWt7Oi8ZBFEiw2cbkhvqIedv2BlRMTeTGvZ5Y9M=",
+        "lastModified": 1784750343,
+        "narHash": "sha256-W0lTqsrGQ9YZLmf2zmDRhZfdoAgqX6V2jXjGA1JNULY=",
         "owner": "phinze",
         "repo": "camlink-fix",
-        "rev": "b8e50748def56540508da3d18fb6dd73efd8d21f",
+        "rev": "7c53887aea39fe9ae282bca58e431462559f0bdf",
         "type": "github"
       },
       "original": {
@@ -100,11 +100,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784585873,
-        "narHash": "sha256-OmxOXzRFIJzC47GGYszVjLaPul6lck0xni5gZxJ8WNQ=",
+        "lastModified": 1784758749,
+        "narHash": "sha256-rNwvRrqedbd6jspIckIb5brLrAWmdOMqhqxLORTVx8Q=",
         "owner": "sadjow",
         "repo": "claude-code-nix",
-        "rev": "c71f8fa601869c015ab2c00f5bca65fe7aafdc85",
+        "rev": "1343337ba7dbc8b72bbe4d0f7084e95acc46570c",
         "type": "github"
       },
       "original": {
@@ -148,11 +148,11 @@
     "claude-plugin-miren-team": {
       "flake": false,
       "locked": {
-        "lastModified": 1784643556,
-        "narHash": "sha256-2/AsIh5Q6zBXMNo/X/fK+x7twYew+2XS9kRf82AaUAk=",
+        "lastModified": 1784741837,
+        "narHash": "sha256-9bAf5vHNceHOfQ4OA2HZryLAnNG8gnbvC96uVwb45g4=",
         "ref": "refs/heads/main",
-        "rev": "107e0848ddc2c92d4aa1733d394e895f3ad5ea1a",
-        "revCount": 17,
+        "rev": "c1afcec56df2cdbe2a8cf212ea26738a0ee3452d",
+        "revCount": 19,
         "type": "git",
         "url": "https://github.com/mirendev/claude-skills.git"
       },
@@ -164,11 +164,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1781136946,
-        "narHash": "sha256-ezMJqz2rKNx/Bh60HRVR+nxJo1oOiXYKSXjHYUeG21g=",
+        "lastModified": 1784833450,
+        "narHash": "sha256-7M90Drnnw20E1WDwys023I/+eeT3amAOmwvEIQBWx5Y=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "9eae436aa2968ada86d8535634d0be5162d720b8",
+        "rev": "91d01b0f54204e36c65b8200647898a6f2451d45",
         "type": "github"
       },
       "original": {
@@ -187,11 +187,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784484188,
-        "narHash": "sha256-FM9Iwr775hfEdUwJsqRuKbi5QqR0JeYuWEyVrgF6C7s=",
+        "lastModified": 1784658824,
+        "narHash": "sha256-TYW3rOz0V0NgXCTW+/GcdX5kNyRsMsxoS5FGRKmo0Jw=",
         "owner": "sadjow",
         "repo": "codex-cli-nix",
-        "rev": "fa13e0c1f4d0792481e68e057db31f26242de73b",
+        "rev": "bd1773d0f796c93de7f4f00ea6c2469e95e44b62",
         "type": "github"
       },
       "original": {
@@ -422,11 +422,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780515920,
-        "narHash": "sha256-8KX2hEeOX6KP3hBBJJI8dGWVrzbOOf1rBPmg/GUG24U=",
+        "lastModified": 1783963347,
+        "narHash": "sha256-r376E2XpakiXwModDHIxlvB6qLq4iFVEq730vxOO4JY=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "4c5c1e8ba14f1c7475fa31ff11bc1c19cd220974",
+        "rev": "a45a7c451455a51ae740ec3bce4024b312809c29",
         "type": "github"
       },
       "original": {
@@ -751,11 +751,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783703872,
-        "narHash": "sha256-Bq0l1jv0CrimLz+cJG3lLCxSa411MiFT+PHdAY8WchU=",
+        "lastModified": 1783718690,
+        "narHash": "sha256-tuHhcGlxqPFLoY4ramiv766GB14F5AUgQLi+nvX7N3c=",
         "ref": "refs/heads/main",
-        "rev": "4715bfba36a24673a9fe6a061d14f52568fe3798",
-        "revCount": 91,
+        "rev": "99034ba506d357dabf8473baf148f6720958929f",
+        "revCount": 92,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
@@ -822,11 +822,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784820107,
-        "narHash": "sha256-n68X1KhkhnCC9yd4AzllGQ8HyV+9ukNz3N7vuFTtbE4=",
+        "lastModified": 1784824219,
+        "narHash": "sha256-9PBwt7lqsAJPoZyXXuwlRoDXhX9wX3wvtZkkwpDm7uE=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "f7e50e3f3efc771ce914f5b41c40b645b431f8f2",
+        "rev": "e4c1b6a63e5c2a19370cd285462fa9ed918837c0",
         "type": "github"
       },
       "original": {
@@ -893,11 +893,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783744199,
-        "narHash": "sha256-PE8ygqeabUMaIIkSxTiE0PaCaVWjXhfN5mbumc853dY=",
+        "lastModified": 1784069693,
+        "narHash": "sha256-5Yx0TcrrxpRnheaF45dSO2g5Zyfgpl7XYmmWTDS1sVw=",
         "owner": "phinze",
         "repo": "sophon",
-        "rev": "556d7adef5adda6f1ca8c06b30b96bbc921810fa",
+        "rev": "39d0a941f03561ecdafc128e1fd3eeefdc18995b",
         "type": "github"
       },
       "original": {
@@ -1004,11 +1004,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781173532,
-        "narHash": "sha256-MwnZpL82aQO1I15JH525vz6REI/OULEAmXDp6cIcgNg=",
+        "lastModified": 1784834038,
+        "narHash": "sha256-7kFP+NUILPvdhO7mQk90h2MnseMNvYzGPpclhmJEKF0=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "f13e82162fae68af7716147207fa5f868f5ca381",
+        "rev": "35443b74c3481fb963ee0a53175ab0e8001f2967",
         "type": "github"
       },
       "original": {
