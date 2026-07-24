@@ -44,8 +44,8 @@
     ./modules/dev-cleanup.nix
     # Hourly memex commit+push (gated by nodeConfig.isMemexHost)
     ./modules/memex-autocommit.nix
-    # Hourly fast-moving flake input sync + switch (gated by nodeConfig.isFlakeSyncHost)
-    ./modules/flake-sync.nix
+    # Hourly main reconciliation + input bumps (gated by nodeConfig.isNixConfigSyncHost)
+    ./modules/nix-config-sync.nix
     # Ghostty + cmux terminal theming on macOS (reads ~/.config/ghostty/config)
     ./ghostty.nix
   ]

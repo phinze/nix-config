@@ -85,6 +85,32 @@ nix flake check
 
 The owner uses a ghq-based directory structure under `~/src` for organizing git repositories, accessible through fish shell functions and tmux session management.
 
+### Workspace-Centric Config Workflow
+
+Treat a nix-config workspace as an isolated development environment. Keep the
+fast feedback loop in that workspace, while the host-side `nix-config-sync`
+service remains responsible for converging foxtrotbase onto committed `main`.
+
+1. Use `nix eval` or `nix build` while editing. These do not alter the running
+   system.
+2. When runtime behavior matters, use
+   `sudo nixos-rebuild test --flake .#foxtrotbase`. Use `test`, not `switch`,
+   because the preview should not become the boot default.
+3. While `origin/main` is unchanged, `nix-config-sync` recognizes that the
+   active system differs from its recorded closure and treats it as a
+   development preview. It leaves the preview active and pauses automatic
+   input bumps.
+4. Once the change is ready, land and push it to `main`, then run
+   `nix-config-sync kick`. The command waits for the user service to build and
+   activate that exact `main` revision.
+5. A reconciliation run that deploys a new `main` revision stops there.
+   Automatic input bumps resume on the next idle timer tick.
+
+If another change lands on `main` during a preview, committed `main` wins. The
+sync service replaces the preview with the newer revision. An abandoned
+`nixos-rebuild test` preview also disappears on reboot because it never changed
+the boot default.
+
 ### Updating Package Hashes
 
 When updating packages in `pkgs/`, use this command to get the correct SRI hash format:

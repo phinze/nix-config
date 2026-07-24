@@ -2,7 +2,8 @@
   inputs,
   outputs,
   ...
-}: {
+}:
+{
   imports = [
     # Import home-manager's NixOS module
     inputs.home-manager.nixosModules.home-manager
@@ -13,7 +14,7 @@
       inherit inputs outputs;
       nodeConfig = {
         isMemexHost = true;
-        isFlakeSyncHost = true;
+        isNixConfigSyncHost = true;
       };
     };
     users = {
