@@ -132,11 +132,11 @@
     "claude-plugin-miren-skills": {
       "flake": false,
       "locked": {
-        "lastModified": 1780342393,
-        "narHash": "sha256-VIX5xO+Of/XP6AVgQUfyCgnNFs2f9F5pkvMCGeRgifI=",
+        "lastModified": 1784921116,
+        "narHash": "sha256-dmeo/MIPXXbQC0tm35H+zD/GIYrKHFri+pjTTKz2Wns=",
         "owner": "mirendev",
         "repo": "miren-skills",
-        "rev": "bfbe9600ab13116e3969719356ff065d4e7cddc5",
+        "rev": "adbe97d7bb3031aaa93b3dadb5e4f3c74621fe3c",
         "type": "github"
       },
       "original": {
@@ -148,11 +148,11 @@
     "claude-plugin-miren-team": {
       "flake": false,
       "locked": {
-        "lastModified": 1784741837,
-        "narHash": "sha256-9bAf5vHNceHOfQ4OA2HZryLAnNG8gnbvC96uVwb45g4=",
+        "lastModified": 1784921099,
+        "narHash": "sha256-sIR6Ay/A3FPH5D1RwticrQzV+mL22eviM7VwnTnnDps=",
         "ref": "refs/heads/main",
-        "rev": "c1afcec56df2cdbe2a8cf212ea26738a0ee3452d",
-        "revCount": 19,
+        "rev": "dd2a1d0af1a7407f99cefc8545bae67833a9d09c",
+        "revCount": 20,
         "type": "git",
         "url": "https://github.com/mirendev/claude-skills.git"
       },
@@ -442,11 +442,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1783545913,
-        "narHash": "sha256-kSgNec930QaYjPDceiLMZFw/SSEWzNUK9IJ7iGvonMQ=",
+        "lastModified": 1784921108,
+        "narHash": "sha256-8jj3dnU8SmIaGrtJrJAphFtcpi393a+rdSAamJopq7o=",
         "ref": "refs/heads/main",
-        "rev": "ed21e7db2528a047ec70819605c515eb47d2ef8f",
-        "revCount": 70,
+        "rev": "c304a82a5bace28932219680975ef6640ff5ddf5",
+        "revCount": 71,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
@@ -495,11 +495,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784228129,
-        "narHash": "sha256-A6lluLTTOUg4WRT0tIKO/YAK69fwzvPJvcHXlS0u3L8=",
+        "lastModified": 1784921117,
+        "narHash": "sha256-Uwc6serrohJJburUiJT8vHCRX2739VkG+zkr6mAoKA4=",
         "ref": "refs/heads/main",
-        "rev": "d9f30e242da293f58b1d5331a3658f0695fd1622",
-        "revCount": 54,
+        "rev": "0bf68c823e79960e6e5803f52c9013bab0a3bca5",
+        "revCount": 55,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
