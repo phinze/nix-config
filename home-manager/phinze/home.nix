@@ -758,18 +758,32 @@
         ForwardAgent = lib.mkDefault false;
         AddKeysToAgent = lib.mkDefault "no";
         Compression = lib.mkDefault false;
-        ServerAliveInterval = lib.mkDefault 0;
         ServerAliveCountMax = lib.mkDefault 3;
         HashKnownHosts = lib.mkDefault false;
         UserKnownHostsFile = lib.mkDefault "~/.ssh/known_hosts";
-        ControlMaster = lib.mkDefault "no";
-        ControlPath = lib.mkDefault "~/.ssh/master-%r@%n:%p";
-        ControlPersist = lib.mkDefault "no";
-      }
-      // lib.optionalAttrs (pkgs.stdenv.isDarwin || (nodeConfig.isGraphical or false)) {
+
+        # Multiplex every egress connection, on every node. The latency win is
+        # nice, but the real reason is that an already-authenticated master
+        # survives the agent going away underneath it. Headless nodes reach the
+        # agent through double-agent, which proxies to a socket forwarded in by
+        # whatever session is attached; when Blink gets suspended on iOS that
+        # socket stays open with nobody servicing it, double-agent starts
+        # answering "agent refused operation", and every new connection fails
+        # auth. A live master keeps working straight through it.
+        #
+        # %C hashes host/port/user into a fixed-length name, so the socket path
+        # can't blow the 108-byte sun_path limit the way %h_%p_%r does once the
+        # hostname gets long.
         ControlMaster = "auto";
-        ControlPath = "/tmp/ssh_mux_%h_%p_%r";
+        ControlPath = "/tmp/ssh_mux_%C";
         ControlPersist = "10m";
+
+        # Keepalives exist because of multiplexing, not in spite of it. Without
+        # them a master whose network died silently keeps accepting new
+        # sessions that then hang until the OS gives up on the TCP connection.
+        # At 30s against the ServerAliveCountMax of 3 above, a dead master
+        # tears itself down in ~90s and the next connection just reconnects.
+        ServerAliveInterval = 30;
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
