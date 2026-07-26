@@ -164,11 +164,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1785024298,
-        "narHash": "sha256-hiT99I/lYd75vQ9W4BLlIcB1t2gyzx+4OOMCiKguOiQ=",
+        "lastModified": 1785071328,
+        "narHash": "sha256-zCmLP0Qmyxu44urARKNawk0Jzo4EI92BxGiIN3oUar8=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "d31456c6571a94b6aaa68ee33f5f2dc0149ebddf",
+        "rev": "5be48a18c7b6d91fc0d313d8b611a118b6ccf040",
         "type": "github"
       },
       "original": {
