@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785218088,
-        "narHash": "sha256-cSJUF7/rBznjUnQ8u3QqN4AEQftGQS7pa7T5subOC2c=",
+        "lastModified": 1785264592,
+        "narHash": "sha256-4r+5x5gDGF8hPPQ+noID8Z7+jkCa7KsdKHFpyNmD2UQ=",
         "owner": "atuinsh",
         "repo": "atuin",
-        "rev": "bf3ab053bd7a55f79185298974792827d5c1e984",
+        "rev": "b9251cfc60bae2383ae9482e5eab1edf51a7f4d7",
         "type": "github"
       },
       "original": {
@@ -164,11 +164,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1785243031,
-        "narHash": "sha256-+jjIVC6OjqXUw8zrUp7G8Dgvbmz3maK/Lxfxskegs4o=",
+        "lastModified": 1785262836,
+        "narHash": "sha256-I116AVy3pP/pzSocq4LC0QD5yVqg4NzLG50JZT93lqg=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "df098247831a98731abfc96b4b1298292f03e9c6",
+        "rev": "da4ce626c8d980d2fd15cc270b78765485ec708a",
         "type": "github"
       },
       "original": {
@@ -837,11 +837,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785255676,
-        "narHash": "sha256-QOQ9KRLPmTvcDBUbjnZKVpXDsW2NBShC2icyyRpFYAk=",
+        "lastModified": 1785262324,
+        "narHash": "sha256-qeOq+35FRWCgCWz2toM7HVkjj9Hyf6MkI48Cneh8t/E=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "ba9f3d673e8ad89b155e9de05ac4faeeb4d0772e",
+        "rev": "f2c7422a0ab2682ddabf88be91ca795251c92e73",
         "type": "github"
       },
       "original": {
