@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785430458,
-        "narHash": "sha256-KrfYrEoQYx/qP6a30qdbwzZnghOW4urWW/2DpdcFUVw=",
+        "lastModified": 1785434448,
+        "narHash": "sha256-SWnJn850Osc9KUijmrFNNkjIk1NrO7eP7WbI/aMRK4k=",
         "owner": "atuinsh",
         "repo": "atuin",
-        "rev": "a4efb1117bc8f6f0783dff622b1a13a37dd14721",
+        "rev": "990eaa6d8334858c7e4249ccbf6d0571e1807d21",
         "type": "github"
       },
       "original": {
@@ -1004,11 +1004,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785224333,
-        "narHash": "sha256-8DNJUVM10ktK02V9ZIV064CH+fuPF272VCAZBn6arig=",
+        "lastModified": 1785432635,
+        "narHash": "sha256-LSb65DJoBk8ZDrg0xCfrOb3NnfsMLTC0kEAVpvlTG+Y=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "5f1a4be4d280e1ae06d61a75775a234b1714da3f",
+        "rev": "aaf2c248c3a75dfd99ea96261675545a308a5b64",
         "type": "github"
       },
       "original": {
