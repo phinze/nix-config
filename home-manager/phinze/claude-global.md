@@ -36,7 +36,10 @@ anything that has our name on it.
 
 Exceptions:
 - Bulk triage or batch operations where we've already agreed on the pattern
-- When a skill's own instructions already handle the review flow (e.g. pr-time)
+- When a skill's own instructions already handle the review flow. pr-time and
+  address-pr-review both do, and address-pr-review specifically clears you to
+  post replies to bot reviewers without checking first. Human-facing replies
+  still get drafted.
 - Read-only operations (fetching, searching, listing) never need approval
 - Local notes-to-self that nobody else will read (milestone diary appends,
   scratch files). Just write them.
