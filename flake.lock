@@ -165,11 +165,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1785442146,
-        "narHash": "sha256-00nhLUa6Tz0Gmw5OmfldPIFlGTMl7k0Y7k81tByh+NY=",
+        "lastModified": 1785607622,
+        "narHash": "sha256-r2Yz5WY4OJ0Hn17laj+BcIBbAFfFK15CPtcAEUgWIV4=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "caccedaf73f3ddfec00b58ccbf3ef920df675177",
+        "rev": "2a39900737f1ae4e80bb502b75d90e71c3b93a03",
         "type": "github"
       },
       "original": {
@@ -767,11 +767,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785360120,
-        "narHash": "sha256-3/2sOtEVFkLjTtWmLfXtjlw7RBjPjSenJ14JPO6pJ6Y=",
+        "lastModified": 1785532344,
+        "narHash": "sha256-WX0zV5P9OQaxaMncC4QZmuW2wpm/KMrif/XYgC6wXkw=",
         "ref": "refs/heads/main",
-        "rev": "8f5d871afc459815242cd83a6d428be8fad00df5",
-        "revCount": 94,
+        "rev": "f7aa20b2b644f0437828753e5730f02d0a5d0052",
+        "revCount": 95,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
@@ -838,11 +838,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785337160,
-        "narHash": "sha256-eODWjZn3cjMJ6BX/3nI4OLsiaUibSf2IIpGz5KUVdks=",
+        "lastModified": 1785615170,
+        "narHash": "sha256-wSNSkzt/C+nhTfo9m8AjV0MrZ+CMwwL2ciw9jniPdYc=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "f38acfb9585e673c5bebd60a088a463152b7addb",
+        "rev": "fe5404a0d203725c07aa19b41e212c44b430f389",
         "type": "github"
       },
       "original": {
@@ -1005,11 +1005,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785442452,
-        "narHash": "sha256-wrNN6+P34Pr06Oe1itNsk3HCLGkqj1bPa7+HLrEf7wg=",
+        "lastModified": 1785569296,
+        "narHash": "sha256-ux2+60xcjl4LloKPevqrkP+uY4DNZXhzVd+TYrfE2+w=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "59f343c80c4143a3c12ae6c74a6268fd8aaf102c",
+        "rev": "945e834a12a97a5e3b08869960e35c7ccfde6f69",
         "type": "github"
       },
       "original": {
