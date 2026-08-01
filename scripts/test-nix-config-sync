@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+#
+# Tests nix-config-sync's bisect and quarantine logic.
+#
+#   scripts/test-nix-config-sync            # builds the script, then tests it
+#   scripts/test-nix-config-sync /path/to/nix-config-sync
+#
+# These are the code paths that only run when an upstream input breaks, which
+# means they're the ones most likely to rot unnoticed — the first version of
+# this file caught a real bug where `bench` wrote `date -Is` timestamps that
+# jq's fromdateiso8601 refuses to parse, so the retry window silently
+# suppressed nothing at all.
+#
+# It works by lifting the function bodies verbatim out of the *generated*
+# script (so what's tested is what runs) and sourcing them over stubbed
+# apply_set/build_quiet, where "the build fails" is just a list of input names.
+set -uo pipefail
+
+if [[ $# -lt 1 ]]; then
+  echo "building nix-config-sync..." >&2
+  repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+  set -- "$(nix build --impure --no-link --print-out-paths --expr "
+    let f = builtins.getFlake (toString $repo);
+        cfg = f.nixosConfigurations.foxtrotbase;
+    in builtins.head (builtins.filter (p: (p.name or \"\") == \"nix-config-sync\")
+         cfg.config.home-manager.users.phinze.home.packages)")/bin/nix-config-sync"
+  echo "testing $1" >&2
+fi
+
+SCRIPT="$1"
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+# Lift the function definitions we want to test out of the generated script.
+for fn in find_culprits bench unbench benched; do
+  sed -n "/^$fn() {/,/^}/p" "$SCRIPT" >> "$WORK/fns.sh"
+done
+
+if ! grep -q 'find_culprits' "$WORK/fns.sh"; then
+  echo "FAIL: could not lift find_culprits out of $SCRIPT" >&2
+  exit 1
+fi
+
+# shellcheck disable=SC1091
+source "$WORK/fns.sh"
+
+QUARANTINE="$WORK/quarantine.json"
+RETRY_AFTER="6 hours"
+BAD=""        # space-separated inputs that break the build
+: > "$WORK/builds"
+CURRENT=()
+
+apply_set() { CURRENT=("$@"); return 0; }
+build_quiet() {
+  echo x >> "$WORK/builds"
+  local i b
+  for i in ${CURRENT[@]+"${CURRENT[@]}"}; do
+    for b in $BAD; do
+      [[ "$i" == "$b" ]] && return 1
+    done
+  done
+  return 0
+}
+
+fails=0
+check() { # label want got
+  if [[ "$2" == "$3" ]]; then
+    echo "ok   $1"
+  else
+    echo "FAIL $1: want [$2] got [$3]"
+    fails=$((fails + 1))
+  fi
+}
+
+# --- single culprit in a batch of five -------------------------------------
+BAD="atuin"; : > "$WORK/builds"
+got=$(find_culprits rig atuin pim-stuff zen-browser claude-code-nix | sort | tr '\n' ' ')
+check "single culprit found" "atuin " "$got"
+echo "     ($(wc -l < "$WORK/builds" | tr -d " ") probe builds)"
+
+# --- two culprits: recursing into both halves has to find both -------------
+BAD="atuin zen-browser"; : > "$WORK/builds"
+got=$(find_culprits rig atuin pim-stuff zen-browser claude-code-nix | sort | tr '\n' ' ')
+check "two culprits found" "atuin zen-browser " "$got"
+echo "     ($(wc -l < "$WORK/builds" | tr -d " ") probe builds)"
+
+# --- culprit at each end of the list ---------------------------------------
+BAD="rig"; : > "$WORK/builds"
+got=$(find_culprits rig atuin pim-stuff | sort | tr '\n' ' ')
+check "first element culprit" "rig " "$got"
+
+BAD="pim-stuff"; : > "$WORK/builds"
+got=$(find_culprits rig atuin pim-stuff | sort | tr '\n' ' ')
+check "last element culprit" "pim-stuff " "$got"
+
+# --- nothing broken: no culprits, exactly one probe ------------------------
+BAD=""; : > "$WORK/builds"
+got=$(find_culprits rig atuin pim-stuff | tr '\n' ' ')
+check "clean set yields nothing" "" "$got"
+check "clean set costs one build" "1" "$(wc -l < "$WORK/builds" | tr -d " ")"
+
+# --- every input broken ----------------------------------------------------
+BAD="rig atuin"; : > "$WORK/builds"
+got=$(find_culprits rig atuin | sort | tr '\n' ' ')
+check "all broken" "atuin rig " "$got"
+
+# --- single-element set that fails ----------------------------------------
+BAD="atuin"; : > "$WORK/builds"
+got=$(find_culprits atuin | tr '\n' ' ')
+check "singleton culprit" "atuin " "$got"
+
+# --- quarantine: bench, retry suppression, unbench -------------------------
+rm -f "$QUARANTINE"
+bench atuin "toplevel build failed"
+check "bench records runs=1" "1" "$(jq -r '.[0].runs' "$QUARANTINE")"
+check "benched suppresses"  "atuin" "$(benched | tr '\n' ' ' | tr -d ' ')"
+
+bench atuin "toplevel build failed"
+check "re-bench increments runs" "2" "$(jq -r '.[0].runs' "$QUARANTINE")"
+since=$(jq -r '.[0].since' "$QUARANTINE")
+tried=$(jq -r '.[0].lastTried' "$QUARANTINE")
+check "since is preserved across benches" "true" "$([[ "$since" == "$tried" || -n "$since" ]] && echo true)"
+
+# An entry last tried outside the retry window must fall out of `benched`, so it
+# gets another chance instead of being benched forever.
+jq '.[0].lastTried = "2020-01-01T00:00:00+00:00"' "$QUARANTINE" > "$QUARANTINE.t" && mv "$QUARANTINE.t" "$QUARANTINE"
+check "stale bench is retried" "" "$(benched | tr -d ' \n')"
+
+unbench atuin
+check "unbench clears entry" "0" "$(jq -r 'length' "$QUARANTINE")"
+
+echo
+if [[ $fails -eq 0 ]]; then echo "all bisect/quarantine checks passed"; else echo "$fails check(s) failed"; exit 1; fi

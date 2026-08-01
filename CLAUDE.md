@@ -111,6 +111,31 @@ sync service replaces the preview with the newer revision. An abandoned
 `nixos-rebuild test` preview also disappears on reboot because it never changed
 the boot default.
 
+### How the Sync Bumps Inputs
+
+Three classes of flake input, and which one something belongs to is the whole
+decision. `syncInputs` follow their branch and get bumped every tick.
+`releaseInputs` follow their newest non-prerelease GitHub release: each tick
+resolves `releases/latest` and rewrites the tag pinned in `flake.nix`, so the
+input is always on a real release and never on anyone's `main`. Their URL must
+be `github:owner/repo/TAG` — that string is where the repo and current tag are
+read from. Everything else is manual on purpose (nixpkgs, home-manager, and the
+other release-branch pins), and should stay that way.
+
+The bump is no longer all-or-nothing. It still takes one build in the happy
+path, but a failure now bisects the moved inputs to find which one is actually
+at fault, benches it in `nix-config-sync-quarantine.json`, and lands the rest.
+A benched input is retried once its window (`RETRY_AFTER`, 6h) elapses, and
+un-benches itself the moment it builds. Skips are named in the commit body and
+posted to `rig notify`, because the failure mode this replaced wasn't the
+breakage, it was that the breakage was *silent* — one bad upstream froze every
+other input for two days at one wasted build per hour.
+
+`scripts/test-nix-config-sync` covers the bisect and quarantine paths by lifting
+the functions out of the generated script and stubbing the builds. Run it when
+you touch that logic; it only executes when an upstream is broken, so it is
+exactly the code that rots unwatched. It has already caught one real bug.
+
 ### Updating Package Hashes
 
 When updating packages in `pkgs/`, use this command to get the correct SRI hash format:

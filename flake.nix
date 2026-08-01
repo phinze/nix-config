@@ -67,10 +67,11 @@
     pim-stuff.inputs.nixpkgs.follows = "nixpkgs-unstable";
     pim-stuff.inputs.flake-utils.follows = "flake-utils";
 
-    # Pinned to a release tag, not main, and out of nix-config-sync's
-    # syncInputs: tracking atuin's main bought a binary with an unresolved
-    # libssl.so.3, and because the input bump is one all-or-nothing
-    # transaction, that one bad build stalled every other input for days.
+    # Release-tracked (see nix-config-sync's releaseInputs): the tag here is
+    # rewritten to the newest non-prerelease each tick, so atuin follows stable
+    # releases and never its main. Tracking main bought a binary with an
+    # unresolved libssl.so.3, which is what taught us the input bump needed to
+    # stop being all-or-nothing.
     #
     # Don't "simplify" this to nixpkgs' atuin. The local history DB has
     # migrations (20260709214605_shell and the 20260723* indexes) that nixpkgs'
