@@ -25,7 +25,6 @@ let
     # AI harnesses
     "claude-code-nix"
     "codex-cli-nix"
-    "atuin"
     # Claude plugin sources (flake = false)
     "claude-plugins-official"
     "claude-plugin-coderabbit"

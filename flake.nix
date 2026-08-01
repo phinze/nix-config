@@ -67,7 +67,17 @@
     pim-stuff.inputs.nixpkgs.follows = "nixpkgs-unstable";
     pim-stuff.inputs.flake-utils.follows = "flake-utils";
 
-    atuin.url = "github:atuinsh/atuin";
+    # Pinned to a release tag, not main, and out of nix-config-sync's
+    # syncInputs: tracking atuin's main bought a binary with an unresolved
+    # libssl.so.3, and because the input bump is one all-or-nothing
+    # transaction, that one bad build stalled every other input for days.
+    #
+    # Don't "simplify" this to nixpkgs' atuin. The local history DB has
+    # migrations (20260709214605_shell and the 20260723* indexes) that nixpkgs'
+    # 18.15.2/18.16.1 have never heard of, and atuin runs sqlx migrations with
+    # validation on, so an older binary refuses to open the DB at all. v18.18.1
+    # is the oldest stable release that carries all of them.
+    atuin.url = "github:atuinsh/atuin/v18.18.1";
     atuin.inputs.nixpkgs.follows = "nixpkgs-unstable";
 
     claude-code-nix.url = "github:sadjow/claude-code-nix";
