@@ -101,10 +101,10 @@ service remains responsible for converging foxtrotbase onto committed `main`.
    development preview. It leaves the preview active and pauses automatic
    input bumps.
 4. Once the change is ready, land and push it to `main`, then run
-   `nix-config-sync kick`. The command waits for the user service to build and
-   activate that exact `main` revision, and exits with that run's real result —
-   it deliberately survives the D-Bus disconnect that activation causes, so a
-   zero exit means the reconciliation succeeded rather than merely started.
+   `nix-config-sync kick`. The command asks the user service to reconcile in the
+   background and returns once systemd accepts the request. Follow the run with
+   `nix-config-sync logs` when you want to watch it build and activate the new
+   `main` revision.
 5. A reconciliation run that deploys a new `main` revision stops there.
    Automatic input bumps resume on the next idle timer tick.
 
