@@ -71,9 +71,51 @@ let
           exit 2
         fi
         echo "nix-config-sync: asking the user service to reconcile now..."
-        systemctl --user start nix-config-sync.service
-        echo "nix-config-sync: reconciliation complete"
-        exit 0
+
+        # `systemctl --user start` blocks by holding a D-Bus connection to the
+        # user manager so it can watch the job. The job runs
+        # switch-to-configuration, which re-execs that manager, and every client
+        # connection dies with it — so systemctl reports "Connection reset by
+        # peer" and exits non-zero for a run that is about to succeed. Losing
+        # sight of the job is not the same as the job failing. Note which run
+        # this is, let the connection break, then reconnect and report what the
+        # unit actually did.
+        before=$(systemctl --user show -p InvocationID --value nix-config-sync.service 2>/dev/null || true)
+        systemctl --user start nix-config-sync.service || true
+
+        # An empty state means the manager itself is still coming back, which is
+        # a wait, not an answer. The deadline is only a backstop against waiting
+        # forever on a manager that never returns.
+        deadline=$((SECONDS + 3600))
+        while :; do
+          state=$(systemctl --user is-active nix-config-sync.service 2>/dev/null || true)
+          if [[ -n "$state" && "$state" != "activating" ]]; then
+            break
+          fi
+          if [[ $SECONDS -ge $deadline ]]; then
+            echo "nix-config-sync: gave up waiting for the user service" >&2
+            exit 1
+          fi
+          sleep 2
+        done
+
+        after=$(systemctl --user show -p InvocationID --value nix-config-sync.service 2>/dev/null || true)
+        if [[ -n "$before" && "$after" == "$before" ]]; then
+          # Nothing new ran, so whatever Result says describes some earlier run
+          # and reporting it here would be a lie.
+          echo "nix-config-sync: the service never started; reporting nothing" >&2
+          exit 1
+        fi
+
+        result=$(systemctl --user show -p Result --value nix-config-sync.service 2>/dev/null || echo unknown)
+        status=$(systemctl --user show -p ExecMainStatus --value nix-config-sync.service 2>/dev/null || echo 1)
+        if [[ "$result" == "success" ]]; then
+          echo "nix-config-sync: reconciliation complete"
+          exit 0
+        fi
+        echo "nix-config-sync: reconciliation failed ($result, exit $status)" >&2
+        echo "nix-config-sync: journalctl --user -u nix-config-sync.service -e" >&2
+        exit "''${status:-1}"
       elif [[ $# -ne 0 ]]; then
         echo "usage: nix-config-sync kick" >&2
         exit 2
