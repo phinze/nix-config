@@ -598,7 +598,22 @@ lib.mkIf (nodeConfig.isNixConfigSyncHost or false) (
 
     (lib.mkIf pkgs.stdenv.isLinux {
       systemd.user.services.nix-config-sync = {
-        Unit.Description = "Reconcile nix-config main and fast-moving inputs";
+        Unit = {
+          Description = "Reconcile nix-config main and fast-moving inputs";
+
+          # This service activates system generations, and activation restarts
+          # changed user units — including this one, whose ExecStart moves every
+          # time the script above changes. sd-switch would then kill the very
+          # switch-to-configuration doing the activating. That has only ever
+          # been survivable because the switch runs as root under sudo and the
+          # user manager gets EPERM trying to kill it; it finishes orphaned,
+          # and the unit reports `Failed with result 'signal'` on the way out.
+          #
+          # keep-old leaves a running instance alone. The new unit file is still
+          # written, so the next tick starts with it. home-manager's own
+          # home-manager-auto-upgrade.service does this for the same reason.
+          X-SwitchMethod = "keep-old";
+        };
         Service = {
           Type = "oneshot";
           ExecStart = "${nix-config-sync}/bin/nix-config-sync run";
