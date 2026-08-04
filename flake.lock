@@ -165,11 +165,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1785877259,
-        "narHash": "sha256-pVAQavt5D6d3klIl19sbca2BZkVsMQ6frKLS7/quSrI=",
+        "lastModified": 1785881268,
+        "narHash": "sha256-AxKypoA+ft138bQrEOeJTEGqavJTsqEN9aOiaC5Sxhg=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "0c7b2a451e8b99ba63f3277aa7cbd844753df7bb",
+        "rev": "633fdfa4026c60fc5c890cf57b8c42817fe6b620",
         "type": "github"
       },
       "original": {
@@ -767,11 +767,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785532344,
-        "narHash": "sha256-WX0zV5P9OQaxaMncC4QZmuW2wpm/KMrif/XYgC6wXkw=",
+        "lastModified": 1785880382,
+        "narHash": "sha256-00TWXq4EpnXUzlpColsN6otxvkwtIBUE2BHXSj+htzI=",
         "ref": "refs/heads/main",
-        "rev": "f7aa20b2b644f0437828753e5730f02d0a5d0052",
-        "revCount": 95,
+        "rev": "be96462d90811b972b036367104092913180f49e",
+        "revCount": 96,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
