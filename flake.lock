@@ -165,11 +165,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1785849096,
-        "narHash": "sha256-tizEeMBGcjF5siXI0JAqbnUH+eTKEjtzy+caF8gmTao=",
+        "lastModified": 1785867599,
+        "narHash": "sha256-RqMcrKEa01Zker3VyUkQvSaGit40nmcd6T5HQSew37Y=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "2836081e91e492efdd9fc17acbd2e857f754bc73",
+        "rev": "3f615dbf294c6ebdcf846f70f9c0c40ab23b08c6",
         "type": "github"
       },
       "original": {
@@ -496,11 +496,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1784921117,
-        "narHash": "sha256-Uwc6serrohJJburUiJT8vHCRX2739VkG+zkr6mAoKA4=",
+        "lastModified": 1785864748,
+        "narHash": "sha256-KjcpCC9KsvC5PFLRhr8LqwKHS5JvlPv/J6DSJE8EC0g=",
         "ref": "refs/heads/main",
-        "rev": "0bf68c823e79960e6e5803f52c9013bab0a3bca5",
-        "revCount": 55,
+        "rev": "5a2e255f193eef7b567a29eb2f97327c2307ee93",
+        "revCount": 58,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
@@ -815,11 +815,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785645353,
-        "narHash": "sha256-HnA7agTNFONbnZCHVFEqUCzCWls2eLnWCKsHfS+UZyQ=",
+        "lastModified": 1785863180,
+        "narHash": "sha256-l9F5i+w8AjZQZCojfr60z227BAwlKfvF5qXu2S830eg=",
         "owner": "phinze",
         "repo": "recto",
-        "rev": "7ab2c77c79021e456b5928caf61c57a7808be243",
+        "rev": "f905283a76fe8e4ff362398d90efd4c0114327c5",
         "type": "github"
       },
       "original": {
@@ -838,11 +838,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785792710,
-        "narHash": "sha256-tlnZGfw1HfEFnD1OdLoj1LMCiuv8KRe/VtmqDw/3F7Q=",
+        "lastModified": 1785865561,
+        "narHash": "sha256-Yc0vurxLcYUR5GuIk5eyza+eV1XyqjiFaalAxNXRsFY=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "e420aaa14bdd83baf60a08a8ac50f29d43b9716e",
+        "rev": "ebd0c61bca97051486abf56619d0958259945884",
         "type": "github"
       },
       "original": {
