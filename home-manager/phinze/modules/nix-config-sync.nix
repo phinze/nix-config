@@ -387,9 +387,22 @@ let
       # rather than walking one-by-one keeps the common single-culprit case at
       # roughly 2·log2(n) builds, and recursing into *both* halves means a tick
       # that breaks two inputs at once still finds both.
+      # Emitted by find_culprits when a probe could not even be applied. Not a
+      # possible flake input name, so it can never collide with a real culprit.
+      PROBE_FAILED='!probe-failed'
+
       find_culprits() {
         local -a cand=("$@")
-        apply_set "''${cand[@]}"
+        # A probe that fails to apply — a `nix flake update` that could not
+        # reach the network, say — is not evidence about any input. Say so out
+        # loud. Left bare, apply_set's non-zero return trips errexit and kills
+        # the process substitution this runs in, and `mapfile` reports success
+        # over the empty output, so a network blip would arrive at the caller
+        # looking exactly like "bisection pinned nothing".
+        if ! apply_set "''${cand[@]}"; then
+          printf '%s\n' "$PROBE_FAILED"
+          return 0
+        fi
         if build_quiet; then
           return 0
         fi
@@ -491,6 +504,16 @@ let
       else
         echo "nix-config-sync: bump build failed; bisecting ''${#MOVED[@]} moved input(s)..." >&2
         mapfile -t SKIPPED < <(find_culprits "''${MOVED[@]}")
+
+        # Treated the same as an update failure on the main path above: we
+        # learned nothing, so land nothing and let the next tick try again.
+        # Anything else would attribute a network problem to an input.
+        if contains "$PROBE_FAILED" ''${SKIPPED[@]+"''${SKIPPED[@]}"}; then
+          echo "nix-config-sync: bisection probe failed to apply, reverting" >&2
+          restore_tree
+          exit 1
+        fi
+
         KEPT=()
         for input in "''${MOVED[@]}"; do
           if ! contains "$input" ''${SKIPPED[@]+"''${SKIPPED[@]}"}; then

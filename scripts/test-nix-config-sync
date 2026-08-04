@@ -46,11 +46,17 @@ source "$WORK/fns.sh"
 
 QUARANTINE="$WORK/quarantine.json"
 RETRY_AFTER="6 hours"
+PROBE_FAILED='!probe-failed'
 BAD=""        # space-separated inputs that break the build
+APPLY_FAILS="" # non-empty makes apply_set fail, as a dead network would
 : > "$WORK/builds"
 CURRENT=()
 
-apply_set() { CURRENT=("$@"); return 0; }
+apply_set() {
+  [[ -n "$APPLY_FAILS" ]] && return 1
+  CURRENT=("$@")
+  return 0
+}
 build_quiet() {
   echo x >> "$WORK/builds"
   local i b
@@ -108,6 +114,19 @@ check "all broken" "atuin rig " "$got"
 BAD="atuin"; : > "$WORK/builds"
 got=$(find_culprits atuin | tr '\n' ' ')
 check "singleton culprit" "atuin " "$got"
+
+# --- a probe that cannot be applied is not a verdict ------------------------
+# In the real script a bare `apply_set` that fails trips errexit, killing the
+# process substitution find_culprits runs in; mapfile then reports success over
+# the empty output, so a dead network reaches the caller looking exactly like
+# "no input is at fault". This file runs without errexit, so it can't reproduce
+# that mechanism — but it pins the contract that fixes it either way: a probe
+# that can't be applied says so, rather than returning an empty culprit list.
+BAD=""; APPLY_FAILS=1; : > "$WORK/builds"
+got=$(find_culprits rig atuin pim-stuff | tr '\n' ' ')
+check "probe failure is reported, not silent" "$PROBE_FAILED " "$got"
+check "probe failure costs no builds" "0" "$(wc -l < "$WORK/builds" | tr -d ' ')"
+APPLY_FAILS=""
 
 # --- what a finished bisection means ---------------------------------------
 # The case that used to page us: only one input moved, it was the broken one,
