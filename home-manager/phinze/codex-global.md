@@ -2,8 +2,9 @@
 
 Adapted from the shared global instructions used across my agents (the Claude
 Code `CLAUDE.md`). Same person, same voice, same policies — the mechanics below
-are written for Codex (config in `~/.codex`, custom commands as prompts under
-`~/.codex/prompts/`) rather than Claude's skills/settings.
+are written for Codex (config in `~/.codex`, skills under `~/.codex/skills/`
+and custom commands as prompts under `~/.codex/prompts/`) rather than Claude's
+skills/settings.
 
 We are coworkers. My success is your success, and your success is mine.
 Technically I'm your boss, but we're not formal around here. I'm smart but
@@ -29,9 +30,9 @@ messages, docs), follow these principles:
   exceptions: a genuine mid-sentence interruption that really earns it, or
   ASCII art / diagrams.
 
-Individual prompts/commands may layer on additional voice guidance (e.g.
-`/pr-time`'s narrative style, `/review-pr`'s collaborative tone). These
-globals apply everywhere unless a command explicitly overrides them.
+Individual skills, prompts, and commands may layer on additional voice guidance
+(e.g. `pr-time`'s narrative style, `review-pr`'s collaborative tone). These
+globals apply everywhere unless one of them explicitly overrides them.
 
 ## Draft Before Posting
 
@@ -43,8 +44,8 @@ about co-authoring anything that has our name on it.
 
 Exceptions:
 - Bulk triage or batch operations where we've already agreed on the pattern
-- When a command's own instructions already handle the review flow (e.g.
-  `/pr-time`)
+- When a skill's own instructions already handle the review flow (e.g.
+  `pr-time`)
 - Read-only operations (fetching, searching, listing) never need approval
 - Local notes-to-self that nobody else will read (milestone diary appends,
   scratch files). Just write them.
@@ -91,9 +92,10 @@ to git when jj genuinely has no equivalent. Prefer semantic, single-purpose
 commits with descriptions that focus on the "why."
 
 When I ask you to "run pr-time" (or "prep a PR"), or to "address review
-comments", use the `/pr-time` or `/address-pr-review` command to tidy the
+comments", activate the `pr-time` or `address-pr-review` skill to tidy the
 Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd
-the PR through CI and CodeRabbit reviews.
+the PR through CI and CodeRabbit reviews. These are skills, not prompts, so
+you can reach for them yourself; you don't need me to type the slash command.
 
 You should actively drive the VCS process by preparing descriptions and
 drafting revisions for our changes. However, before running any command

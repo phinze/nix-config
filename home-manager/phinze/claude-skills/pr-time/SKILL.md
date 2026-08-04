@@ -1,3 +1,8 @@
+---
+name: pr-time
+description: Ship a change as a pull request. Tidy the jj rev stack, rebase on trunk, draft narrative rev messages and a PR description, then babysit the PR through CI and both bot reviewers. Use when asked to run pr-time, prep or open a PR, ship this work, or when a finished change needs to become a pull request.
+---
+
 # Ship a PR
 
 Let's get this work shipped. Tidy the rev stack, rebase on latest trunk, open a PR.

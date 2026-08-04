@@ -350,10 +350,21 @@ in
     };
   };
 
-  # Claude Code slash commands (skills stored in separate files for easier editing)
-  home.file.".claude/commands/whatsup-home.md".source = ./claude-skills/whatsup-home.md;
-  home.file.".claude/commands/whatsup-work.md".source = ./claude-skills/whatsup-work.md;
-  home.file.".claude/commands/pr-time.md".source = ./claude-skills/pr-time.md;
-  home.file.".claude/commands/address-pr-review.md".source = ./claude-skills/address-pr-review.md;
-  home.file.".claude/commands/review-pr.md".source = ./claude-skills/review-pr.md;
+  # PR workflow skills. These were slash commands for a long time, which meant
+  # only a human could start them: a command is invisible to the model, so an
+  # agent asked to "take us through pr-time" had to go read the prompt file off
+  # disk by hand. As skills they carry a description the loader can match on, so
+  # any host can discover and activate them, and the pr-time -> address-pr-review
+  # handoff resolves on its own. Claude Code still surfaces a skill as
+  # /<name>, so the typed invocation survives the move.
+  home.file.".claude/skills/pr-time".source = ./claude-skills/pr-time;
+  home.file.".claude/skills/address-pr-review".source = ./claude-skills/address-pr-review;
+  home.file.".claude/skills/review-pr".source = ./claude-skills/review-pr;
+
+  # Catch-up skills, same move for the same reason. These also lean on the rig
+  # board (`rig ls`, `rig waiting`, `rig history`) rather than reconstructing
+  # it from Linear and gh, which is what they did back when work lived in
+  # git worktrees and rig didn't exist.
+  home.file.".claude/skills/whatsup-home".source = ./claude-skills/whatsup-home;
+  home.file.".claude/skills/whatsup-work".source = ./claude-skills/whatsup-work;
 }

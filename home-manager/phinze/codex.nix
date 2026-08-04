@@ -86,21 +86,42 @@ let
     }
   );
 
-  # Personal slash-commands, reused verbatim from the Claude Code skill sources.
-  # In Codex, a markdown file at ~/.codex/prompts/<name>.md becomes /<name>.
-  promptCommands = {
-    whatsup-home = ./claude-skills/whatsup-home.md;
-    whatsup-work = ./claude-skills/whatsup-work.md;
-    pr-time = ./claude-skills/pr-time.md;
-    address-pr-review = ./claude-skills/address-pr-review.md;
-    review-pr = ./claude-skills/review-pr.md;
-    # Keep the slash command tiny: it explicitly activates the installed skill,
-    # whose own directory gives Codex a stable base for bundled scripts.
-    second-opinion = pkgs.writeText "second-opinion-prompt.md" ''
-      Use $second-opinion to get an independent code review.
+  # Personal skills, shared verbatim with the Claude Code and Antigravity
+  # installs. A prompt only fires when the human types the slash command, and
+  # the model never sees that it exists; a skill carries a description the
+  # loader matches on, so Codex can discover and activate one on its own. That
+  # distinction is why the PR workflows live here and not in promptCommands.
+  skillDirs = {
+    second-opinion = ./claude-skills/second-opinion;
+    pr-time = ./claude-skills/pr-time;
+    address-pr-review = ./claude-skills/address-pr-review;
+    review-pr = ./claude-skills/review-pr;
+    whatsup-home = ./claude-skills/whatsup-home;
+    whatsup-work = ./claude-skills/whatsup-work;
+  };
+
+  # Keep each slash command tiny: it explicitly activates the installed skill,
+  # whose own directory gives Codex a stable base for bundled scripts. The
+  # shim exists purely so typing /pr-time still works out of muscle memory.
+  skillShim =
+    name: sentence:
+    pkgs.writeText "${name}-prompt.md" ''
+      Use ${"$" + name} to ${sentence}.
 
       User request: $ARGUMENTS
     '';
+
+  # Personal slash-commands. In Codex, a markdown file at
+  # ~/.codex/prompts/<name>.md becomes /<name>. Every one of ours is now a
+  # shim over a skill of the same name, so the typed command and the model's
+  # own reach for the workflow land on identical instructions.
+  promptCommands = lib.mapAttrs skillShim {
+    second-opinion = "get an independent code review";
+    pr-time = "ship this work as a PR";
+    address-pr-review = "work through the review feedback on the PR";
+    review-pr = "review a pull request";
+    whatsup-home = "catch up on what's been happening outside work";
+    whatsup-work = "catch up on where mirendev work stands";
   };
 in
 {
@@ -115,8 +136,12 @@ in
     {
       ".codex/AGENTS.md".source = ./codex-global.md;
       ".codex/hooks.json".source = codexHooksFile;
-      ".codex/skills/second-opinion".source = ./claude-skills/second-opinion;
     }
+    # Skills: model-discoverable, each its own directory.
+    // lib.mapAttrs' (name: src: {
+      name = ".codex/skills/${name}";
+      value.source = src;
+    }) skillDirs
     # Custom prompts / slash-commands.
     // lib.mapAttrs' (name: src: {
       name = ".codex/prompts/${name}.md";

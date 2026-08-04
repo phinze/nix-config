@@ -255,17 +255,22 @@ in
       executable = true;
     };
 
-  # Custom personal commands mapped natively as prefix-free skills
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home/SKILL.md".source =
-    ./claude-skills/whatsup-home.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work/SKILL.md".source =
-    ./claude-skills/whatsup-work.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time/SKILL.md".source =
-    ./claude-skills/pr-time.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review/SKILL.md".source =
-    ./claude-skills/address-pr-review.md;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr/SKILL.md".source =
-    ./claude-skills/review-pr.md;
+  # PR workflow skills. These used to land here as a bare SKILL.md lifted from
+  # a slash-command file, which meant no frontmatter and so no description for
+  # the loader to match on: a skill in filename only. They now ship as real
+  # skill directories shared with the Claude Code and Codex installs.
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time".source =
+    ./claude-skills/pr-time;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review".source =
+    ./claude-skills/address-pr-review;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr".source =
+    ./claude-skills/review-pr;
+
+  # Catch-up skills, same story: bare SKILL.md before, real skill directories now.
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home".source =
+    ./claude-skills/whatsup-home;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work".source =
+    ./claude-skills/whatsup-work;
 
   # Install all mutable JSON config files as regular files.
   home.activation.antigravityMutableConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

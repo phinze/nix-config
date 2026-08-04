@@ -1,3 +1,8 @@
+---
+name: address-pr-review
+description: Work through review feedback on an open pull request. Gather comments from CodeRabbit, biscuit, and human reviewers, plan and implement the fixes, then draft and post replies. Use when asked to address review comments or PR feedback, when a reviewer leaves findings on a PR, or as the handoff from pr-time when a bot review comes back with work.
+---
+
 # Address PR Review Feedback
 
 Work through PR review comments: gather data, plan fixes, implement, draft responses, and post.
@@ -42,7 +47,7 @@ first.
 ## Phase 1: Gather Data
 
 Determine the PR to work on:
-- If `$ARGUMENTS` is provided, use it as the PR number
+- If the request names a PR number or URL, use that
 - Otherwise, auto-detect from the current branch: `gh pr view --json number,title,url,state,headRefName,baseRefName`
 
 Parse owner/repo from gh (works in both colocated jj+git repos and jj workspaces under `~/workspaces/...` that have no `.git`, since direnv exports `GH_REPO` there):

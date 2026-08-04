@@ -1,14 +1,17 @@
-# PR Review Skill
+---
+name: review-pr
+description: Review someone else's pull request. Claim it with the assignee mutex, read the diff against its stated intent, and leave collaborative inline comments. Use when asked to review a PR, look over someone's changes, or when handed a PR number or URL to review.
+---
 
-Review pull request: $ARGUMENTS
+# PR Review Skill
 
 Think hard and carefully about the code changes.
 
 ## Instructions
 
 0. **Determine which PR to review**:
-   - If a PR number is given in $ARGUMENTS, use that
-   - If no PR specified (empty $ARGUMENTS), assume the current branch's PR:
+   - If the request names a PR number or URL, use that
+   - If no PR is named, assume the current branch's PR:
      run `gh pr view --json number,title` to find it
    - If that fails (no PR for current branch), run `gh pr list` and ask
 
