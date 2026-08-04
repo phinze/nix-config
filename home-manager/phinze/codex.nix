@@ -125,10 +125,17 @@ in
 
   # config.toml is installed as a mutable regular file rather than a symlink:
   # `codex mcp add`, `codex mcp login`, and `codex plugin` all rewrite it at
-  # runtime, which a read-only nix-store symlink would break. Same tradeoff the
-  # antigravity module makes for its JSON configs — edit the nix source, not
-  # the deployed file; a home-manager switch overwrites it.
+  # runtime, which a read-only nix-store symlink would break.
+  #
+  # It is merged rather than overwritten, which is where it parts ways with the
+  # antigravity and karabiner modules. Those files hold preferences; this one
+  # also holds decisions — the directories you told Codex to trust and the hook
+  # hashes you approved. A plain install revoked every one of them on each
+  # switch, so the next Codex start asked about the folder and the hooks again,
+  # and it silently undid the directory trust rig seeds for every rig it
+  # creates. Nix still wins on every key it declares; Codex keeps the rest.
   home.activation.codexMutableConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD install -D -m 644 ${codexConfigFile} ${config.home.homeDirectory}/.codex/config.toml
+    $DRY_RUN_CMD ${pkgs.python3}/bin/python3 ${./codex-config-merge.py} \
+      ${codexConfigFile} ${config.home.homeDirectory}/.codex/config.toml
   '';
 }
