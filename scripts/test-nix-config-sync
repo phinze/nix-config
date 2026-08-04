@@ -32,7 +32,7 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
 # Lift the function definitions we want to test out of the generated script.
-for fn in find_culprits bench unbench benched; do
+for fn in find_culprits bump_outcome bench unbench benched; do
   sed -n "/^$fn() {/,/^}/p" "$SCRIPT" >> "$WORK/fns.sh"
 done
 
@@ -108,6 +108,18 @@ check "all broken" "atuin rig " "$got"
 BAD="atuin"; : > "$WORK/builds"
 got=$(find_culprits atuin | tr '\n' ' ')
 check "singleton culprit" "atuin " "$got"
+
+# --- what a finished bisection means ---------------------------------------
+# The case that used to page us: only one input moved, it was the broken one,
+# and benching it left nothing to land. That is the quarantine working, so it
+# has to read as an ordinary tick and not as a stalled bump — otherwise the
+# alarm re-fires every retry window for as long as upstream stays broken.
+check "sole culprit benched is not a stall"  "benched-all" "$(bump_outcome 0 1)"
+check "all movers benched is not a stall"    "benched-all" "$(bump_outcome 0 3)"
+check "survivors mean we land"               "land"        "$(bump_outcome 2 1)"
+check "clean bump lands"                     "land"        "$(bump_outcome 5 0)"
+# Build failed, bisection pinned nobody: that one is a real stall.
+check "no culprit pinned is a real stall"    "stalled"     "$(bump_outcome 0 0)"
 
 # --- quarantine: bench, retry suppression, unbench -------------------------
 rm -f "$QUARANTINE"

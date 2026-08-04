@@ -119,6 +119,17 @@ let
         command -v rig >/dev/null 2>&1 || return 0
         rig notify dismiss "nix-config-sync/$1" >/dev/null 2>&1 || true
       }
+      # The single warn both skip paths share. A skip is a warn whether or not
+      # anything else landed this tick; that difference is one sentence, so the
+      # caller supplies it rather than each path growing its own notify call.
+      notify_skips() { # tail input...
+        local tail="$1"; shift
+        local runs
+        runs=$(jq -r --arg i "$1" \
+          '(map(select(.input == $i)) | first | .runs) // 1' "$QUARANTINE" 2>/dev/null || echo 1)
+        notify warn bump-stalled "input bump skipping $# input(s)" \
+          "$* failed to build; benched after $runs attempt(s). $tail"
+      }
 
       # Bootstrap the dedicated clone on first run. This is the bot's own copy,
       # kept entirely separate from Paul's working checkout so interim WIP there
@@ -382,6 +393,28 @@ let
         find_culprits "''${cand[@]:mid}"
       }
 
+      # What a finished bisection means, from the two counts alone:
+      #
+      #   land        survivors exist; try to land them
+      #   benched-all every input that moved was a culprit and is now benched.
+      #               Nothing is left to land, which is the quarantine working
+      #               rather than anything going wrong.
+      #   stalled     the build failed but bisection pinned nothing, so the
+      #               failure isn't attributable to any single input.
+      #
+      # Split out as a function so scripts/test-nix-config-sync can exercise it
+      # the way it exercises find_culprits: these branches only run when an
+      # upstream is broken, which is exactly when nobody is watching.
+      bump_outcome() { # kept_count skipped_count
+        if [[ "$1" -gt 0 ]]; then
+          echo land
+        elif [[ "$2" -gt 0 ]]; then
+          echo benched-all
+        else
+          echo stalled
+        fi
+      }
+
       cp flake.lock flake.lock.pre
       cp flake.nix flake.nix.pre
       restore_tree() {
@@ -461,12 +494,33 @@ let
           bench "$input" "toplevel build failed"
         done
 
+        case "$(bump_outcome ''${#KEPT[@]} ''${#SKIPPED[@]})" in
+          benched-all)
+            # Every input that moved is now benched, so there is simply nothing
+            # left to land this tick. Exiting non-zero here would paint the unit
+            # red and fire an error every RETRY_AFTER for as long as an upstream
+            # stays broken — and whether it fired at all would come down to the
+            # accident of some unrelated input moving in the same tick.
+            echo "nix-config-sync: all ''${#MOVED[@]} moved input(s) benched; nothing to land"
+            restore_tree
+            notify_skips "Nothing else moved this tick." "''${SKIPPED[@]}"
+            exit 0
+            ;;
+          stalled)
+            echo "nix-config-sync: bisection pinned no culprit, reverting" >&2
+            restore_tree
+            notify error bump-stalled "input bump stalled" \
+              "build failed but no single input is at fault in: ''${MOVED[*]}"
+            exit 1
+            ;;
+        esac
+
         # Re-verify the survivors together. If they still don't build, the
         # failure isn't attributable to any single input (a genuine interaction,
         # or something outside the bump entirely) and landing a half-bisected
         # lock would be worse than landing nothing.
-        if [[ ''${#KEPT[@]} -eq 0 ]] || ! apply_set "''${KEPT[@]}" || ! build_quiet; then
-          echo "nix-config-sync: nothing survivable in this bump, reverting" >&2
+        if ! apply_set "''${KEPT[@]}" || ! build_quiet; then
+          echo "nix-config-sync: survivors still fail together, reverting" >&2
           restore_tree
           notify error bump-stalled "input bump stalled" \
             "no survivable subset of: ''${MOVED[*]}"
@@ -503,10 +557,7 @@ let
       subject="nix-config-sync: bump $count fast-moving input(s)"
       if [[ ''${#SKIPPED[@]} -gt 0 ]]; then
         subject+=", skip ''${#SKIPPED[@]}"
-        runs=$(jq -r --arg i "''${SKIPPED[0]}" \
-          '(map(select(.input == $i)) | first | .runs) // 1' "$QUARANTINE" 2>/dev/null || echo 1)
-        notify warn bump-stalled "input bump skipping ''${#SKIPPED[@]} input(s)" \
-          "''${SKIPPED[*]} failed to build; benched after $runs attempt(s). Everything else landed."
+        notify_skips "Everything else landed." "''${SKIPPED[@]}"
       else
         notify_clear bump-stalled
       fi
