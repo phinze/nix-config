@@ -41,11 +41,12 @@ let
   # be `github:owner/repo/TAG` — that's where the repo and the current tag are
   # read from, so the list here is just names.
   #
-  # atuin is here because it's the reason any of this exists: tracking its main
-  # produced a binary with an unresolved libssl.so.3, and the all-or-nothing
-  # bump meant that one bad build stalled every other input for two days.
+  # Empty on purpose right now. atuin used to live here — it's the reason this
+  # mechanism exists at all — but release tracking turned out not to fix its
+  # breakage, because the bad binary ships in the tags too. See the note on the
+  # atuin input in flake.nix. The machinery stays for the next input that wants
+  # it; `scripts/test-nix-config-sync` is what keeps it honest while unused.
   releaseInputs = [
-    "atuin"
   ];
 
   host = "foxtrotbase";

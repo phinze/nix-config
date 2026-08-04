@@ -67,11 +67,20 @@
     pim-stuff.inputs.nixpkgs.follows = "nixpkgs-unstable";
     pim-stuff.inputs.flake-utils.follows = "flake-utils";
 
-    # Release-tracked (see nix-config-sync's releaseInputs): the tag here is
-    # rewritten to the newest non-prerelease each tick, so atuin follows stable
-    # releases and never its main. Tracking main bought a binary with an
-    # unresolved libssl.so.3, which is what taught us the input bump needed to
-    # stop being all-or-nothing.
+    # Pinned by hand, deliberately. This was release-tracked for a while on the
+    # theory that tags would be safe where main wasn't, but that theory died:
+    # v18.19.0 fails exactly the way main did, with an unresolved libssl.so.3.
+    #
+    # The cause isn't instability, it's packaging. v18.19.0 migrated TLS from
+    # rustls to native-tls (atuinsh/atuin#3807), which links OpenSSL
+    # dynamically, and their atuin.nix leaves the installed binary with no
+    # RPATH for it. Their build doesn't notice because it exports
+    # LD_LIBRARY_PATH for a proc-macro and never drops it, so postInstall runs
+    # the binary happily and CI only ever runs `nix build`. Ours dies the
+    # moment home-manager calls `atuin init fish`.
+    #
+    # So: stay on v18.18.1, which predates the migration and links no OpenSSL
+    # at all. Unpin once upstream ships the RPATH fix.
     #
     # Don't "simplify" this to nixpkgs' atuin. The local history DB has
     # migrations (20260709214605_shell and the 20260723* indexes) that nixpkgs'
