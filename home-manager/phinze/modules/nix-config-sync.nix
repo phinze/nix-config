@@ -326,6 +326,14 @@ let
       resolve_releases() {
         local input url owner repo tag latest
         for input in "''${RELEASE_INPUTS[@]}"; do
+          # A benched input is not a candidate this tick, so resolving it spends
+          # a GitHub call to learn something we will not act on — and worse, logs
+          # "$input release X → Y" for an input that is not going to move. That
+          # is why the 12:06 log announced atuin was benched and then, one line
+          # later, appeared to bump it.
+          if ! contains "$input" ''${CANDIDATES[@]+"''${CANDIDATES[@]}"}; then
+            continue
+          fi
           url=$(sed -n "s|^[[:space:]]*$input\.url = \"github:\([^\"]*\)\";.*|\1|p" flake.nix.pre)
           if [[ -z "$url" ]]; then
             echo "nix-config-sync: $input is release-tracked but has no github: pin, skipping" >&2
