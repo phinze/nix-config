@@ -367,6 +367,31 @@ If any one of these is an assumption rather than something you checked, it isn't
 
 Then summarize what you did on your own authority: the fixes taken, the pushbacks posted, and anything skipped. Phase 2 lets you move without asking, and this summary is what I get in exchange, so it needs to be complete enough that I'd catch a call I disagree with. Flag anything you were less than sure about, even after going ahead with it.
 
+## After Human Approval
+
+An approval that arrives with non-blocking inline notes means "I trust you to
+flush this out and merge." Those nits are yours to resolve as you judge best,
+including fixing them in the same PR after the approval landed. The approval
+carries forward; a moved head commit is not by itself a reason to go back.
+
+Re-request review only when something *major* changed since the approval: a new
+direction, a real scope change, or a fix that goes against what the reviewer
+actually asked for. Rebases, conflict resolutions, regenerated files, and fixes
+taken in the direction the reviewer proposed are none of those, even when they
+add real logic. Say what changed in the thread and merge.
+
+Two things still gate the merge regardless of who approved:
+
+- **CI green on the current head**, not on the commit that was approved.
+- **`mergeable`**, which drifts to `CONFLICTING` on its own when trunk moves
+  under you. Check it rather than assuming, since nothing announces it:
+  `gh pr view $PR --json mergeable,mergeStateStatus`. Generated files are the
+  usual culprit, and the fix is to rerun the generator rather than hand-edit
+  the conflict markers, so `generate-check` vouches for the resolution.
+
+biscuit's verdict is not a gate. It never was, and waiting on a re-review to
+merge a human-approved PR is wasted time.
+
 ## Response Style
 - Concise and friendly
 - Acknowledge the reviewer's point even when disagreeing
