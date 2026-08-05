@@ -710,6 +710,7 @@
     };
     extensions = [
       pkgs.gh-poi
+      pkgs.unstable.gh-stack
     ];
   };
 
