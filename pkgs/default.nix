@@ -3,9 +3,6 @@
 pkgs: rec {
   ccusage = pkgs.callPackage ./ccusage { };
   gwq = pkgs.callPackage ./gwq { };
-  hunkdiff = pkgs.callPackage ./hunkdiff { };
-  # lumen's genai dep uses `if let && ` chains stabilized in rustc 1.88, build against unstable
-  lumen = pkgs.unstable.callPackage ./lumen { };
   # Use unstable jujutsu so the reap script can read repos the user is
   # actively working in with their interactive jj (which is also unstable).
   # Version skew → "Failed to load the repo" errors → silent fail-open in
