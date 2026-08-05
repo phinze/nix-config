@@ -138,7 +138,24 @@
     {
       # Your custom packages
       # Accessible through 'nix build', 'nix shell', etc
-      packages = eachSystem (system: import ./pkgs nixpkgs.legacyPackages.${system});
+      #
+      # These get nixpkgs with the unstable-packages overlay rather than the
+      # bare legacyPackages set, because several of them are pinned to unstable
+      # through `pkgs.unstable` and a bare set doesn't have it. The host configs
+      # apply the overlay themselves, so this output was the only place the
+      # attribute went missing — which meant `nix flake check` failed on a
+      # package the system built fine. Only the unstable overlay belongs here:
+      # `additions` is this very file's output and would recurse.
+      packages = eachSystem (
+        system:
+        import ./pkgs (
+          import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+            overlays = [ outputs.overlays.unstable-packages ];
+          }
+        )
+      );
       # Formatter for your nix files, available through 'nix fmt'
       formatter = eachSystem (system: nixpkgs.legacyPackages.${system}.nixfmt-rfc-style);
 
