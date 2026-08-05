@@ -111,6 +111,18 @@ wrong. Know which is which before step 8.
    ```
    If it's `mirendev`, add `--draft` to the `gh pr create` above. Both bots review drafts (CodeRabbit's `drafts` auto-review setting is on org-wide, and biscuit reviews on open regardless), so the babysit loop below works unchanged, and step 8b flips the PR to ready once both bots are clean. Personal repos (solo, no reviewers) open normally, no draft.
 
+   **Link stacked follow-ups.** If this PR builds on another open PR, add it to GitHub's stack after creation. When the parent is already in a stack, find that stack by its PR number and use the stack number shortcut:
+   ```bash
+   STACK_NUMBER=$(gh api "repos/$OWNER/$REPO/stacks?pull_request=$PARENT_PR_NUMBER" \
+     --jq '.[0].number // empty')
+   if [[ -n "$STACK_NUMBER" ]]; then
+     gh stack link "$STACK_NUMBER" "$PR_NUMBER"
+   else
+     gh stack link "$PARENT_PR_NUMBER" "$PR_NUMBER"
+   fi
+   ```
+   The first form appends the new PR to the existing stack. The second creates a two-PR stack when the parent has not been stacked yet. `gh stack link` also corrects the new PR's base branch to the previous PR's head branch. Skip this for an independent PR based directly on trunk.
+
 8. **Babysit the PR**: After the PR is created, stick around and shepherd it through CI and automated review. This phase is fully autonomous. No need to check in unless something needs human judgment.
 
    **8a. Watch CI**
