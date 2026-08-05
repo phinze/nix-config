@@ -259,18 +259,28 @@ in
   # a slash-command file, which meant no frontmatter and so no description for
   # the loader to match on: a skill in filename only. They now ship as real
   # skill directories shared with the Claude Code and Codex installs.
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time".source =
-    ./claude-skills/pr-time;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review".source =
-    ./claude-skills/address-pr-review;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr".source =
-    ./claude-skills/review-pr;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/pr-time" = {
+    source = ./claude-skills/pr-time;
+    recursive = true;
+  };
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/address-pr-review" = {
+    source = ./claude-skills/address-pr-review;
+    recursive = true;
+  };
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/review-pr" = {
+    source = ./claude-skills/review-pr;
+    recursive = true;
+  };
 
   # Catch-up skills, same story: bare SKILL.md before, real skill directories now.
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home".source =
-    ./claude-skills/whatsup-home;
-  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work".source =
-    ./claude-skills/whatsup-work;
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-home" = {
+    source = ./claude-skills/whatsup-home;
+    recursive = true;
+  };
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work" = {
+    source = ./claude-skills/whatsup-work;
+    recursive = true;
+  };
 
   # Install all mutable JSON config files as regular files.
   home.activation.antigravityMutableConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
