@@ -115,6 +115,19 @@
       url = "git+https://github.com/mirendev/claude-skills.git";
       flake = false;
     };
+    claude-plugin-interface-design = {
+      url = "github:Dammyjay93/interface-design";
+      flake = false;
+    };
+
+    # Miren brand system (palette, type, logo assets). Private, so git+https
+    # like the other mirendev inputs. Pinned here so the miren-brand skill can
+    # point every session at a copy that's always on disk, rather than assuming
+    # a checkout exists at some path under ~/src.
+    miren-brand = {
+      url = "git+https://github.com/mirendev/brand.git";
+      flake = false;
+    };
 
     iso.url = "git+https://github.com/mirendev/iso.git";
 

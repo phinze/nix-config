@@ -30,7 +30,9 @@ let
     "claude-plugin-coderabbit"
     "claude-plugin-miren-skills"
     "claude-plugin-miren-team"
+    "claude-plugin-interface-design"
     # Miren work infra
+    "miren-brand"
     "iso"
     "multipass"
   ];

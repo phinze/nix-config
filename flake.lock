@@ -130,6 +130,22 @@
         "type": "github"
       }
     },
+    "claude-plugin-interface-design": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781955164,
+        "narHash": "sha256-L3OgE08i0lL69YEkfhmFJxIpreMCj5R5kuyIT7w3UmU=",
+        "owner": "Dammyjay93",
+        "repo": "interface-design",
+        "rev": "2f9be3206855bcb2d1d0af262c8bae25cba6658d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Dammyjay93",
+        "repo": "interface-design",
+        "type": "github"
+      }
+    },
     "claude-plugin-miren-skills": {
       "flake": false,
       "locked": {
@@ -484,6 +500,22 @@
         "ref": "v0.1.1",
         "repo": "ixx",
         "type": "github"
+      }
+    },
+    "miren-brand": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784921097,
+        "narHash": "sha256-7jNsoLyDgIUrVX3zPKF/vR0dJ1saxgJCizbc2CAG9ls=",
+        "ref": "refs/heads/main",
+        "rev": "f1f7d890bf8092d018a9fa426cebca43600364cb",
+        "revCount": 9,
+        "type": "git",
+        "url": "https://github.com/mirendev/brand.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/mirendev/brand.git"
       }
     },
     "multipass": {
@@ -859,6 +891,7 @@
         "camlink-fix": "camlink-fix",
         "claude-code-nix": "claude-code-nix",
         "claude-plugin-coderabbit": "claude-plugin-coderabbit",
+        "claude-plugin-interface-design": "claude-plugin-interface-design",
         "claude-plugin-miren-skills": "claude-plugin-miren-skills",
         "claude-plugin-miren-team": "claude-plugin-miren-team",
         "claude-plugins-official": "claude-plugins-official",
@@ -867,6 +900,7 @@
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
         "iso": "iso",
+        "miren-brand": "miren-brand",
         "multipass": "multipass",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",

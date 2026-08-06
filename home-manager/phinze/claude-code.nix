@@ -222,6 +222,20 @@ in
   home.file.".claude/skills/miren".source = "${inputs.claude-plugin-miren-skills}/plugins/miren";
   home.file.".claude/skills/miren-team".source = inputs.claude-plugin-miren-team;
 
+  # interface-design: craft-first product UI (dashboards, admin panels, settings,
+  # data views) — hierarchy, tokens, density, states, motion. Deliberately scoped
+  # *away* from marketing pages, which is what keeps it from fighting the official
+  # frontend-design plugin above rather than duplicating it. Ships two commands
+  # alongside the skill (design-review, design-deslop).
+  #
+  # We symlink the repo root, not ./plugin. Both carry a valid plugin.json, but
+  # the root one omits the hooks that the ./plugin variant registers: a node
+  # script on every Edit/Write plus a 30s "design deep pass" on Stop. Those would
+  # fire in every session on this machine — nix, Go, infra, all of it — for a
+  # skill that's relevant to a small slice of the work, and node isn't reliably
+  # on PATH here anyway. Root gives the skill and commands without them.
+  home.file.".claude/skills/interface-design".source = inputs.claude-plugin-interface-design;
+
   # Official LSP plugins: the upstream plugin dirs ship only a README (their
   # lspServers config lives in the marketplace catalog, not the dir), so we author
   # self-contained skills-dir plugins from the same config. These configs are tiny
@@ -349,6 +363,35 @@ in
       };
     };
   };
+
+  # Figma MCP, wired the same way as Linear: the official remote hosted endpoint,
+  # no desktop app or local server. The upstream figma plugin
+  # (github.com/figma/mcp-server-guide, what `figma@claude-plugins-official`
+  # resolves to) bundles this same .mcp.json with twelve skills. We take the
+  # server alone — the tools stay reachable on demand via ToolSearch, without
+  # twelve skill descriptions competing in every unrelated session.
+  home.file.".claude/skills/figma-mcp/.claude-plugin/plugin.json".text = builtins.toJSON {
+    name = "figma-mcp";
+    version = "1.0.0";
+    description = "Figma MCP server for reading design files, variables, and design systems";
+  };
+  home.file.".claude/skills/figma-mcp/.mcp.json".text = builtins.toJSON {
+    mcpServers = {
+      figma = {
+        type = "http";
+        url = "https://mcp.figma.com/mcp";
+      };
+    };
+  };
+
+  # miren-brand skill: point every session at the pinned brand repo so palette,
+  # type, and logo choices come from the real hex values instead of being
+  # approximated. The skill body is authored in-tree; @BRAND@ is substituted for
+  # the store path so the paths it cites actually resolve on any machine, with no
+  # assumption that a checkout exists under ~/src.
+  home.file.".claude/skills/miren-brand/SKILL.md".text =
+    builtins.replaceStrings [ "@BRAND@" ] [ "${inputs.miren-brand}" ]
+      (builtins.readFile ./claude-skills/miren-brand/SKILL.md);
 
   # PR workflow skills. These were slash commands for a long time, which meant
   # only a human could start them: a command is invisible to the model, so an
