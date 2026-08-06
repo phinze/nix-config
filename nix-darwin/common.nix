@@ -177,7 +177,6 @@ in
     "1password-cli"
     "balenaetcher"
     "bambu-studio"
-    "bartender"
     "blackhole-2ch"
     "chatgpt"
     "claude"
