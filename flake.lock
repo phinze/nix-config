@@ -505,11 +505,11 @@
     "miren-brand": {
       "flake": false,
       "locked": {
-        "lastModified": 1784921097,
-        "narHash": "sha256-7jNsoLyDgIUrVX3zPKF/vR0dJ1saxgJCizbc2CAG9ls=",
+        "lastModified": 1786116068,
+        "narHash": "sha256-c3KbBNHborPwC8RZV04OEcQUAuSP6HCmyK81iLTS8qg=",
         "ref": "refs/heads/main",
-        "rev": "f1f7d890bf8092d018a9fa426cebca43600364cb",
-        "revCount": 9,
+        "rev": "2f5642f5366b70999625f4af487154444293a08f",
+        "revCount": 10,
         "type": "git",
         "url": "https://github.com/mirendev/brand.git"
       },
@@ -1039,11 +1039,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786103105,
-        "narHash": "sha256-2MhXLiiw5K9Q/d2rLV+v3hbSVQTrEDXyNAPv4/XChu8=",
+        "lastModified": 1786118193,
+        "narHash": "sha256-RhkiElXANPrHOXTncgUmKHVw8FHuRZjAXmtUPQfB91c=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "67202a6dc9ad712796fe31ef7797084d1fb8dbfe",
+        "rev": "43272965c62be2c512630bc80deeb6792b2f285b",
         "type": "github"
       },
       "original": {
