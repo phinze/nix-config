@@ -181,11 +181,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1786137671,
-        "narHash": "sha256-abgKk+CsXQ3DdCemiHvod0JvzYX0Q766faQRJtFKTHk=",
+        "lastModified": 1786147676,
+        "narHash": "sha256-aqpaT9WE4VCmVhw63sZjKwdGbzKKLyg9UM53R0N6k4c=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "d33732b67aef18b3409d2c566e1d15541906726d",
+        "rev": "c14697fe1f62e55dc83b36743fb76d97b20370c1",
         "type": "github"
       },
       "original": {
@@ -528,11 +528,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785947682,
-        "narHash": "sha256-UdOuqt4CH8U9JTJH3VJHYt+6b9Sa4efkjfvuvbCEt28=",
+        "lastModified": 1786146350,
+        "narHash": "sha256-SMEIeNj5RcT++g/VUUh+H0arKVO/OcLlv8cmVKlbnFg=",
         "ref": "refs/heads/main",
-        "rev": "b5ff91f5c44240b590ce4baca2041e9787504de0",
-        "revCount": 60,
+        "rev": "5dad91ac4b856b3b3c310af69fac6a8ace84684f",
+        "revCount": 61,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
