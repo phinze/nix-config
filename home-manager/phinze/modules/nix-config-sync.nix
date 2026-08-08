@@ -10,6 +10,14 @@ let
   # and iterates on, plus quick-turnover AI harnesses and their plugin sources.
   # Everything NOT listed here (nixpkgs, home-manager, nix-darwin, and the other
   # release-branch pins) stays manual on purpose — those are deliberate.
+  #
+  # nixpkgs-small is the one nixpkgs branch that rides along, and it earns the
+  # exception by being narrow rather than by being safe: exactly two packages
+  # read from it, so a bump rebuilds the jj toolchain and nothing else. Moving
+  # nixpkgs-unstable on a timer would be a mass rebuild every tick; this isn't.
+  # The cost is that a jj release the binary cache hasn't caught up on turns one
+  # tick into a ~30min source build. It still lands, it just takes a while, and
+  # deploy_main has already run by then so a real config push never waits on it.
   syncInputs = [
     # Paul's own repos
     "rig"
@@ -35,6 +43,8 @@ let
     "miren-brand"
     "iso"
     "multipass"
+    # Narrow nixpkgs fast lane; see the note above
+    "nixpkgs-small"
   ];
 
   # Inputs that follow their newest *release* rather than a branch. Each tick

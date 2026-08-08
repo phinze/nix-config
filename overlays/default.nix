@@ -68,6 +68,17 @@
     };
   };
 
+  # Same idea for the nixos-unstable-small channel, through 'pkgs.small'. Keep
+  # the set of packages read from here deliberately tiny — its whole value is
+  # that bumping the input has a near-zero blast radius, which stops being true
+  # the moment something with a large closure starts reading from it.
+  small-packages = final: _prev: {
+    small = import inputs.nixpkgs-small {
+      system = final.stdenv.hostPlatform.system;
+      config.allowUnfree = true;
+    };
+  };
+
   # My configured copy of neovim
   nixvim = final: _prev: {
     nixvim = inputs.nixvim-config.packages.${_prev.stdenv.hostPlatform.system}.default;

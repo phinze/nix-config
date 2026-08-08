@@ -86,6 +86,7 @@
       outputs.overlays.additions
       outputs.overlays.modifications
       outputs.overlays.unstable-packages
+      outputs.overlays.small-packages
       outputs.overlays.nixvim
       outputs.overlays.recto
       outputs.overlays.rig
@@ -160,8 +161,12 @@
       gwq # Git worktree manager that works with ghq
       recto # jj-first terminal diff viewer for reviewing agent-authored changes
       rig # workspace tool for task-shaped multi-repo work (subsumes jpickup/jreview)
-      unstable.jujutsu # jj VCS, trying it out alongside git
-      unstable.jjui # TUI frontend for jj
+      # The jj pair rides the small channel so monthly jj releases land within
+      # days instead of waiting on the next manual nixpkgs-unstable bump. jjui
+      # comes along because it shells out to jj and parses its output, so the
+      # two want to move together when a jj release shifts something.
+      small.jujutsu # jj VCS, trying it out alongside git
+      small.jjui # TUI frontend for jj
       jq
       linearis # CLI tool for Linear.app with JSON output
       mtr
