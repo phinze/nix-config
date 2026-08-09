@@ -10,7 +10,10 @@ when jj genuinely has no equivalent. Common verbs: `jj status`, `jj diff`
 (or `jj diff -r @-`), `jj log`, `jj show`. To view a file at a revision use
 `jj file show <path> -r <rev>` (not `jj cat`). To exclude paths from a
 command, use fileset syntax: `jj diff '~package-lock.json'` or
-`jj diff '~dir1 & ~dir2'`.
+`jj diff '~dir1 & ~dir2'`. Use `rg` for ordinary content search, but when
+you need to search the tree *at a revision* rather than on disk, reach for
+`jj file search <pattern> -r <rev>` (add `-n` for line numbers, or
+`--name-only` for just the matching paths).
 
 - When asked to start work on something and you're on an empty commit with
   no description, set a short description before editing files. Refine it
@@ -42,6 +45,12 @@ command, use fileset syntax: `jj diff '~package-lock.json'` or
   common base, implement each, then compare. No bookmarks needed.
 - When using `jj squash`, avoid the editor popup with `-m '<msg>'` or `-u`
   to keep the destination message. The two flags are mutually exclusive.
+- When only *part* of a rev belongs in an earlier one, `jj absorb -i` lets
+  you pick the hunks to consider instead of splitting the rev first.
+  Anything you don't select, or that absorb can't place unambiguously,
+  stays put. The destructive-op rules below still apply: absorb rewrites
+  the commits it lands in, so it's yours to run on scratch revs from this
+  session and mine to ask for on anything older.
 - Whether to run a destructive jj op (`squash`, `abandon`, `rebase`)
   depends on which commits it touches:
   - Scratch commits you created earlier in the session whose only purpose
@@ -57,7 +66,11 @@ command, use fileset syntax: `jj diff '~package-lock.json'` or
   confirm your changes landed.
 - `--ignore-immutable` may be needed when abandoning divergent commits
   from other authors (e.g., after rebasing on their branch and a force
-  push). The config treats commits not authored by me as immutable.
+  push). The config treats commits not authored by me as immutable. Tags
+  count too, since they're part of jj's built-in immutable heads, and as
+  of 0.44 `jj git fetch` pulls and tracks every tag the remote has. In a
+  tag-heavy repo that means more of history is immutable than you might
+  expect from looking at bookmarks alone.
 - `jj tug` is a custom alias that moves the closest ancestor bookmark to
   `@-`, useful for advancing a branch pointer to current work without
   retyping its name.

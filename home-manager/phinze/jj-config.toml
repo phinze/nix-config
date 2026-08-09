@@ -39,8 +39,13 @@ merge-editor = ":builtin"
 diff-formatter = ":git"
 
 [revsets]
-# Default log shows a bit more ancestry than jj's built-in
-log = "present(@) | ancestors(immutable_heads().., 4) | present(trunk()) | divergent()"
+# Default log shows a bit more ancestry than jj's built-in. 0.44 exposes the
+# built-in default as `builtin_log()`, so this says "the built-in, but reaching
+# further back, plus divergent" instead of restating the whole thing and then
+# drifting the next time upstream changes it. The deeper `ancestors(.., 4)`
+# subsumes the `.., 2)` inside builtin_log(); the resulting set is identical to
+# what the hand-copied version produced.
+log = "builtin_log() | ancestors(immutable_heads().., 4) | divergent()"
 # `jj bookmark advance` targets the parent of the working copy by default, not
 # @ itself. @ is usually the empty WIP commit you don't want a branch pointing
 # at. This makes `jj bookmark a` a near drop-in for the `tug` alias below.
@@ -82,10 +87,14 @@ concat(
 # Log with diff stats inline for the working copy or empty-description revs.
 # `|` in stat output is swapped to a full-width variant so jjui's line
 # parser (which uses `|` as a separator) isn't confused.
+#
+# Without a cap, the `++--` bar is sized off the full terminal width, which is
+# the wrong width here: this template renders inside jjui's revision pane, not
+# across the whole terminal. 0.44 added max_bar_width for exactly this.
 'home' = '''
 builtin_log_compact ++ if(
   (self.current_working_copy() || self.description().len() == 0) && !self.empty(),
-  "\n" ++ stringify(self.diff().stat()).replace("|", "｜") ++ "\n"
+  "\n" ++ stringify(self.diff().stat(max_bar_width=30)).replace("|", "｜") ++ "\n"
 )
 '''
 
