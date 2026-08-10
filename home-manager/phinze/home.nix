@@ -125,6 +125,13 @@
     vi = "nvim";
     vim = "nvim";
 
+    # `r` is to rigs what `t` is to tmux sessions. session-wizard ships a
+    # binary literally named `t` (see the fish_add_path in interactiveShellInit)
+    # so its picker is one keystroke from any prompt; radar is the equivalent
+    # board for rigs, and deserved the same. Mirrored on the tmux side too:
+    # prefix+t opens the session picker, prefix+r opens radar.
+    r = "rig radar";
+
     # Claude Code shorthand
     cld = "claude --dangerously-skip-permissions";
     cldr = "claude --dangerously-skip-permissions --resume";

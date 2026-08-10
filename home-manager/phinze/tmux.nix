@@ -120,11 +120,15 @@ in
     ];
 
     extraConfig = ''
-      bind r source-file ~/.config/tmux/tmux.conf \; display "reloaded"
+      # Reload lives on capital R because lowercase r went to radar below.
+      bind R source-file ~/.config/tmux/tmux.conf \; display "reloaded"
 
       # rig radar: popup board over every rig — in-flight rigs to switch to,
-      # parked rigs ranked by review status; enter switches or wakes
-      bind-key i display-popup -E -w 80% -h 80% "rig radar"
+      # parked rigs ranked by review status; enter switches or wakes.
+      # Bound to `r` as the rig-side counterpart of session-wizard's `t`
+      # (set above): same prefix, same popup, adjacent keys, one picker each
+      # for sessions and rigs.
+      bind-key r display-popup -E -w 80% -h 80% "rig radar"
 
       # Set terminal/tab title to "【 hostname 】› session" (last 2 path segments of session name)
       set-option -g set-titles on
