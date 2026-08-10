@@ -459,11 +459,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1784921108,
-        "narHash": "sha256-8jj3dnU8SmIaGrtJrJAphFtcpi393a+rdSAamJopq7o=",
+        "lastModified": 1786380996,
+        "narHash": "sha256-WbiblD2w/239aAX2XU8Em9jF1ia6Y7KBUwT3iAjQ7jI=",
         "ref": "refs/heads/main",
-        "rev": "c304a82a5bace28932219680975ef6640ff5ddf5",
-        "revCount": 71,
+        "rev": "af2d371ed5b69f4c9400eed590839689a6f14578",
+        "revCount": 73,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
@@ -863,11 +863,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786372374,
-        "narHash": "sha256-6HMGHjaOSWEAMAe2mb9+qpK1IyIDCmRqjusqAx4jzXc=",
+        "lastModified": 1786378947,
+        "narHash": "sha256-bLDRkpRoscvxlHLtmhdxDUbQ3sNYUPuGYViqhIH1CQI=",
         "owner": "phinze",
         "repo": "recto",
-        "rev": "90c5f9d03ca93220a92626ef9ce2475b3b0e656f",
+        "rev": "a6d676875941c8d4eec4c97db7e42ff2b64becfc",
         "type": "github"
       },
       "original": {
@@ -886,11 +886,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785967144,
-        "narHash": "sha256-3vdEdsFpxmW0KXmkKl5U5Y24RLBZK/q+RIwFSeuHQM8=",
+        "lastModified": 1786378956,
+        "narHash": "sha256-oE8bMG4Qnu9h4IxBpQli3xx/gqJtQW3Mc6dTVUPRBhM=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "68358479b339370ef9ae51b6263b01584d461621",
+        "rev": "b5c31edcbb20f706b1f69a6970ec6c47fe21f23f",
         "type": "github"
       },
       "original": {
