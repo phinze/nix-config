@@ -181,11 +181,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1786454723,
-        "narHash": "sha256-8MaLj/NEjyWztMDRF60rq1I7iTJPbA8+O5pKPyyd5a0=",
+        "lastModified": 1786470201,
+        "narHash": "sha256-Ijlm/amrnCRvfLLSEgrbgyq8AI/Op5Rjr6Dlqv40BsQ=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "76e1fd77f727b593f5bb19873d5b5fde21fd2db1",
+        "rev": "f78ab8b4172d77dc298c8954ce47c4e5c0b6d6cc",
         "type": "github"
       },
       "original": {
@@ -510,11 +510,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786146350,
-        "narHash": "sha256-SMEIeNj5RcT++g/VUUh+H0arKVO/OcLlv8cmVKlbnFg=",
+        "lastModified": 1786471865,
+        "narHash": "sha256-8fmoQ2hKgsGUhMR0UXHdmoVIdTowgsz5SBU0ahPInyA=",
         "ref": "refs/heads/main",
-        "rev": "5dad91ac4b856b3b3c310af69fac6a8ace84684f",
-        "revCount": 61,
+        "rev": "0c8d47fa4edc68a1438653a73e44d68b72cd836d",
+        "revCount": 63,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
@@ -631,11 +631,11 @@
     },
     "nixpkgs-small": {
       "locked": {
-        "lastModified": 1786400526,
-        "narHash": "sha256-ABftAecb5leXFwM5EZodr2q4dmwuCH+tmdp8xde4ssA=",
+        "lastModified": 1786463514,
+        "narHash": "sha256-lDVA1kYvHuXlcwnBss5Ws70qskNSIwaDLhI9+MIEyiM=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "265b7e2dbbdbe2e59609fa31ed8be38cdb517d13",
+        "rev": "5c406c24ab27a146b8321f419a5536e3cf6842a0",
         "type": "github"
       },
       "original": {
