@@ -101,11 +101,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1786403413,
-        "narHash": "sha256-SXErjFOkqgf5UgA/aH31VSncbWAbF1qYpbRKKxJWGSk=",
+        "lastModified": 1786479130,
+        "narHash": "sha256-YPU/GTIghkZlrXxVtoOJ+lT8v1X8cHUSr3MEo0O+JwI=",
         "owner": "sadjow",
         "repo": "claude-code-nix",
-        "rev": "b16562174ada2407616943aea88f278b5a2cef71",
+        "rev": "fad470f88fe10a834954cf701bb7a1a937f2c988",
         "type": "github"
       },
       "original": {
@@ -487,11 +487,11 @@
     "miren-brand": {
       "flake": false,
       "locked": {
-        "lastModified": 1786116068,
-        "narHash": "sha256-c3KbBNHborPwC8RZV04OEcQUAuSP6HCmyK81iLTS8qg=",
+        "lastModified": 1786476215,
+        "narHash": "sha256-zwXOXVIFVHk6AICyvufLP9BYeGxuho6I+bE9LW9t354=",
         "ref": "refs/heads/main",
-        "rev": "2f5642f5366b70999625f4af487154444293a08f",
-        "revCount": 10,
+        "rev": "a6f832d682eab5d02012a14970ab650ef7f79530",
+        "revCount": 12,
         "type": "git",
         "url": "https://github.com/mirendev/brand.git"
       },
@@ -797,11 +797,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785939325,
-        "narHash": "sha256-/nftQkxSJOD+aeFeAIwYdBr8iVA9kiZTdQoD9JX3yIo=",
+        "lastModified": 1786476239,
+        "narHash": "sha256-B3hJ5cH7KGijK5RW2c3DoJwCLgJ74EeppuY5wlDQN8A=",
         "ref": "refs/heads/main",
-        "rev": "8988fef00253d18b09a46203879a85e6db2cce93",
-        "revCount": 97,
+        "rev": "31d686f15ce1c44442aae4410f194ce6b13a7092",
+        "revCount": 99,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
