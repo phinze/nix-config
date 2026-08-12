@@ -7,13 +7,15 @@ description: Ship a change as a pull request. Tidy the jj rev stack, rebase on t
 
 ## Style Guide
 
+Applies to rev messages, and to a description when I've asked you for a draft.
+I write descriptions by default (step 5).
+
 The reader's attention is finite and worth being kind to. Give them the
 situation, what was wrong with it, and what we did. They can get the rest from
 the code. No test plan section. Conversational and a little informal, and almost
 never an em-dash (per global CLAUDE.md).
 
-**Length is what this skill gets wrong**, reliably enough that drafts get sent
-back for a trim about a third of the time. Write it short the first time rather
+**Length is what this skill gets wrong.** Write it short the first time rather
 than padding and cutting back, and let the repo set the target. The last few
 merged PRs (`gh pr list --state merged --limit 3 --json title,body`) are a
 better gauge than any number, since they adapt per repo where a number wouldn't.
@@ -88,15 +90,25 @@ wrong.
 
 4. **Polish the rev messages**. Short imperative summary line, blank line, brief narrative body hard-wrapped at 72 per git convention. `jj desc -r <rev> -m '<message>'` with the whole thing in one single-quoted string (newlines preserved), or `jj desc -r <rev>` for the editor.
 
-5. **Draft the PR**:
-   - **Calibrate first**: read the recent merged PRs per the style guide, for house length and register. Some repos also have a template whose sections get dropped when they don't apply. Match what's there over what this file describes.
-   - **Title**: high-level summary of the whole change
-   - **Description**: per the style guide. With multiple revs it can reference the progression.
-   - Do NOT hard-wrap the description. It renders as markdown, and mid-sentence line breaks look broken on GitHub.
+   These carry more weight than their length suggests. The style guide sends mechanism here rather than into the description, so this is where the durable technical prose lives, and its reader arrives from `blame` with the diff already in front of them. Give that reader the why: what the situation was, what forced the change, what you considered and rejected. A body that restates the summary line, or narrates a diff they are already looking at, gives them nothing.
 
-6. **Trim, then show me the draft** and ask "Look good?". Wait for approval before pushing.
+5. **Hand over the material. I write the description.**
 
-   Reread it against the cut list and against those merged PRs before showing anything. If a paragraph doesn't say something the ones above it didn't, it goes. And skip the meta scaffolding: which bookmark you picked, whether the repo opens drafts, how you settled the rev structure. Do it, don't narrate it.
+   A description argues for the change: what mattered, what the tradeoffs were, why one approach beat another. I made those calls and you weren't there, so reconstructing them from the diff yields a plausible rationale rather than the real one. Don't write it unprompted.
+
+   Give me what I'd otherwise assemble by hand, then stop:
+   - The rev stack with its messages, and the combined diff
+   - What got deleted or moved, which is easy to miss reading top-down
+   - What this is stacked on, if anything
+   - The last few merged bodies (`gh pr list --state merged --limit 3 --json title,body`) for house register, and any repo template
+
+   **Propose the title** yourself, a high-level summary of the whole change. I'll adjust it if it's off.
+
+   If I ask you for a draft on a given PR, write one per the style guide, trim it against the cut list first, and show it with "Look good?". That's the exception.
+
+6. **Check what I wrote against the diff**, then assemble. Say so when something doesn't match: a claim about behavior the code doesn't have, a file I think changed and didn't, a rationale the rev messages contradict. Checking is the job here, not wording.
+
+   Post it as I wrote it. Do NOT hard-wrap: it renders as markdown, and mid-sentence line breaks look broken on GitHub. And skip the meta scaffolding in your own reporting: which bookmark you picked, whether the repo opens drafts, how you settled the rev structure. Do it, don't narrate it.
 
 7. **After approval**: advance the bookmark, push, open the PR.
 
