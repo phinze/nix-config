@@ -199,6 +199,27 @@ Skip this phase if there are no threads needing replies.
 
 For each comment that needs a reply, write the response text. These include skipped items (human or bot), reviewer questions, and acknowledgments of fixes.
 
+### Mark what you wrote
+
+A reply posts under the user's account, so a reader cannot tell whose prose it
+is. Say so: **any reply whose wording you wrote opens with 🤖**, and the user's
+own words go unmarked.
+
+The marker is about authorship of the prose, not about who takes
+responsibility. An approved draft is still your writing, so it still gets
+marked. A reader calibrates differently for an agent's reply, and that is worth
+more than the credit. This is already the house convention in `mirendev/` review
+threads.
+
+    🤖 Confirmed and fixed. `appspec` merges task env on the same footing as a
+    service's, and I checked the unit test fails without the fix rather than
+    trusting it.
+
+When the user supplies the substance and you add detail, their words go first
+and unmarked, yours below a `---` rule and marked, exactly as in `review-pr`.
+Never let the marked half hedge or contradict the unmarked half; raise the
+disagreement with the user before posting instead.
+
 **Bot replies just go.** Acknowledgments ("fixed in the latest push, added the nil check") and factual pushbacks to CodeRabbit or biscuit don't need my eyes first. Write them, post them in Phase 5, and include them in the Phase 7 summary.
 
 **Human replies get drafted and shown.** Anything addressed to a person waits for my go-ahead, as does any reply carrying a judgment-call disagreement from the "stop and ask" list, whoever it's aimed at.
@@ -213,13 +234,15 @@ Present the drafts that do need review together in a summary like:
 ### Reply to @reviewer on file.go:42
 > Their comment text...
 
-Draft: "Thanks, fixed in the latest push: added the nil check."
+Draft: "🤖 Thanks, fixed in the latest push: added the nil check."
 
 ### Reply to @reviewer on file.go:87
 > Their comment text...
 
-Draft: "Good point, but keeping it inline for now since it's only used once. Happy to extract if we need it elsewhere."
+Draft: "🤖 Good point, but keeping it inline for now since it's only used once. Happy to extract if we need it elsewhere."
 ```
+
+Show the marker in the draft, so what you post is what the user approved.
 
 **For those, iterate on wording until approved. Never post a human-facing reply without an explicit go-ahead.**
 
@@ -393,6 +416,7 @@ biscuit's verdict is not a gate. It never was, and waiting on a re-review to
 merge a human-approved PR is wasted time.
 
 ## Response Style
+- Mark your own prose with 🤖 (see Phase 4)
 - Concise and friendly
 - Acknowledge the reviewer's point even when disagreeing
 - Use "we" language (collective ownership)
