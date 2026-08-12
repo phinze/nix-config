@@ -37,9 +37,35 @@ Do this quietly and quickly. It is plumbing, not review.
    us, take it with `gh pr edit <number> --add-assignee @me` before reading
    deeply, so the claim is visible early.
 
-3. **Get the branch local.** `gh pr diff <number>` for the diff, and check the
-   branch out if we are not on it. Reading whole files matters — the diff alone
-   will not let you trace a call chain, and tracing call chains is the job.
+3. **Get the branch local.** `gh pr diff <number>` for the diff, then read whole
+   files out of the working tree — the diff alone will not let you trace a call
+   chain, and tracing call chains is the job.
+
+   Assume you are in a rig already sitting on the PR's head, because that is
+   where this almost always runs. Confirm it rather than checking anything out:
+   compare `@-`'s commit id to `headRefOid`. Matching means you are there and
+   there is nothing to do. Only if they differ, or you are outside a rig, is
+   there a branch to switch to — and say so before switching a rig's workspace,
+   since the rig is dedicated to this task and recto and `rig pr` are pointed
+   at it. That same comparison is the one you repeat before submitting, so
+   running it here also gives you the head you will check against later.
+
+4. **On a stacked PR, fix recto's base.** If `baseRefName` is not trunk, recto
+   is almost certainly showing the wrong diff: `recto --pr` uses
+   `fork_point(trunk() | @)`, which on a stack renders every PR below this one
+   as well. Run `recto ping` and compare its `files` count to the PR's. If they
+   disagree, tell the user to press `b` and set the base to `baseRefName` —
+   recto will not switch bases on its own, and until it does your `focus` and
+   `annotate` calls land in the wrong document.
+
+## The head moves
+
+The repo shifts under you while you read; the `jj` skill covers that side. What
+is specific to reviewing is that the author can force-push mid-review. When the
+whole stack comes back with new commit ids and identical messages, that is a
+rebase — your reading still holds, so re-verify anchors, not conclusions. Name
+the commit id whenever you record what you checked; GitHub stamps one on every
+review comment for exactly this reason.
 
 ## Phase 1 — Orientation
 
@@ -118,6 +144,15 @@ Say so plainly when a claim does not survive, and say it *before* posting. This
 is the single most useful thing you do in phase 2 — the user supplies the
 instinct, you supply the patience to check it.
 
+**Prove it rather than arguing it.** When a contested claim reduces to pure
+logic — string formatting, hashing, comparison, ordering, parsing — copy the
+function verbatim into a scratch program and run it. A disagreement between the
+author and a bot over whether two names can collide ends the moment you paste
+in `tickRunName`, feed it two plausible inputs, and print the output. This is
+worth reaching for exactly when a thread has stalled into competing assertions:
+prose invites another round, a transcript does not. Copy the code rather than
+paraphrasing its behavior, and say in the comment that you ran it.
+
 **Check each comment against the current code**, not just the diff. Multi-commit
 PRs fix things in later commits; read the file at the target line and confirm
 the comment still applies.
@@ -180,23 +215,82 @@ involved; no per-review announcement is needed.
 **Don't invent context.** No on-call rotation, team size, or process you do not
 actually know — this applies to anything you append.
 
-Post with `gh api`:
+**Default to posting a draft.** Omit `event` and the review is created in
+`PENDING` state: a draft only the user can see, with every inline comment
+editable in the Files changed tab and a "Finish your review" button where they
+pick the verdict at submit time.
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{number}/reviews \
-  --method POST --input - << 'EOF'
+  --method POST --input review.json
+```
+
+```jsonc
 {
   "body": "Top-level comment here",
-  "event": "APPROVE",
+  // no "event" key -> PENDING
   "comments": [
     {"path": "path/to/file.go", "line": 74, "body": "Inline comment..."}
   ]
 }
-EOF
 ```
 
+This fits the division better than anything else in the skill. The user writes
+their prose in GitHub, where they are already comfortable editing, and the
+verdict becomes theirs by construction rather than by your restraint. Add
+`"event": "APPROVE"` only when the user has said the words and wants it out in
+one shot.
+
 Use a single line number, not a range — that is what the API takes. Write the
-payload to a file rather than inlining it when the bodies are long.
+payload to a file rather than inlining it when the bodies are long; build the
+JSON with a script so you are not hand-escaping newlines and backticks.
+
+**Scaffolding the user's half.** When you assemble a draft before they have
+written their lines, never put plausible prose in their slot — it will ship in
+their voice. Use a loud placeholder with the strawman after it:
+
+    ⚠️ **TODO — replace with your words.** Strawman: <one sentence>
+
+    ---
+
+    🤖 <your half>
+
+An unedited comment then reads as visibly unfinished, and the strawman is right
+there to accept or overwrite.
+
+### Editing a draft
+
+You will want to revise your own half after the user reads it. Three facts,
+learned the hard way:
+
+- Pending comments **404** on the REST `pulls/comments/{id}` endpoint. They are
+  not published comments yet.
+- The GraphQL `updatePullRequestReviewComment` mutation edits them fine. Get the
+  `node_id` from `pulls/{n}/reviews/{review_id}/comments`.
+- Pending comments have **no edit history**. `userContentEdits` is empty, so an
+  overwrite is unrecoverable by any means.
+
+The mutation takes a whole body, which makes the rule absolute: **read the
+current body first, then splice.** Keep everything above the `---` byte for
+byte and replace only the 🤖 block below it. The user edits their half in the
+UI while you are working; a body you compose from memory will silently destroy
+whatever they wrote since you last looked. If you do clobber their words, say
+so immediately and plainly — you cannot recover them, and they need to know to
+re-paste rather than discovering it after submit.
+
+To discard a draft entirely:
+`gh api repos/{owner}/{repo}/pulls/{n}/reviews/{review_id} --method DELETE`.
+
+### Before and after submitting
+
+The head can move under you. Before submitting, re-read `headRefOid` and
+compare it to what you mapped anchors against. After submitting, confirm each
+comment came back with a non-null `position` — a force-push between drafting
+and submitting can strand comments on a commit nobody is looking at.
+
+    gh api repos/{owner}/{repo}/pulls/{n}/comments \
+      --jq '.[] | select(.user.login=="<us>") |
+            "\(.path) line=\(.line) commit=\(.commit_id[0:8]) outdated=\(.position==null)"'
 
 ## Input channels
 
@@ -216,11 +310,17 @@ review back before posting.
 A review is not only comments.
 
 - **Fixable things can be commits.** Docs gaps, small bugs, missing test cases
-   — offer to contribute to the branch rather than only commenting. Pause the
+   — contributing to the branch is sometimes better than commenting. Pause the
   review, do the work, resume. When the review references our own commits,
   frame them as "we contributed," not as feedback on the author's code.
 - **Follow-up tickets are a natural artifact.** Refactoring opportunities,
   coverage gaps, future improvements — offer to file them.
+
+**Offer once, not per finding.** Both of the above are worth raising when they
+genuinely beat a comment, and are noise attached to every item on the slate.
+Repeating "want me to just fix this?" down a list of six turns a review into a
+negotiation about logistics. Make the offer once, for the items where it
+actually applies, and take silence as no.
 
 ## What you do not do
 
@@ -229,6 +329,7 @@ A review is not only comments.
 - Edit, tighten, or "improve" their words on the way to posting
 - Post a claim you have not traced
 - Pad the 🤖 append to look thorough
+- Send a comment body you did not just read back first
 
 Most of your work never reaches the post, and that is correct. An hour of
 tracing and five minutes of it can both end as a two-sentence approve; the
