@@ -1,240 +1,193 @@
 ---
 name: review-pr
-description: Review someone else's pull request. Claim it with the assignee mutex, read the diff against its stated intent, and leave collaborative inline comments. Use when asked to review a PR, look over someone's changes, or when handed a PR number or URL to review.
+description: Review someone else's pull request, with the user writing the comments and you supporting. Claim it with the assignee mutex, hand over a map of the change, answer what the user asks while they orient, then verify their claims and post what they wrote. Use when asked to review a PR, look over someone's changes, or when handed a PR number or URL to review.
 ---
 
 # PR Review Skill
 
-Think hard and carefully about the code changes.
+**The user writes the review. You do the mechanics and the digging.**
 
-## Instructions
+That division is the whole design. You are very good at tracing a call chain
+across four files and proving whether a thing can actually happen; you are bad
+at having an opinion in someone else's voice. So the user's words go out, and
+yours support them.
 
-0. **Determine which PR to review**:
-   - If the request names a PR number or URL, use that
-   - If no PR is named, assume the current branch's PR:
-     run `gh pr view --json number,title` to find it
-   - If that fails (no PR for current branch), run `gh pr list` and ask
+Work in two phases. **Phase 1 is orientation**: the user builds their own read
+of the change, and you are a resource they pull from. **Phase 2 is
+composition**: they call the verdict and write the comments, you verify and
+post. Phase 1 ends when *the user* says they are oriented, not when you think
+the walkthrough is complete.
 
-1. **Fetch PR metadata, claim the review (mutex), and ensure the branch is
-   local**:
-   - Fetch metadata *including current assignees* — we need them to check the
-     lock before we take it:
-     `gh pr view <number> --json number,title,body,author,baseRefName,headRefName,url,assignees`
-   - **Mutex: check, then claim.** The assignee is our soft "I'm reviewing
-     this" lock. It's advisory, not atomic (GitHub won't stop a simultaneous
-     grab), but it's enough to keep two of us off the same PR.
-     - **If someone other than us is already assigned**, that's almost
-       certainly another reviewer holding the lock. Stop and surface it by
-       name — ask whether to pile on or back off, don't silently claim over
-       them. (One exception: the *author* self-assigning their own PR isn't a
-       review claim; note it and carry on.)
-     - **If it's unassigned (or already us)**, take the lock:
-       `gh pr edit <number> --add-assignee @me`. Do this before reading deeply
-       or drafting, so the claim is visible as early as possible.
-   - Run `gh pr diff <number>`
-   - **Check out the branch locally** if not already on it (`git switch` or
-     `gh pr checkout`). Reading the full source files locally — not just the
-     diff — is essential for understanding context, tracing call chains, and
-     exploring how changes interact with surrounding code.
+## Setup
 
-2. **Summarize the PR**:
-   - What is this PR trying to accomplish?
-   - Who authored it?
-   - What's the scope (files changed, rough size)?
+Do this quietly and quickly. It is plumbing, not review.
 
-3. **Walk through the changes**:
-   - Group changes logically (by feature, by file, or by layer)
-   - Explain what each change does
-   - **Flag areas to discuss**: things that need clarification, look surprising,
-     or where you're not yet sure if something is a concern or just unfamiliar.
-     Be honest about confidence level — "I want to understand this better" is
-     different from "this looks wrong." Initial impressions often change after
-     discussion.
-   - **For behavioral/semantic changes** (not just additions): trace through
-     the key workflows and scenarios affected. Read the code paths end-to-end,
-     not just the diff hunks. This is where the real understanding happens —
-     changes that look risky in isolation often compose into a coherent design
-     when you see the full flow.
+1. **Find the PR.** If the request names a number or URL, use it. Otherwise
+   `gh pr view --json number,title` for the current branch's PR, and if that
+   fails, `gh pr list` and ask.
 
-4. **Pause for walkthrough discussion**:
-   - **This is the main event, not a preamble.** The walkthrough is where
-     real understanding happens — ask if I want to go chunk by chunk, or if
-     the PR is simple enough to skip straight to drafting.
-   - Ask if I have questions or want to dive deeper into any area
-   - If we find fixable issues (docs gaps, small bugs, missing test cases),
-     discuss whether to contribute a commit to the branch rather than just
-     commenting. If so, pause the review, do the work, then resume.
-   - When the review references our own contributed commits, frame them as
-     "we contributed" not as feedback on the author's code.
-   - **Follow-up tickets are a natural output.** If we identify work worth
-     tracking (refactoring opportunities, missing test coverage, future
-     improvements), offer to file tickets. These are valuable review artifacts
-     beyond just the PR comments.
-   - We'll discuss before drafting comments
+2. **Check the mutex, then claim it.** Fetch metadata including assignees:
 
-5. **Check automated review comments for overlap**:
-   - Run `gh api repos/{owner}/{repo}/pulls/{number}/comments` to fetch existing review comments
-   - Identify comments from automated code review tools (e.g., bot usernames)
-   - Note which of our findings overlap with automated reviewers' findings
-   - This overlap is mostly for our own triage, so we don't restate inline what
-     a bot already caught. It rarely belongs in the posted review at all —
-     mention a bot only when the agreement or disagreement actually changes the
-     verdict.
-   - Keep our inline comments focused on things the automated tools didn't catch
+       gh pr view <number> --json number,title,body,author,baseRefName,headRefName,url,assignees
 
-6. **Draft the review**:
+   The assignee is our advisory "I'm reviewing this" lock. If someone other
+   than us holds it, stop and surface them by name — ask whether to pile on or
+   back off rather than silently claiming over them. The author self-assigning
+   is not a review claim; note it and carry on. If it is unassigned or already
+   us, take it with `gh pr edit <number> --add-assignee @me` before reading
+   deeply, so the claim is visible early.
 
-   **Before you draft: whose take is this?** The review carries the *user's*
-   verdict in the *user's* voice — not your analysis with their name on it.
-   The best seed is one line from them: scan the conversation for what they
-   actually think ("clean, love it," "this one worries me," "slotted in
-   nicely"). That line sets the call and the voice; you enhance it with the
-   findings and operational notes that earn their place. Human seeds, agent
-   enhances. If the conversation *doesn't* carry their take — you went deep
-   in mechanics and they never tipped the verdict — **ask for it before
-   drafting; don't infer it.** A real "easy peasy, slotted right in" from
-   them is more signal than the most careful "we went spelunking and it held
-   up" you could write on their behalf.
+3. **Get the branch local.** `gh pr diff <number>` for the diff, and check the
+   branch out if we are not on it. Reading whole files matters — the diff alone
+   will not let you trace a call chain, and tracing call chains is the job.
 
-   **Then a gate — one rule, run before you write a word and again over
-   every sentence you wrote. First drafts fail it constantly; that's the
-   whole reason it's up here.**
+## Phase 1 — Orientation
 
-   **The rule: a review says only what the author can't already see from
-   their own diff.** They wrote the change, so they know what it does. What
-   they *don't* have is the verdict, the bug you found, the gap they missed,
-   the operational state (needs a rebase, we're taking the pen). That's the
-   review. Recapping the change, reporting that you traced it, telling them
-   you're satisfied — that's either something they already have or something
-   about you, and neither one goes in.
+The user is building their own model of the change. Your job is to remove the
+tedium from that, not to do it for them.
 
-   Two places drafts fail it, both where proof-of-work sneaks back:
-   - **Confidence is the verdict, not a sentence.** "Approved" already says
-     you looked and you're satisfied. The disguises are the tell: if the
-     subject of a sentence is *you* — "I confirmed," "traced this end to
-     end," "looked hard at it," "I'm confident," "the design's the right
-     shape" — it's about your work, not their gap. Make the subject the code
-     ("X holds") or cut the sentence. This is the single most common thing
-     the user deletes, and it keeps its disguises: "looked closely" and
-     "spent real time on this" are the same move in humbler clothes.
-   - **Narrow, not terse.** Cut narration to zero, but keep every real
-     signal: a bug, a rebase requirement, "the two bot nits are legit but
-     optional." Each earns its sentence. Narrow means only-the-load-bearing,
-     not shortest-possible — don't compress a useful pointer out chasing
-     brevity.
+### Hand over the map
 
-   The trap that outlives knowing all this: you build the review by
-   **shrinking the walkthrough you gave the user.** That walkthrough is
-   *supposed* to be thick with "I traced / I confirmed" — correct, for them.
-   But compression keeps the frame, so the proof-of-work rides along. Don't
-   shrink it; re-derive the review from a blank page and the rule.
+Open with facts they would otherwise spend ten minutes assembling:
 
-   Then the operational calls:
-   - **Propose the verdict, don't offer a menu.** State the call and the
-     leanest form it takes (usually APPROVE, often top-level-only). Fork into
-     options only when genuinely torn, and even then lead with your pick.
-     Don't reach for REQUEST_CHANGES or an approve-then-flip dance unless
-     there's a real blocker.
-   - **Verify each finding now, not in step 7.** A claim doesn't enter the
-     draft until you've traced it to a real runtime path (the reachability
-     test in step 7). We've drafted whole inline comments whose proposed fix
-     couldn't even work — that verification belongs before drafting, so
-     you're the reviewer and the user isn't left being the verifier.
-   - **Default to two-person-team informal.** Plain, conversational, a little
-     warm. If it reads like a corporate PR review, it's wrong.
-   - **Don't invent context.** No on-call rotation, team size, or process you
-     don't actually know. When unsure, leave it out.
+- What the change is trying to do, in the author's own framing, and who wrote it
+- Scope: files, rough size, how it groups
+- Structural facts: what is new versus edited, what got deleted, whether the
+  base is a stacked branch or trunk
+- CI state, and whether any bot has reviewed the current head
+- **On a re-review**: what has landed since our last review, and what the
+  author said in reply to it. This is the most valuable map you can hand over
+  and it is pure fact — commits and replies, not your assessment of them.
 
-   Then draft:
-   - **Lead with the verdict.** The first sentence is the most load-bearing
-     finding or the overall call, not a roll call ("Claude and Paul here")
-     or a methodology recital ("we traced..."). Attach evidence to claims
-     instead of front-loading it: "auth chain fails closed everywhere
-     (traced end to end, including the Ctrl-C flush path)" beats "we
-     traced the auth chain end to end. It's solid."
-   - **Sign off with `--p+🤖`.** That's the standing marker that Claude was
-     involved; no per-review announcement needed. Mention Claude by name in
-     the body only when attribution is doing real work for a specific
-     judgment (e.g., "Claude rebuilt the token model from scratch before
-     we reviewed").
-   - **Pronouns and voice**: The review posts under the user's GitHub account
-     and should read as collaborative: Claude's analysis plus the user's
-     judgment. If the user expressed admiration, excitement, or concerns
-     during the walkthrough, that should come through in the prose.
-   - Draft a short **top-level comment** summarizing the review. Default
-     shape: a few sentences. When there are multiple inline comments, add
-     a triage line so the author knows where to start (e.g., "inline
-     notes below; the org-boundary one is the only one with teeth").
-     Long-form architectural discussion belongs in inline comments,
-     follow-up tickets, or a direct conversation — not the review body.
-     A longer top-level is fine only when every paragraph is verified
-     and load-bearing.
-   - **A worked approve, the common case.** You traced for an hour; the post
-     is still short, and that's correct — the tracing became your confidence,
-     not your prose. A draft that fails the rule:
-     > Traced this end to end and it's solid. The helper is the right place
-     > to hang the policy, all three call sites route through it, and I
-     > confirmed the guard covers the only name that matters. Pool logic and
-     > the frozen hash check out. The two nits the bot flagged are worth a
-     > look. Needs a rebase.
+### The line between map and analysis
 
-     Every sentence there is either about the reviewer ("traced," "I
-     confirmed," "check out") or the author's own change handed back to them
-     ("the helper is the right place," "three call sites"). Strip both, keep
-     only what they can't see from their diff — the verdict, the operational
-     state, and the one pointer that saves them time:
-     > LGTM. Needs a rebase, it's conflicting with main. The two nits biscuit
-     > left inline are both legit but optional, so nothing blocking.
-     >
-     > `--p+🤖`
+Counts, structure, and what the author asserts are all map. Anything carrying
+an implied *look here* is analysis, and analysis is parked.
 
-     That's narrow, not terse: the bot-nit pointer stays, because "where to
-     look and that it's safe to skip" is a real signal the author doesn't
-     have — while the tracing and the recap are gone. A load-bearing finding
-     earns a sentence; a clean approve rarely earns more than three.
-   - Draft **inline comments** for specific lines, formatted as:
+- Map: "74 files, base is a stacked branch, the exec proxy dropped from 383
+  lines to 124."
+- Parked: "the replay buffer is new machinery and worth a hard look."
+
+The test is whether you are volunteering judgment. If you are, park it.
+
+### Be on call
+
+Then stop talking and answer things. The user reads; you trace. Where does
+this field get set, does this path ever run, who else writes this, what did
+this look like before. Go read the actual source, run a repro, check the
+adjacent subsystem. This is where most of the value is, and almost none of it
+will appear in the posted review.
+
+### Holding back, without being precious about it
+
+While the user orients, noticing is your job and announcing is not. But do not
+sandbag either. When you find something real, name it in a few words with a
+location and stop there:
+
+> There's something in `run_detach.go`'s `Read` I want to show you later.
+
+That is enough for them to pull it forward if it bears on what they are already
+looking at, and short enough not to hijack their read. Do not deliver the
+mechanism, the evidence, or the severity unless asked.
+
+Keep a running count so you can say what is parked when phase 2 opens. Do not
+turn the hold-back into a ritual — if the user asks what you have, tell them.
+
+### Ending phase 1
+
+The user closes it. They may say they are oriented, start dictating comments,
+or ask what you parked. Any of those moves you to phase 2. Do not prompt for it
+more than once.
+
+## Phase 2 — Composition
+
+### The user writes; you verify
+
+They call the verdict and write the comments. Your work here is to make sure
+nothing false goes out under their name.
+
+**Verify every claim before it posts — theirs and yours.** A claim earns its
+place only when you have traced it to a real runtime path. It is not enough
+that a problem exists in the code's type-space; check whether any path reaches
+it. A guard for an unreachable case is speculative code, and a comment
+describing an observed problem that cannot happen is just wrong — worse when it
+goes out in the user's voice. Watch for the shape that catches people: an error
+log whose condition exists in the types while no production path produces it.
+
+Say so plainly when a claim does not survive, and say it *before* posting. This
+is the single most useful thing you do in phase 2 — the user supplies the
+instinct, you supply the patience to check it.
+
+**Check each comment against the current code**, not just the diff. Multi-commit
+PRs fix things in later commits; read the file at the target line and confirm
+the comment still applies.
+
+**Triage bot overlap.** Fetch existing comments with
+`gh api repos/{owner}/{repo}/pulls/{number}/comments` and tell the user where a
+bot already caught the same thing, so they are not restating it. This is mostly
+for our own triage — it rarely belongs in the posted review, and a bot is worth
+naming only when the agreement or disagreement changes the verdict.
+
+**Release what you parked**, now that it is additive to their read rather than a
+substitute for it.
+
+### Comment format
+
+The user's words go out verbatim, first, unedited. Where detail helps, append
+yours below a separator, marked with 🤖:
 
 ~~~markdown
-**File**: `path/to/file.go` (line 74)
+**File**: `path/to/file.go` (line 99)
 
-Your comment text here...
+A lone Ctrl-P returning `(0, nil)` here kills stdin for the rest of the session.
+
+---
+
+🤖 `stream.ServeReader` runs unbatched on this path, so `serveReader.Recv`
+ships `buf[:0]`, and `rscReader.Read` turns a zero-length value into `io.EOF`
+(`pkg/rpc/stream/stream.go:84`). The input pump's `io.Copy` ends there and
+never restarts.
 ~~~
 
-   - Use a single line number (not ranges) - this is what the API needs
+🤖 is the house convention for agent-authored content in review threads.
 
-7. **Verify before posting** (final re-check — the reachability work should
-   already be done per the step 6 gate; this pass is the last look against the
-   current code before it goes out):
-   - **Check each inline comment against the actual current code** (not just
-     the diff). Multi-commit PRs may have fixed issues in later commits.
-     Read the file at the target line to confirm the comment still applies.
-   - **Verify a flagged issue can actually occur at runtime, not just that it
-     exists in the code's type-space.** Before raising (or worse, contributing
-     a fix for) a problem, trace whether any real path reaches it. We once
-     drafted and tested a fix for a "recurring error log" that couldn't fire
-     under the actual single-subnet allocator — the condition existed in the
-     types but no production path produced it. A guard for an unreachable case
-     is speculative code, and a review comment claiming an observed problem
-     that can't happen is just wrong.
-   - Confirm the event type with the user. Almost always either **APPROVE**
-     or **REQUEST_CHANGES** — never COMMENT (it's a non-action). Default to
-     APPROVE with comments; we trust authors to address or consciously skip
-     feedback. Use REQUEST_CHANGES only when there's a specific blocking
-     concern, and clearly explain what needs to be resolved.
-   - **If we're taking the pen** (pushing commits to the branch), the
-     review that announces it should be REQUEST_CHANGES from the start so
-     the mechanical state matches the intent — no approve-then-flip dance.
-     Flip to APPROVE once our commits have landed.
+Rules for the append:
 
-8. **Post when ready**:
-   - When I say to post, use `gh api` to submit:
+- **Verbatim by default.** Post exactly what the user wrote. Do not tighten,
+  reorder, or improve it. If a note reads as shorthand only they can parse,
+  ask whether to expand it — do not expand it on your own initiative.
+- **Append only when it carries weight**: a trace, a file:line citation, repro
+  output, a cross-reference to a comment elsewhere in the codebase. Not a
+  restatement of what they just said in more words.
+- **No append is the common case.** A comment that stands on its own gets
+  nothing.
+- Never let the 🤖 section contradict or hedge the user's claim. If you think
+  they are wrong, say so to them before posting, not underneath them in public.
+
+### Verdict and posting
+
+The verdict is the user's call. Almost always **APPROVE** or
+**REQUEST_CHANGES**, never COMMENT (a non-action). Default to APPROVE with
+comments — we trust authors to address or consciously skip feedback. Save
+REQUEST_CHANGES for a specific blocking concern. If we are taking the pen and
+pushing commits ourselves, the review that announces it should be
+REQUEST_CHANGES from the start so the mechanics match the intent, flipping to
+APPROVE once our commits land.
+
+**Sign off with `--p+🤖`.** That is the standing marker that Claude was
+involved; no per-review announcement is needed.
+
+**Don't invent context.** No on-call rotation, team size, or process you do not
+actually know — this applies to anything you append.
+
+Post with `gh api`:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{number}/reviews \
   --method POST --input - << 'EOF'
 {
   "body": "Top-level comment here",
-  "event": "APPROVE",  # or "COMMENT" or "REQUEST_CHANGES"
+  "event": "APPROVE",
   "comments": [
     {"path": "path/to/file.go", "line": 74, "body": "Inline comment..."}
   ]
@@ -242,50 +195,42 @@ gh api repos/{owner}/{repo}/pulls/{number}/reviews \
 EOF
 ```
 
-**Tone: respect the reader.** Every choice in the review serves the
-person who has to act on it. That cashes out three ways:
+Use a single line number, not a range — that is what the API takes. Write the
+payload to a file rather than inlining it when the bodies are long.
 
-- **Don't make claims we haven't verified.** "We traced the auth chain"
-  means we traced it. If something is a hunch or an open question, frame
-  it as one. Confidence labels help the reader triage; they aren't
-  hedging.
-- **Don't write three sentences when one will do.** But don't
-  over-compress either: if meaning or intent requires decoding, the
-  compression failed just as badly as padding would have. The test is a
-  single read: the author should come away knowing what we think and
-  what to do about it.
-- **Say operational things plainly.** "We're going to push commits,
-  hold off merging" is a coordination signal, not prose. It goes in the
-  first sentence, in plain words, never inside a joke or metaphor.
-- **Most of the analysis is for you, not the review.** The depth you go
-  to build confidence — tracing call chains, sizing a concurrency
-  question, drafting a fix you then abandon — usually earns no words in
-  the post. Trace deep, post narrow. An hour-long review and a
-  five-minute one can both correctly land as "LGTM"; the work shows up as
-  the *confidence* behind the verdict, not as paragraphs proving you did
-  it. (This is the gate's rule, viewed from the effort side: re-derive the
-  review from the blank page, don't shrink your walkthrough into it.)
+## Input channels
 
-Friendly, fun, and informal lives in how individual sentences are
-phrased, not in how many there are. Genuine enthusiasm when something's
-clever. Humor is a garnish (a line, an emoji), never the structure;
-extended bits and themes are out — we once lost a real "we're taking
-the pen" signal inside one and collided with the author's own pushes.
+**Recto, when it is up.** The user marks up the diff and `recto comments`
+drains their notes with path and line already attached. Load the `recto` skill
+for the mechanics. Two things carry over from it: comments are delivered
+exactly once, so only drain when you are ready to act on them; and `recto
+comment` is the user's tool, not yours — never write notes into the set you
+are about to drain.
 
-Use "we" in the spirit of collective code ownership (e.g., "we could
-handle..." not "you should..."). Skip nitpicks.
+**Conversation, otherwise.** The user says the comments; you keep a running
+ledger and ask for an anchor when the target is ambiguous. Read the assembled
+review back before posting.
 
-When drafting, distill the user's voice from the walkthrough discussion
-and let it come through in the review. If they were excited about
-something, that excitement should land. If they were skeptical, that
-skepticism should land. The review is the user's voice amplified by
-Claude's analysis — not Claude's voice with the user's name on it.
+## Other outputs
 
-Focus on:
-- Questions that clarify intent
-- Potential issues or edge cases
-- Suggestions worth making
+A review is not only comments.
 
-If tracing already answered a question, don't pose it as a question —
-that makes the author re-derive what you already know. State it as an
-observation, or if it just confirms things are fine, cut it.
+- **Fixable things can be commits.** Docs gaps, small bugs, missing test cases
+   — offer to contribute to the branch rather than only commenting. Pause the
+  review, do the work, resume. When the review references our own commits,
+  frame them as "we contributed," not as feedback on the author's code.
+- **Follow-up tickets are a natural artifact.** Refactoring opportunities,
+  coverage gaps, future improvements — offer to file them.
+
+## What you do not do
+
+- Write the user's verdict, or infer it from how the conversation felt
+- Volunteer analysis during phase 1
+- Edit, tighten, or "improve" their words on the way to posting
+- Post a claim you have not traced
+- Pad the 🤖 append to look thorough
+
+Most of your work never reaches the post, and that is correct. An hour of
+tracing and five minutes of it can both end as a two-sentence approve; the
+tracing becomes the confidence behind the user's verdict, not paragraphs
+proving it happened.
