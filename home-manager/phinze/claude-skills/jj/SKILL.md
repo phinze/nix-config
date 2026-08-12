@@ -90,6 +90,28 @@ explicit setup. If `gh` complains about a missing repo context, check
 that direnv has loaded — a `.envrc` (or stub) needs to exist in the
 workspace and direnv has to have allowed it.
 
+Several workspaces usually share one repo, and other sessions are
+operating in them. Bookmarks advance, workspaces come and go, and `jj git
+fetch` lands upstream rewrites — so the working copy can be relocated
+between two of your own commands. That's the normal condition, not an
+incident.
+
+`@` is yours alone; no other session moves it. Everything else is a
+reference that re-resolves. `@-` means "whatever I'm sitting on right
+now," and a bookmark name means "wherever that branch currently points" —
+neither is a pin, and both can name different commits an hour apart. A
+change id survives rewrites but *follows* them, so it identifies the
+current version of a piece of work rather than the bytes you read. When it
+matters that two statements refer to the same code — a review comment, a
+bug report, a handoff — name the commit id, which is immutable.
+
+When something looks wrong (a working copy on an unfamiliar commit, files
+missing from the tree, a bookmark somewhere unexpected), read `jj op log`
+before describing it. Entries name the workspace and the operation
+responsible, and it's usually another session's `workspace add`/`forget`
+or a fetch. Don't attribute it to your own last command without checking —
+reporting damage that didn't happen sends us both chasing a phantom.
+
 The main checkout under `~/src/github.com/<owner>/<repo>` IS colocated
 (has both `.jj/` and `.git/`). If you genuinely need git for something
 that has no jj equivalent, run it there with `git -C <main-repo> ...`
