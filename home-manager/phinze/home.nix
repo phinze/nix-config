@@ -194,13 +194,16 @@
     ++ lib.optionals pkgs.stdenv.isLinux [
       osc-copy # Provides pbcopy/xclip/xsel via OSC 52 for clipboard access through SSH/tmux
     ]
-    # Private packages whose flake inputs need gh auth to fetch. Included by
-    # default. The bootstrap (before gh is authenticated) skips them with
-    # SKIP_PRIVATE_PACKAGES=1, but builtins.getEnv only reads the environment
-    # under impure eval, so the bootstrap MUST also pass --impure. Under the
-    # pure eval that nh/darwin-rebuild do normally, getEnv returns "" and the
-    # default (include) holds.
-    ++ lib.optionals ((builtins.getEnv "SKIP_PRIVATE_PACKAGES") != "1") [
+    # Packages from private repos. These need an authenticated gh for the
+    # git+https flake inputs to fetch, which BOOTSTRAP.md makes step one on a
+    # fresh machine. There used to be a SKIP_PRIVATE_PACKAGES escape hatch
+    # here for the pre-auth case; it never worked, because `pim` (above) and
+    # three refs in claude-code.nix pull private inputs unconditionally, so
+    # eval died on pim-stuff whether or not the flag was set. Gating those too
+    # would just move the rot — the hatch is a code path that runs once every
+    # few years and is therefore always broken when you reach for it. Auth
+    # first instead; it's one `nix run nixpkgs#gh -- auth login`.
+    ++ [
       inputs.multipass.packages.${pkgs.stdenv.hostPlatform.system}.default # GCP Workload Identity Federation auth CLI
       inputs.iso.packages.${pkgs.stdenv.hostPlatform.system}.default # Isolated Docker environment
     ]
@@ -702,7 +705,7 @@
       github.user = "phinze";
       push.default = "current";
       init.defaultBranch = "main";
-      safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nixos-config";
+      safe.directory = "${config.home.homeDirectory}/src/github.com/phinze/nix-config";
       push.autoSetupRemote = true;
       ghq.root = "~/src";
       fetch.prune = true;

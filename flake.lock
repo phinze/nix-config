@@ -114,22 +114,6 @@
         "type": "github"
       }
     },
-    "claude-plugin-coderabbit": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1776058097,
-        "narHash": "sha256-rfLJczlF+qB/qdJb7OhWmzhVmVdun58gsvw6Be6Pe/Q=",
-        "owner": "coderabbitai",
-        "repo": "claude-plugin",
-        "rev": "2d194b823b8466714992186e7d182acbbc6735f0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "coderabbitai",
-        "repo": "claude-plugin",
-        "type": "github"
-      }
-    },
     "claude-plugin-interface-design": {
       "flake": false,
       "locked": {
@@ -888,7 +872,6 @@
         "belowdeck": "belowdeck",
         "camlink-fix": "camlink-fix",
         "claude-code-nix": "claude-code-nix",
-        "claude-plugin-coderabbit": "claude-plugin-coderabbit",
         "claude-plugin-interface-design": "claude-plugin-interface-design",
         "claude-plugin-miren-skills": "claude-plugin-miren-skills",
         "claude-plugin-miren-team": "claude-plugin-miren-team",

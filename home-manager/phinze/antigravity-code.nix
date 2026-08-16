@@ -158,9 +158,6 @@ let
         };
       };
     };
-    "plugins/coderabbit/plugin.json" = {
-      name = "coderabbit";
-    };
     "plugins/miren/plugin.json" = {
       name = "miren";
     };
@@ -222,14 +219,6 @@ in
   # mcp_config.json, lsp_config.json, hooks.json) are installed as mutable files via the
   # activation script below. Skill and agent directories remain HM-managed
   # symlinks since agy treats them as read-only inputs.
-
-  # coderabbit plugin: skills + agents directories
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/agents".source =
-    "${inputs.claude-plugin-coderabbit}/agents";
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/code-review".source =
-    "${inputs.claude-plugin-coderabbit}/skills/code-review";
-  home.file.".gemini/antigravity-cli/plugins/coderabbit/skills/review/SKILL.md".source =
-    "${inputs.claude-plugin-coderabbit}/commands/review.md";
 
   # miren plugin: skills + agents directories
   home.file.".gemini/antigravity-cli/plugins/miren/agents".source =

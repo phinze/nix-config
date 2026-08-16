@@ -12,7 +12,15 @@
     inputs.belowdeck.darwinModules.default
   ];
 
+  # macOS keeps three separate names and nix-darwin maps one option to each:
+  # hostName -> HostName, computerName -> ComputerName, localHostName ->
+  # LocalHostName. Declaring only hostName left the other two at whatever Setup
+  # Assistant guessed, which a wipe makes visible. Tailscale reads the machine
+  # name when it registers a node and keeps it thereafter, so setting all three
+  # here means a rebuilt machine joins the tailnet correctly named.
   networking.hostName = "phinze-mrn-mbp";
+  networking.computerName = "phinze-mrn-mbp";
+  networking.localHostName = "phinze-mrn-mbp";
 
   # Cam Link 4K auto-fix on wake
   # Automatically resets the camera via USB power cycle when it becomes

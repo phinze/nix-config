@@ -218,7 +218,6 @@ in
   # Plugins whose upstream dir is already self-contained — symlink straight in.
   home.file.".claude/skills/frontend-design".source =
     "${inputs.claude-plugins-official}/plugins/frontend-design";
-  home.file.".claude/skills/coderabbit".source = inputs.claude-plugin-coderabbit;
   home.file.".claude/skills/miren".source = "${inputs.claude-plugin-miren-skills}/plugins/miren";
   home.file.".claude/skills/miren-team".source = inputs.claude-plugin-miren-team;
 

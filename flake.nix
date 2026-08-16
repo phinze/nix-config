@@ -110,10 +110,6 @@
       url = "github:anthropics/claude-plugins-official";
       flake = false;
     };
-    claude-plugin-coderabbit = {
-      url = "github:coderabbitai/claude-plugin";
-      flake = false;
-    };
     claude-plugin-miren-skills = {
       url = "github:mirendev/miren-skills";
       flake = false;
