@@ -214,7 +214,6 @@ in
   ];
 
   homebrew.masApps = {
-    "Numbers" = 409203825;
     "Xcode" = 497799835;
     "Flighty" = 1358823008;
   };

@@ -40,9 +40,19 @@ sudo scutil --set HostName phinze-mrn-mbp
 
 ## 1. macOS Setup Assistant, and the old tailnet node
 
-Sign into iCloud, and sign into the App Store specifically. `homebrew.masApps`
-(Xcode, Numbers, Flighty) fails activation when the App Store is not signed in,
-and the failure does not name that as the cause.
+Sign into iCloud, and sign into the App Store specifically, since `mas`
+installs `homebrew.masApps` during the switch and needs an account.
+
+If one of them fails with
+
+    Error: No apps found in the App Store for ADAM ID <id>
+
+the ID has most likely been retired rather than anything being wrong with the
+account. Check `https://apps.apple.com/us/app/id<id>`: a 404 means it is dead.
+Apple folds apps into new universal listings and drops the old Mac-only IDs, so
+an entry that worked for years can stop resolving. Already-installed titles
+report `Using <name>` and are skipped, so this only surfaces on a machine that
+actually has to download the app.
 
 If this machine is already in the tailnet, delete the old node from the
 Tailscale admin console now. The name is otherwise taken when the new machine
@@ -60,8 +70,9 @@ Command Line Tools: a headless `softwareupdate -i`, falling back to
 way. That also provides `/usr/bin/git` for step 6.
 
 nix-darwin's `homebrew.*` options manage the Brewfile but do not install
-Homebrew. Without it, system activation fails partway through, after it has
-already made changes.
+Homebrew. Without it, activation prints `error: Homebrew is not installed,
+skipping...` and carries on, so the switch reports success and you are left
+with none of the casks. It does not fail, which makes it easy to miss.
 
 ## 3. 1Password, and its SSH agent
 
@@ -150,9 +161,14 @@ sudo ./result/sw/bin/darwin-rebuild switch --flake .
 Prefer this to `sudo nix run nix-darwin -- switch`, which resolves an unpinned
 nix-darwin that need not match what the config expects.
 
-This builds the world and installs around forty Homebrew casks, so give it
-time. Files you wrote by hand that home-manager also manages are moved aside
-rather than clobbered: `backupFileExtension = "nix-backup"`, so `~/.ssh/config`
+The build is pure nix and touches Homebrew not at all; it only produces the
+generated Brewfile. Casks, formulae and Mac App Store apps are installed by
+`brew bundle`, which nix-darwin runs from an activation script during the
+switch. So expect the long tail of downloads to arrive in the second command,
+not the first.
+
+Files you wrote by hand that home-manager also manages are moved aside rather
+than clobbered: `backupFileExtension = "nix-backup"`, so `~/.ssh/config`
 becomes `~/.ssh/config.nix-backup`.
 
 Every rebuild after this one is `nh darwin switch .`.
