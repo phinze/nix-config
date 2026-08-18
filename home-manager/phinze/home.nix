@@ -776,6 +776,16 @@ in
     source = ./finicky.ts;
   };
 
+  # ssh matches agent keys by public key, not by comment, so IdentitiesOnly
+  # needs these on disk.
+  home.file.".ssh/pub/phinze-mrn-mbp.pub".text = ''
+    ${inputs.nix-private.data.sshKeys.laptop}
+  '';
+
+  home.file.".ssh/pub/miren.pub".text = ''
+    ${inputs.nix-private.data.sshKeys.miren}
+  '';
+
   programs.ssh = {
     enable = true;
 
@@ -817,6 +827,11 @@ in
         # At 30s against the ServerAliveCountMax of 3 above, a dead master
         # tears itself down in ~90s and the next connection just reconnects.
         ServerAliveInterval = 30;
+
+        # One key per host instead of the agent's whole keyring. The fleet all
+        # takes this one; blocks above override where a host wants otherwise.
+        IdentitiesOnly = lib.mkDefault true;
+        IdentityFile = lib.mkDefault "~/.ssh/pub/phinze-mrn-mbp.pub";
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
@@ -843,6 +858,12 @@ in
 
       "pixiu" = {
         User = "root";
+      };
+
+      # IdentityFile accumulates rather than overrides, so these hosts offer
+      # this key and the "*" default both.
+      "${inputs.nix-private.data.sshHosts.miren}" = {
+        IdentityFile = "~/.ssh/pub/miren.pub";
       };
     }
     // lib.optionalAttrs pkgs.stdenv.isDarwin {
