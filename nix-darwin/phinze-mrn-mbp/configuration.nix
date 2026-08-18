@@ -38,8 +38,7 @@
     enable = true;
     settings = {
       weather = {
-        lat = "41.94358";
-        lon = "-87.72418";
+        inherit (inputs.nix-private.data.location) lat lon;
       };
       homeassistant = {
         server = "https://homeassistant.versa.inze.ph/";

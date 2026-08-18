@@ -548,6 +548,21 @@
         "type": "github"
       }
     },
+    "nix-private": {
+      "locked": {
+        "lastModified": 1787167936,
+        "narHash": "sha256-f8qFkRf3b7+Xmd6dAcHcBGdUBA2B3UuGwxItLCx/mBY=",
+        "ref": "refs/heads/main",
+        "rev": "281f5f3e0947c59480122463cea2b70c3860e1f4",
+        "revCount": 1,
+        "type": "git",
+        "url": "https://github.com/phinze/nix-private.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/phinze/nix-private.git"
+      }
+    },
     "nixos-hardware": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
@@ -885,6 +900,7 @@
         "multipass": "multipass",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
+        "nix-private": "nix-private",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-small": "nixpkgs-small",

@@ -76,6 +76,9 @@
     pim-stuff.inputs.nixpkgs.follows = "nixpkgs-unstable";
     pim-stuff.inputs.flake-utils.follows = "flake-utils";
 
+    # Keys, hostnames and coordinates kept out of this public repo.
+    nix-private.url = "git+https://github.com/phinze/nix-private.git";
+
     # Pinned by hand, deliberately. This was release-tracked for a while on the
     # theory that tags would be safe where main wasn't, but that theory died:
     # v18.19.0 fails exactly the way main did, with an unresolved libssl.so.3.
