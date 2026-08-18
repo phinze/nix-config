@@ -115,10 +115,6 @@
       PermitRootLogin = "no";
       PasswordAuthentication = false;
     };
-    extraConfig = ''
-      # For opener
-      StreamLocalBindUnlink yes
-    '';
   };
 
   # User configuration

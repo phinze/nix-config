@@ -10,6 +10,10 @@
   nodeConfig ? { },
   ...
 }:
+let
+  # First port above Linux's default ephemeral range (32768-60999).
+  bankshotBridgePort = 61000;
+in
 {
   # You can import other home-manager modules here
   imports = [
@@ -812,7 +816,11 @@
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         RemoteForward = [
           {
-            bind.address = "/home/phinze/.bankshot.sock";
+            # A loopback TCP listener disappears cleanly with its SSH
+            # transport. Competing non-multiplexed connections can fail to
+            # bind it, but cannot unlink the long-lived master's listener.
+            bind.address = "127.0.0.1";
+            bind.port = bankshotBridgePort;
             host.address = "/Users/phinze/.bankshot.sock";
           }
         ];
@@ -877,6 +885,13 @@
     enable = true;
     enableXdgOpen = true;
 
+    # The Mac daemon keeps its private Unix socket. Linux reaches it through
+    # the race-safe loopback TCP endpoint forwarded by SSH above.
+    settings = lib.optionalAttrs pkgs.stdenv.isLinux {
+      network = "tcp";
+      address = "127.0.0.1:${toString bankshotBridgePort}";
+    };
+
     # Enable the bankshot monitor
     daemon = {
       enable = true;
@@ -891,6 +906,7 @@
     monitor = {
       pollInterval = "1s";
       gracePeriod = "30s";
+      ignorePorts = [ bankshotBridgePort ];
       ignoreProcesses = [
         "sshd"
         "systemd"
