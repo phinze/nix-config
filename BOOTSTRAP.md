@@ -216,7 +216,36 @@ None of this is declarable:
   it always reports the Stream Deck as not detected while the daemon holds the
   HID device.
 - **Colima**: `colima start` on first use, or let the launchd agent handle it.
-- **atuin**: `atuin login` to sync shell history.
+- **atuin**: `atuin login` to sync shell history, unless you restored
+  `~/.local/share/atuin` from a backup. That directory holds `key` and
+  `session`, so the login comes back with it.
+
+### Restore app preferences before the first launch
+
+If you are restoring from a backup, ask two questions per app, in order.
+
+First, does it sync its own settings from the cloud? Raycast does, and pushing
+a stale local copy at a cloud-synced app only picks a fight with the sync.
+Sign in and let it restore itself.
+
+If it does not, get its preferences in place *before* you launch it the first
+time. macOS caches preferences in `cfprefsd` on behalf of running processes,
+so an app you have already opened is holding a fresh empty config in memory
+and writes it over your restored file when it quits. Restoring first means it
+comes up configured, and the permission grants below are all that is left.
+
+Use `defaults import <domain> <file>` rather than copying the plist into
+`~/Library/Preferences`, so `cfprefsd` picks the values up instead of
+caching over them.
+
+Licences ride along in those files, which is the part worth knowing before you
+go hunting through old email: iStat Menus keeps its licence and its whole
+menubar layout in `com.bjango.istatmenus.menubar.7`, and CleanShot keeps its
+`activationKey` in `pl.maketheweb.cleanshotx`. ScreenFlow's is machine-bound
+and time-limited, so that one really does need reactivating.
+
+An app that was never launched has no live state to clobber, which makes this
+free — but only until you open it. Do the restore pass first.
 
 Once the switch has landed, `nix profile remove gh`. Home-manager provides it
 from then on.
