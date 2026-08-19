@@ -1,22 +1,27 @@
 ---
 name: review-pr
-description: Review someone else's pull request, with the user writing the comments and you supporting. Claim it with the assignee mutex, hand over a map of the change, answer what the user asks while they orient, then verify their claims and post what they wrote. Use when asked to review a PR, look over someone's changes, or when handed a PR number or URL to review.
+description: Review someone else's pull request through independent agent understanding, shared orientation, and joint critique, with exact comments co-authored in Recto. Use when asked to review a PR, inspect someone's changes, or work from a PR number or URL.
 ---
 
 # PR Review Skill
 
-**The user writes the review. You do the mechanics and the digging.**
+**The user owns the judgment. The user and agent write the review together in
+Recto.**
 
-That division is the whole design. You are very good at tracing a call chain
-across four files and proving whether a thing can actually happen; you are bad
-at having an opinion in someone else's voice. So the user's words go out, and
-yours support them.
+That division is the whole design. You are good at tracing a call chain across
+four files and proving whether a thing can happen. The user supplies taste,
+context, and the final verdict. Neither person has to write a complete comment
+alone. During composition, both edit the same exact public-facing Markdown in
+Recto until it says what they mean.
 
-Work in two phases. **Phase 1 is orientation**: the user builds their own read
-of the change, and you are a resource they pull from. **Phase 2 is
-composition**: they call the verdict and write the comments, you verify and
-post. Phase 1 ends when *the user* says they are oriented, not when you think
-the walkthrough is complete.
+Work in three passes. **First, understand the change independently. Second,
+help the user build their own understanding. Third, critique it together and
+compare notes before composing comments.** This sequencing keeps explanation
+separate from evaluation without asking the agent to stop noticing things.
+Candidate concerns found during the first pass stay hypotheses until the joint
+critique begins.
+
+Recto holds the working review. GitHub receives the approved artifact.
 
 ## Setup
 
@@ -26,199 +31,271 @@ Do this quietly and quickly. It is plumbing, not review.
    `gh pr view --json number,title` for the current branch's PR, and if that
    fails, `gh pr list` and ask.
 
-2. **Check the mutex, then claim it.** Fetch metadata including assignees:
+2. **Check the mutex, then claim it.** Fetch metadata including assignees and
+   the exact head:
 
-       gh pr view <number> --json number,title,body,author,baseRefName,headRefName,url,assignees
+       gh pr view <number> --json number,title,body,author,baseRefName,headRefName,headRefOid,url,assignees
 
    The assignee is our advisory "I'm reviewing this" lock. If someone other
-   than us holds it, stop and surface them by name — ask whether to pile on or
+   than us holds it, stop and surface them by name. Ask whether to pile on or
    back off rather than silently claiming over them. The author self-assigning
    is not a review claim; note it and carry on. If it is unassigned or already
    us, take it with `gh pr edit <number> --add-assignee @me` before reading
    deeply, so the claim is visible early.
 
-3. **Get the branch local.** `gh pr diff <number>` for the diff, then read whole
-   files out of the working tree — the diff alone will not let you trace a call
-   chain, and tracing call chains is the job.
+3. **Get the branch local.** Fetch the diff with `gh pr diff <number>`, then
+   read whole files out of the working tree. The diff alone will not let you
+   trace a call chain, and tracing call chains is the job.
 
-   Assume you are in a rig already sitting on the PR's head, because that is
-   where this almost always runs. Confirm it rather than checking anything out:
-   compare `@-`'s commit id to `headRefOid`. Matching means you are there and
-   there is nothing to do. Only if they differ, or you are outside a rig, is
-   there a branch to switch to — and say so before switching a rig's workspace,
-   since the rig is dedicated to this task and recto and `rig pr` are pointed
-   at it. That same comparison is the one you repeat before submitting, so
-   running it here also gives you the head you will check against later.
+   Assume a rig is already sitting on the PR head, because that is where this
+   almost always runs. Confirm it rather than checking anything out: compare
+   `@-`'s commit id with `headRefOid`. Matching means there is nothing to do.
+   Only if they differ, or you are outside a rig, is there a branch to switch
+   to. Say so before switching a rig workspace, since its Recto and `rig pr`
+   are pointed at that workspace.
 
-4. **On a stacked PR, fix recto's base.** If `baseRefName` is not trunk, recto
-   is almost certainly showing the wrong diff: `recto --pr` uses
-   `fork_point(trunk() | @)`, which on a stack renders every PR below this one
-   as well. Run `recto ping` and compare its `files` count to the PR's. If they
-   disagree, tell the user to press `b` and set the base to `baseRefName` —
-   recto will not switch bases on its own, and until it does your `focus` and
-   `annotate` calls land in the wrong document.
+4. **Attach the PR to Recto.** In a rig, route through Rig and name the repo:
+
+       rig recto <repo> ping
+       rig recto <repo> pr <owner/repo#number>
+
+   Outside a rig, use `recto ping` and `recto pr` directly. Attaching fetches a
+   read-only PR snapshot and opens its overview. It does not publish anything.
+   If no Recto is listening, continue with the conversation fallback below,
+   but say that the shared draft surface is unavailable.
+
+5. **On a stacked PR, fix Recto's base.** If `baseRefName` is not trunk,
+   Recto may be showing every PR below this one. Compare `recto ping`'s `files`
+   with the PR diff. If they disagree, tell the user to press `b` and set the
+   base to `baseRefName`. Recto does not switch bases on its own, and until the
+   base is right, focus calls and draft anchors land in the wrong document.
 
 ## The head moves
 
-The repo shifts under you while you read; the `jj` skill covers that side. What
-is specific to reviewing is that the author can force-push mid-review. When the
-whole stack comes back with new commit ids and identical messages, that is a
-rebase — your reading still holds, so re-verify anchors, not conclusions. Name
-the commit id whenever you record what you checked; GitHub stamps one on every
-review comment for exactly this reason.
+Record the `headRefOid` you mapped. GitHub stamps a commit id on every review
+comment for the same reason: the author can force-push while you read.
 
-## Phase 1 — Orientation
+When a new head is a rebase with identical changes, conclusions may survive,
+but anchors still need verification. When the content changed, re-check both.
 
-The user is building their own model of the change. Your job is to remove the
-tedium from that, not to do it for them.
+Recto drafts are deliberately locked to one repository, PR number, and head.
+If the head moves while drafts exist, do not delete them merely to make
+`recto pr` succeed. Peek with `recto review`, tell the user the slate belongs
+to the old head, and decide together whether to port each body to a new anchor
+or discard it. Only then delete the old drafts, attach the new snapshot, and
+recreate the comments that still apply.
+
+## Phase 1: Agent understanding
+
+Build a causal model of the change before trying to teach or judge it. Read the
+author's framing, the whole diff, the surrounding source, relevant history and
+tests, CI, and existing reviews. Trace entry points, data and control flow,
+changed invariants, failure paths, and the behavior before and after the patch.
+
+This pass is allowed to produce candidate concerns. Treat them as private
+hypotheses, not review findings, and do not announce locations or leave
+"something here for later" teasers. Their purpose is to make the eventual
+critique informed, not to steer the user's first read.
+
+Finish this pass when you can explain the mechanism plainly and answer basic
+questions about how the change works. Tell the user you have the change mapped,
+then move into the shared walkthrough.
+
+## Phase 2: Shared understanding
+
+Help the user build their own model of the change. Your job is to remove the
+tedium from orientation, not to substitute your judgment for theirs.
 
 ### Hand over the map
 
 Open with facts they would otherwise spend ten minutes assembling:
 
-- What the change is trying to do, in the author's own framing, and who wrote it
-- Scope: files, rough size, how it groups
-- Structural facts: what is new versus edited, what got deleted, whether the
-  base is a stacked branch or trunk
-- CI state, and whether any bot has reviewed the current head
-- **On a re-review**: what has landed since our last review, and what the
-  author said in reply to it. This is the most valuable map you can hand over
-  and it is pure fact — commits and replies, not your assessment of them.
+- What the change is trying to do, in the author's framing, and who wrote it
+- Scope: files, rough size, and how the changes group
+- Structural facts: what is new, edited, or deleted, and whether the base is a
+  stacked branch or trunk
+- CI state, and whether a bot reviewed the current head
+- On a re-review, what landed since our last review and what the author said in
+  reply
 
-### The line between map and analysis
-
-Counts, structure, and what the author asserts are all map. Anything carrying
-an implied *look here* is analysis, and analysis is parked.
-
-- Map: "74 files, base is a stacked branch, the exec proxy dropped from 383
-  lines to 124."
-- Parked: "the replay buffer is new machinery and worth a hard look."
-
-The test is whether you are volunteering judgment. If you are, park it.
+Then explain the mechanism you mapped. Understanding can be analytical: "the
+replay buffer sits between the reader and decoder, stores complete frames, and
+drains on reconnect." Critique evaluates it: "the replay buffer can lose the
+last frame and should drain before reconnect." Keep the walkthrough on the
+first side of that line.
 
 ### Be on call
 
 Then stop talking and answer things. The user reads; you trace. Where does
 this field get set, does this path ever run, who else writes this, what did
-this look like before. Go read the actual source, run a repro, check the
-adjacent subsystem. This is where most of the value is, and almost none of it
-will appear in the posted review.
+this look like before. Read the actual source, run a repro, and check the
+adjacent subsystem. Most of this work should never appear in the posted
+review.
 
-### Holding back, without being precious about it
+The user closes this pass when they say they are oriented, ask to compare
+notes, start evaluating the design, or ask a question such as "is this safe?"
+An evaluative question naturally opens joint critique.
 
-While the user orients, noticing is your job and announcing is not. But do not
-sandbag either. When you find something real, name it in a few words with a
-location and stop there:
+## Phase 3: Joint critique and composition
 
-> There's something in `run_detach.go`'s `Read` I want to show you later.
+### Compare notes
 
-That is enough for them to pull it forward if it bears on what they are already
-looking at, and short enough not to hijack their read. Do not deliver the
-mechanism, the evidence, or the severity unless asked.
+Invite the user's critique slate first by default, so your hypotheses do not
+anchor their read. If they ask for your take first, give it. Then put your
+candidate concerns beside theirs all at once and sort the combined slate into
+overlap, user-only observations, agent-only observations, and genuine
+disagreements.
 
-Keep a running count so you can say what is parked when phase 2 opens. Do not
-turn the hold-back into a ritual — if the user asks what you have, tell them.
+Investigate the candidates together. Verify each against the current head,
+discard what does not survive inspection, and refine what does. Neither slate
+is privileged, and a disagreement is something to resolve with code and
+evidence rather than authorship.
 
-### Ending phase 1
+Once a point survives that comparison, compose its public wording in Recto.
 
-The user closes it. They may say they are oriented, start dictating comments,
-or ask what you parked. Any of those moves you to phase 2. Do not prompt for it
-more than once.
+### One shared slate
 
-## Phase 2 — Composition
+The exact body that may become public lives in Recto's shared review draft.
+It is session-durable, local-only, and safe to read repeatedly:
 
-### The user writes; you verify
+    recto review
 
-They call the verdict and write the comments. Your work here is to make sure
-nothing false goes out under their name.
+In a rig, use `rig recto <repo> review`. The response carries the PR identity,
+head oid, stable comment ids, anchors, bodies, and `last_editor`.
+`last_editor` coordinates concurrent editing; it is not public attribution and
+cannot tell you who authored the words already present.
 
-**Verify every claim before it posts — theirs and yours.** A claim earns its
-place only when you have traced it to a real runtime path. It is not enough
-that a problem exists in the code's type-space; check whether any path reaches
-it. A guard for an unreachable case is speculative code, and a comment
-describing an observed problem that cannot happen is just wrong — worse when it
-goes out in the user's voice. Watch for the shape that catches people: an error
-log whose condition exists in the types while no production path produces it.
+The user creates or opens a yellow shared draft with `c` on a diff line, Enter
+on its file-pane child row, or a double click in either pane. You can create
+one from the companion side:
 
-Say so plainly when a claim does not survive, and say it *before* posting. This
-is the single most useful thing you do in phase 2 — the user supplies the
-instinct, you supply the patience to check it.
+    recto review-comment 'path/to/file.go:99=Draft Markdown'
 
-**Prove it rather than arguing it.** When a contested claim reduces to pure
-logic — string formatting, hashing, comparison, ordering, parsing — copy the
-function verbatim into a scratch program and run it. A disagreement between the
-author and a bot over whether two names can collide ends the moment you paste
-in `tickRunName`, feed it two plausible inputs, and print the output. This is
-worth reaching for exactly when a thread has stalled into competing assertions:
-prose invites another round, a transcript does not. Copy the code rather than
-paraphrasing its behavior, and say in the comment that you ran it.
+Revise the same object by stable id:
 
-**Check each comment against the current code**, not just the diff. Multi-commit
-PRs fix things in later commits; read the file at the target line and confirm
-the comment still applies.
+    recto review-comment --id 7 'Revised Markdown'
 
-**Triage bot overlap.** Fetch existing comments with
-`gh api repos/{owner}/{repo}/pulls/{number}/comments` and tell the user where a
-bot already caught the same thing, so they are not restating it. This is mostly
-for our own triage — it rarely belongs in the posted review, and a bot is worth
-naming only when the agreement or disagreement changes the verdict.
+An empty replacement deletes it. Every mutation returns the complete updated
+draft, so read that response rather than assuming the write landed.
 
-**Release what you parked**, now that it is additive to their read rather than a
-substitute for it.
+### Work comment by comment
 
-### Comment format
+Use this loop for each finding:
 
-The user's words go out verbatim, first, unedited. Where detail helps, append
-yours below a separator, marked with 🤖:
+1. Read the current body with `recto review` immediately before touching it.
+2. Verify the technical claim against the current head and real runtime paths.
+3. Discuss the point as needed, then revise the shared body directly when the
+   direction is clear. If the wording choice is genuinely open, offer the
+   alternatives before writing.
+4. Read back the mutation response. Briefly name any substantive change you
+   made and whether it changes the authorship class, so the user knows what to
+   inspect in Recto.
+5. Let the user edit it in place. Re-peek before the next agent revision.
 
-~~~markdown
-**File**: `path/to/file.go` (line 99)
+Do not edit several ids from one stale snapshot. `review-comment --id`
+replaces the whole body, so a delayed write can overwrite a user edit even
+though reads are non-consuming. One comment at a time keeps the collaboration
+legible and the race window small.
 
-A lone Ctrl-P returning `(0, nil)` here kills stdin for the rest of the session.
+### Mark the actual authorship
 
----
+Recto is a shared editor, but not every comment is co-written. Classify each
+public body by how its prose was actually authored:
 
-🤖 `stream.ServeReader` runs unbatched on this path, so `serveReader.Recv`
-ships `buf[:0]`, and `rscReader.Read` turns a zero-length value into `io.EOF`
-(`pkg/rpc/stream/stream.go:84`). The input pump's `io.Copy` ends there and
-never restarts.
-~~~
+1. **Totally human-written:** post the user's words unadorned. Agent research,
+   verification, or typo spotting does not claim authorship of prose the user
+   wrote.
+2. **Co-written as one voice:** use the jointly revised body and sign it at the
+   end with `--p+🤖`.
+3. **Totally agent-written:** prefix the body with `🤖`.
+4. **Human prefix, agent continuation:** keep the user's opening unmarked,
+   then separate and mark the agent-authored continuation:
 
-🤖 is the house convention for agent-authored content in review threads.
+       The retry should stay bounded by the request deadline.
 
-Rules for the append:
+       ---
 
-- **Verbatim by default.** Post exactly what the user wrote. Do not tighten,
-  reorder, or improve it. If a note reads as shorthand only they can parse,
-  ask whether to expand it — do not expand it on your own initiative.
-- **Append only when it carries weight**: a trace, a file:line citation, repro
-  output, a cross-reference to a comment elsewhere in the codebase. Not a
-  restatement of what they just said in more words.
-- **No append is the common case.** A comment that stands on its own gets
-  nothing.
-- Never let the 🤖 section contradict or hedge the user's claim. If you think
-  they are wrong, say so to them before posting, not underneath them in public.
+       🤖 `pollUntilReady` receives the parent context here, but the loop calls
+       `time.Sleep`, so cancellation is not observed until the next poll.
 
-### Verdict and posting
+The fourth class is deliberately different from fused co-authorship. It lets
+the reader see where the human framing ends and the agent-supplied trace
+begins. Do not add both the split marker and the `--p+🤖` signoff.
 
-The verdict is the user's call. Almost always **APPROVE** or
-**REQUEST_CHANGES**, never COMMENT (a non-action). Default to APPROVE with
-comments — we trust authors to address or consciously skip feedback. Save
-REQUEST_CHANGES for a specific blocking concern. If we are taking the pen and
-pushing commits ourselves, the review that announces it should be
-REQUEST_CHANGES from the start so the mechanics match the intent, flipping to
-APPROVE once our commits land.
+Preserve wording the user chose deliberately. When both people have revised a
+single voice, call it co-written rather than pretending the final prose is
+untouched human text. Conversely, investigation behind a human-written
+sentence does not require a robot mark. Track the class in the conversation;
+`last_editor` only identifies the most recent keystrokes.
 
-**Sign off with `--p+🤖`.** That is the standing marker that Claude was
-involved; no per-review announcement is needed.
+Incomplete drafts may use a loud `TODO`, because they are local. A `TODO` is a
+hard publication blocker, not plausible text that can accidentally ship.
 
-**Don't invent context.** No on-call rotation, team size, or process you do not
-actually know — this applies to anything you append.
+### Verify every claim
 
-**Default to posting a draft.** Omit `event` and the review is created in
-`PENDING` state: a draft only the user can see, with every inline comment
-editable in the Files changed tab and a "Finish your review" button where they
-pick the verdict at submit time.
+A claim earns its place only when you have traced it to a real runtime path.
+It is not enough that a problem exists in the type-space; check whether any
+production path reaches it. Say plainly when a claim does not survive, and say
+it before polishing the prose.
+
+When a contested claim reduces to pure logic such as formatting, hashing,
+comparison, ordering, or parsing, copy the actual function into a scratch
+program and run it. A transcript settles competing assertions better than
+another paragraph. If the review body says you ran something, actually run it
+and state the scope precisely.
+
+Check each comment against current code, not only the original diff.
+Multi-commit PRs often fix a problem later in the stack.
+
+### Triage overlap
+
+Fetch existing inline comments with:
+
+    gh api repos/{owner}/{repo}/pulls/{number}/comments
+
+Tell the user when a human or bot already caught the same issue so the shared
+draft is not a duplicate. This is mostly triage; a bot belongs in the public
+body only when the agreement or disagreement changes the substance.
+
+## Verdict and top-level summary
+
+The verdict is the user's call. Almost always use **APPROVE** or
+**REQUEST_CHANGES**, not COMMENT. Default to APPROVE with comments; trust the
+author to address or consciously skip non-blocking feedback. Save
+REQUEST_CHANGES for a specific blocking concern. If we take the pen and push
+commits ourselves, request changes while those commits are outstanding, then
+approve once they land.
+
+Recto currently owns inline comment drafts, not the top-level review body.
+Compose that short summary in conversation, show its exact final text, and
+apply the same four-way authorship classification. A co-written summary ends
+with `--p+🤖`; a human-written one is unadorned; an agent-written one starts
+with `🤖`; a human prefix plus agent continuation uses the split form.
+
+## Publication boundary
+
+No Recto authoring command posts to GitHub. Publishing is a separate,
+explicitly approved action.
+
+Before asking to send:
+
+1. Re-read `headRefOid`, local `@-`, and `recto review`'s
+   `pull_request.head_oid`. All three must name the head whose code and anchors
+   you verified.
+2. Re-check every path and line against that head. Reject empty bodies and any
+   remaining `TODO`.
+3. Confirm each inline body and the top-level summary carry the marker for
+   their actual authorship class. Do not infer this from `last_editor`.
+4. Fetch existing comments one last time for duplicate or newly resolved
+   findings.
+5. Build the exact review payload. Set `commit_id` explicitly. For a one-line
+   current-side comment, use `line` and `side: "RIGHT"`. For a Recto range,
+   preserve both ends with `start_line`, `start_side: "RIGHT"`, `line`, and
+   `side: "RIGHT"`.
+6. Show the user the exact verdict, top-level body, authorship class, and every
+   inline body in posting order. Wait for an explicit send confirmation.
+
+Then post one final review:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{number}/reviews \
@@ -227,111 +304,90 @@ gh api repos/{owner}/{repo}/pulls/{number}/reviews \
 
 ```jsonc
 {
-  "body": "Top-level comment here",
-  // no "event" key -> PENDING
+  "commit_id": "<verified head oid>",
+  "body": "Top-level summary\n\n--p+🤖",
+  "event": "APPROVE",
   "comments": [
-    {"path": "path/to/file.go", "line": 74, "body": "Inline comment..."}
+    {
+      "path": "path/to/file.go",
+      "line": 74,
+      "side": "RIGHT",
+      "body": "Exact co-written Recto body\n\n--p+🤖"
+    },
+    {
+      "path": "path/to/other.go",
+      "start_line": 80,
+      "start_side": "RIGHT",
+      "line": 84,
+      "side": "RIGHT",
+      "body": "Exact shared Recto range body"
+    }
   ]
 }
 ```
 
-This fits the division better than anything else in the skill. The user writes
-their prose in GitHub, where they are already comfortable editing, and the
-verdict becomes theirs by construction rather than by your restraint. Add
-`"event": "APPROVE"` only when the user has said the words and wants it out in
-one shot.
+Set `event` to the user's chosen verdict: `APPROVE`, `REQUEST_CHANGES`, or
+`COMMENT`. If the user explicitly chooses a separate GitHub staging step,
+omit `event` to create a pending review.
 
-Use a single line number, not a range — that is what the API takes. Write the
-payload to a file rather than inlining it when the bodies are long; build the
-JSON with a script so you are not hand-escaping newlines and backticks.
-
-**Scaffolding the user's half.** When you assemble a draft before they have
-written their lines, never put plausible prose in their slot — it will ship in
-their voice. Use a loud placeholder with the strawman after it:
-
-    ⚠️ **TODO — replace with your words.** Strawman: <one sentence>
-
-    ---
-
-    🤖 <your half>
-
-An unedited comment then reads as visibly unfinished, and the strawman is right
-there to accept or overwrite.
-
-### Editing a draft
-
-You will want to revise your own half after the user reads it. Three facts,
-learned the hard way:
-
-- Pending comments **404** on the REST `pulls/comments/{id}` endpoint. They are
-  not published comments yet.
-- The GraphQL `updatePullRequestReviewComment` mutation edits them fine. Get the
-  `node_id` from `pulls/{n}/reviews/{review_id}/comments`.
-- Pending comments have **no edit history**. `userContentEdits` is empty, so an
-  overwrite is unrecoverable by any means.
-
-The mutation takes a whole body, which makes the rule absolute: **read the
-current body first, then splice.** Keep everything above the `---` byte for
-byte and replace only the 🤖 block below it. The user edits their half in the
-UI while you are working; a body you compose from memory will silently destroy
-whatever they wrote since you last looked. If you do clobber their words, say
-so immediately and plainly — you cannot recover them, and they need to know to
-re-paste rather than discovering it after submit.
-
-To discard a draft entirely:
-`gh api repos/{owner}/{repo}/pulls/{n}/reviews/{review_id} --method DELETE`.
-
-### Before and after submitting
-
-The head can move under you. Before submitting, re-read `headRefOid` and
-compare it to what you mapped anchors against. After submitting, confirm each
-comment came back with a non-null `position` — a force-push between drafting
-and submitting can strand comments on a commit nobody is looking at.
-
-    gh api repos/{owner}/{repo}/pulls/{n}/comments \
-      --jq '.[] | select(.user.login=="<us>") |
-            "\(.path) line=\(.line) commit=\(.commit_id[0:8]) outdated=\(.position==null)"'
+After posting, confirm each returned or listed comment has the intended body,
+commit id, path, and a non-null position. A force-push between assembly and
+send can strand an anchor. Only after GitHub reflects the complete artifact
+should you offer to clear the corresponding local drafts from Recto. Delete
+them after the user agrees. If posting or verification fails, leave the drafts
+intact.
 
 ## Input channels
 
-**Recto, when it is up.** The user marks up the diff and `recto comments`
-drains their notes with path and line already attached. Load the `recto` skill
-for the mechanics. Two things carry over from it: comments are delivered
-exactly once, so only drain when you are ready to act on them; and `recto
-comment` is the user's tool, not yours — never write notes into the set you
-are about to drain.
+### Shared review drafts
 
-**Conversation, otherwise.** The user says the comments; you keep a running
-ledger and ask for an anchor when the target is ambiguous. Read the assembled
-review back before posting.
+`recto review` is the primary composition channel. It is a peek, never a
+drain. Agent and user edits converge on the same stable comment ids.
+
+### Private agent notes
+
+Peach private notes are direction from the user to the local agent, not public
+prose. `recto ping` reports them as `pending_comments`. Drain with
+`recto notes` only when the user says they are ready for action; draining is
+destructive and each note is delivered exactly once. Never move a private note
+into the public draft by assumption. Discuss it, verify it, then deliberately
+create a shared yellow draft if that is where it belongs.
+
+Do not use `recto note` yourself. The user owns that inbound channel; use
+conversation or Recto annotations for your side.
+
+### Conversation fallback
+
+If Recto is unavailable, keep an explicit ledger of exact bodies and anchors
+in conversation. Work comment by comment with the same verification loop, then
+read the complete assembled review back before posting.
 
 ## Other outputs
 
 A review is not only comments.
 
-- **Fixable things can be commits.** Docs gaps, small bugs, missing test cases
-   — contributing to the branch is sometimes better than commenting. Pause the
-  review, do the work, resume. When the review references our own commits,
-  frame them as "we contributed," not as feedback on the author's code.
-- **Follow-up tickets are a natural artifact.** Refactoring opportunities,
-  coverage gaps, future improvements — offer to file them.
+- Fixable things can be commits. Docs gaps, small bugs, and missing tests may
+  be better as contributions to the branch. Pause the review, do the work, and
+  resume. When the review references those commits, frame them as "we
+  contributed," not as feedback on the author's code.
+- Follow-up tickets are natural artifacts for refactors, coverage gaps, and
+  future improvements.
 
-**Offer once, not per finding.** Both of the above are worth raising when they
-genuinely beat a comment, and are noise attached to every item on the slate.
-Repeating "want me to just fix this?" down a list of six turns a review into a
-negotiation about logistics. Make the offer once, for the items where it
-actually applies, and take silence as no.
+Offer either once where it genuinely beats a comment. Repeating "want me to
+fix this?" after every finding turns review into logistics negotiation.
 
 ## What you do not do
 
-- Write the user's verdict, or infer it from how the conversation felt
-- Volunteer analysis during phase 1
-- Edit, tighten, or "improve" their words on the way to posting
+- Infer or write the user's verdict
+- Volunteer critique during shared understanding
+- Treat either person's first wording as untouchable
 - Post a claim you have not traced
-- Pad the 🤖 append to look thorough
-- Send a comment body you did not just read back first
+- Overwrite a shared body you did not just re-read
+- Mislabel authorship based on who happened to edit last
+- Promote a private agent note into public prose by assumption
+- Send a review artifact the user has not inspected in full and approved
 
 Most of your work never reaches the post, and that is correct. An hour of
-tracing and five minutes of it can both end as a two-sentence approve; the
-tracing becomes the confidence behind the user's verdict, not paragraphs
-proving it happened.
+tracing and five minutes of it can end as a two-sentence approval. The tracing
+becomes the confidence behind the shared words, not paragraphs proving it
+happened.

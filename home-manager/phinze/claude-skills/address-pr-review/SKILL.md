@@ -216,9 +216,10 @@ threads.
     trusting it.
 
 When the user supplies the substance and you add detail, their words go first
-and unmarked, yours below a `---` rule and marked, exactly as in `review-pr`.
-Never let the marked half hedge or contradict the unmarked half; raise the
-disagreement with the user before posting instead.
+and unmarked, yours below a `---` rule and marked. This is the human-prefix,
+agent-continuation authorship class from `review-pr`, and it remains common for
+replies. Never let the marked half hedge or contradict the unmarked half;
+raise the disagreement with the user before posting instead.
 
 **Bot replies just go.** Acknowledgments ("fixed in the latest push, added the nil check") and factual pushbacks to CodeRabbit or biscuit don't need my eyes first. Write them, post them in Phase 5, and include them in the Phase 7 summary.
 
