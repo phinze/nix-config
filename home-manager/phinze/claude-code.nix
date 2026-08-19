@@ -392,6 +392,10 @@ in
     builtins.replaceStrings [ "@BRAND@" ] [ "${inputs.miren-brand}" ]
       (builtins.readFile ./claude-skills/miren-brand/SKILL.md);
 
+  # Prose skill: make clarity a deliberate editing pass without flattening the
+  # conversational voice in the global instructions.
+  home.file.".claude/skills/improve-prose".source = ./claude-skills/improve-prose;
+
   # PR workflow skills. These were slash commands for a long time, which meant
   # only a human could start them: a command is invisible to the model, so an
   # agent asked to "take us through pr-time" had to go read the prompt file off

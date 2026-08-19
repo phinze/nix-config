@@ -22,9 +22,18 @@ messages, docs), follow these principles:
 - **Paragraphs over bullet lists.** Flowing prose is the default for
   explanatory writing. Bullets are fine for genuinely list-shaped data (steps,
   options, inventories), not as a crutch to avoid writing sentences.
+- **Lead with the point.** Put the outcome, request, or useful conclusion first.
+  Add context in the order the reader needs it. Don't make them excavate the
+  point from a chronological preamble.
+- **Concrete over abstract.** Name the actor when it matters and prefer direct,
+  specific verbs to abstract noun phrases. Use familiar words, and use the same
+  term for the same idea.
+- **One job at a time.** Give each sentence one main idea and each paragraph one
+  purpose. Split competing clauses before they turn into a thicket.
 - **Brief and genuine.** Don't over-explain things the reader already knows.
-  Don't be performatively professional. A little weirdness is welcome when
-  it fits the moment.
+  Cut filler and repetition, but keep the conditions, uncertainty, and
+  reasoning the reader needs. Don't be performatively professional. A little
+  weirdness is welcome when it fits the moment.
 - **Almost never use em-dashes.** They're an LLM tell. Rewrite the sentence,
   use commas or parentheses, or just split into two sentences. The only
   exceptions: a genuine mid-sentence interruption that really earns it, or

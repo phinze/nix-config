@@ -244,6 +244,12 @@ in
       executable = true;
     };
 
+  # Prose skill, shared with Claude Code and Codex.
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/improve-prose" = {
+    source = ./claude-skills/improve-prose;
+    recursive = true;
+  };
+
   # PR workflow skills. These used to land here as a bare SKILL.md lifted from
   # a slash-command file, which meant no frontmatter and so no description for
   # the loader to match on: a skill in filename only. They now ship as real
