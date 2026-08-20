@@ -129,6 +129,10 @@
       PermitRootLogin = "no";
       PasswordAuthentication = false;
     };
+
+    # Drop the default %h/.ssh/authorized_keys so the keys below are the only
+    # ones that work; a stray ssh-copy-id here is a no-op by design.
+    authorizedKeysFiles = lib.mkForce [ "/etc/ssh/authorized_keys.d/%u" ];
   };
 
   # User configuration
