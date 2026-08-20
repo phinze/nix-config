@@ -173,6 +173,34 @@ in
     # That false lead cost real debugging time once already.
     BELOWDECK_CONFIG =
       osConfig.launchd.user.agents.belowdeck.serviceConfig.EnvironmentVariables.BELOWDECK_CONFIG;
+  }
+  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    # nh calls its elevation program as
+    #   env PATH=... HOME= USER=phinze nix build --profile ...
+    # and that empty HOME is a bug with teeth. Determinate Nix builds its
+    # Sentry cache path by joining HOME with ".cache"; joining onto an empty
+    # base yields a *relative* path, so root writes .cache/nix/sentry into
+    # whatever directory nh was run from. In a jj workspace that wedges the
+    # repo outright, because jj cannot snapshot a tree holding a directory it
+    # is not allowed to read.
+    #
+    # Repair the one assignment on the way past and hand everything else to
+    # sudo untouched. /var/root matches what nix-darwin's own activation
+    # script exports, so the cache lands where root's cache already is.
+    NH_ELEVATION_STRATEGY =
+      let
+        nh-elevate = pkgs.writeShellScriptBin "nh-elevate" ''
+          args=()
+          for a in "$@"; do
+            case "$a" in
+              HOME=) args+=("HOME=/var/root") ;;
+              *) args+=("$a") ;;
+            esac
+          done
+          exec /usr/bin/sudo "''${args[@]}"
+        '';
+      in
+      "${nh-elevate}/bin/nh-elevate";
   };
 
   home.packages =
