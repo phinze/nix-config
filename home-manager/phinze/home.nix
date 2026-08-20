@@ -815,6 +815,15 @@ in
     '') inputs.nix-private.data.onePasswordSshItems;
   };
 
+  # macOS sshd reads .ssh/authorized_keys and has no authorized_keys.d, so this
+  # is home-manager's job here rather than services.openssh's.
+  home.file.".ssh/authorized_keys" = lib.mkIf pkgs.stdenv.isDarwin {
+    text = lib.concatMapStrings (k: k + "\n") [
+      inputs.nix-private.data.sshKeys.laptop
+      inputs.nix-private.data.sshKeys.miren
+    ];
+  };
+
   # ssh matches agent keys by public key, not by comment, so IdentitiesOnly
   # needs these on disk.
   home.file.".ssh/pub/phinze-mrn-mbp.pub".text = ''
