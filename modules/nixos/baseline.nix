@@ -1,5 +1,6 @@
 {
   config,
+  options,
   pkgs,
   lib,
   outputs,
@@ -97,12 +98,25 @@
   # Enable mosh for remote connections
   programs.mosh.enable = true;
 
-  # Bankshot eBPF port monitoring
-  services.bankshot.ebpf.enable = true;
-
-  # Raise memlock limit for user services so eBPF map allocation works.
-  # The default 8MB is too low and cilium/ebpf's RemoveMemlock() fails.
-  systemd.services."user@".serviceConfig.LimitMEMLOCK = "infinity";
+  # Bankshot port monitoring, as a system service running as phinze.
+  #
+  # It has to be a system service: the monitor needs CAP_BPF and CAP_PERFMON
+  # for eBPF, systemd can only grant capabilities to a system unit, and a
+  # user unit's only way to get them is to exec a setcap copy out of
+  # /run/wrappers. That route leaves a capability-carrying bankshot any local
+  # user can exec, and it decouples the unit from the binary it runs, so the
+  # monitor silently drifts a build behind on every rebuild. Ambient
+  # capabilities scope the grant to this one process and let ExecStart name
+  # the store path.
+  #
+  # Pointing configFile at the file home-manager already renders keeps one
+  # source of truth for the settings, and means a config change changes the
+  # unit and restarts the monitor onto it.
+  services.bankshot.monitor = lib.mkIf (options ? home-manager) {
+    enable = true;
+    user = "phinze";
+    configFile = config.home-manager.users.phinze.programs.bankshot.generatedConfig;
+  };
 
   # Tailscale for networking
   services.tailscale.enable = true;

@@ -892,13 +892,15 @@ in
       address = "127.0.0.1:${toString bankshotBridgePort}";
     };
 
-    # Enable the bankshot monitor
+    # On macOS this is the launchd agent that owns the SSH forwards. On Linux
+    # the monitor runs as a system service instead (services.bankshot.monitor
+    # in the NixOS baseline), because only a system unit can be granted the
+    # eBPF capabilities it needs, so home-manager should not stand up a
+    # second, user-scoped one here.
     daemon = {
-      enable = true;
+      enable = pkgs.stdenv.isDarwin;
       autoStart = true;
       logLevel = "info";
-      # Use capability-wrapped binary for eBPF port monitoring on NixOS
-      executablePath = lib.mkIf pkgs.stdenv.isLinux "/run/wrappers/bin/bankshot";
     };
 
     # Monitor configuration (applies to bankshot monitor on remote servers)
