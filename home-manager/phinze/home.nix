@@ -804,6 +804,17 @@ in
     source = ./finicky.ts;
   };
 
+  # Bounds what a forwarded agent can sign with; 1Password exposes every key
+  # we own otherwise.
+  xdg.configFile."1Password/ssh/agent.toml" = lib.mkIf pkgs.stdenv.isDarwin {
+    text = lib.concatMapStrings (k: ''
+      [[ssh-keys]]
+      item = "${k.item}"
+      vault = "${k.vault}"
+
+    '') inputs.nix-private.data.onePasswordSshItems;
+  };
+
   # ssh matches agent keys by public key, not by comment, so IdentitiesOnly
   # needs these on disk.
   home.file.".ssh/pub/phinze-mrn-mbp.pub".text = ''
