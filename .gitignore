@@ -7,3 +7,7 @@ tmp/
 
 # Antigravity CLI per-cwd state (symlink into ~/.gemini/config/projects/)
 .antigravitycli/
+
+# Root-owned Sentry cache nix drops here when handed an empty HOME; the fix
+# is NH_ELEVATION_STRATEGY in home-manager/phinze/home.nix.
+.cache/
