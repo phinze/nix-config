@@ -163,6 +163,16 @@ in
     # overrides, so this only moves the starting position. Delete the line to
     # go back to claude.
     RIG_AGENT = "codex";
+  }
+  // lib.optionalAttrs (osConfig.services.belowdeck.enable or false) {
+    # The belowdeck darwin module hands the daemon its generated config through
+    # BELOWDECK_CONFIG in the launchd plist, and nowhere else. Without the same
+    # variable in the shell, `belowdeck status` falls back to
+    # ~/.config/belowdeck/config.yaml, finds nothing, and reports every setting
+    # as NOT SET while the daemon is running perfectly well off the store path.
+    # That false lead cost real debugging time once already.
+    BELOWDECK_CONFIG =
+      osConfig.launchd.user.agents.belowdeck.serviceConfig.EnvironmentVariables.BELOWDECK_CONFIG;
   };
 
   home.packages =

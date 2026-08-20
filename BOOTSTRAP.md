@@ -192,8 +192,29 @@ None of this is declarable:
   system extension in Login Items.
 - **Raycast, Rectangle, CleanShot, iStat Menus**: Accessibility and Screen
   Recording, plus their licences.
-- **belowdeck**: `belowdeck setup` to put API keys in the macOS Keychain. The
-  Stream Deck settings in `configuration.nix` assume they are there.
+- **belowdeck**: the Stream Deck settings in `configuration.nix` are declarative,
+  but the two secrets they rely on live in the login Keychain and a wipe takes
+  them with it. Without them the Home Assistant and weather keys render blank
+  and `/tmp/belowdeck.log` says so on every startup. Skip `belowdeck setup`
+  (it also rewrites a config file the daemon does not read) and seed the
+  Keychain directly:
+
+  ```bash
+  security add-generic-password -U -s belowdeck -a hass-token -w '<token>'
+  security add-generic-password -U -s belowdeck -a openweathermap-api-key -w '<key>'
+  launchctl kickstart -k gui/$(id -u)/org.nixos.belowdeck
+  ```
+
+  Both values are in the pre-wipe backup image at
+  `home/src/github.com/phinze/belowdeck/.env.local`, which is where the
+  2026-08-14 recovery got them. Failing that, the Home Assistant value is a
+  long-lived access token minted from the Home Assistant profile page, and the
+  OpenWeatherMap key comes off the account page for the `Openweathermap` login
+  in 1Password. Validate before storing: `GET /api/` with the token as a bearer
+  should answer `{"message":"API running."}`, and a `data/3.0/onecall` request
+  with the key should return 200. `belowdeck status` verifies the result, though
+  it always reports the Stream Deck as not detected while the daemon holds the
+  HID device.
 - **Colima**: `colima start` on first use, or let the launchd agent handle it.
 - **atuin**: `atuin login` to sync shell history.
 
