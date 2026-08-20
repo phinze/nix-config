@@ -158,6 +158,11 @@ in
     # installed `pim` works from any directory (the secrets live outside the
     # nix store and can't be baked into the package).
     PIM_DATA_DIR = "${config.home.homeDirectory}/src/github.com/phinze/pim-stuff/.local";
+    # Which agent `rig up`/`new`/`review` start their picker on. Trying codex
+    # as the first thing I reach for; ctrl-o still cycles and --agent still
+    # overrides, so this only moves the starting position. Delete the line to
+    # go back to claude.
+    RIG_AGENT = "codex";
   };
 
   home.packages =
