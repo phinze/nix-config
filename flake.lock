@@ -550,11 +550,11 @@
     },
     "nix-private": {
       "locked": {
-        "lastModified": 1787230615,
-        "narHash": "sha256-QTTvZalJofEZQemUgQ/5O3FN8Xkah9BK/K6stK25N4w=",
+        "lastModified": 1787345685,
+        "narHash": "sha256-uEbnUutjwQ+kq3h69c3LePxqp9DyBABaUX8rQsrCMwk=",
         "ref": "refs/heads/main",
-        "rev": "a48f7f19fd4e13a60e30cb42ca4a7004bd98ebcb",
-        "revCount": 2,
+        "rev": "786ab6febffc97c3f98f5de5ec1bcbcca822758e",
+        "revCount": 3,
         "type": "git",
         "url": "https://github.com/phinze/nix-private.git"
       },
