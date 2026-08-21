@@ -817,12 +817,25 @@ in
 
   # macOS sshd reads .ssh/authorized_keys and has no authorized_keys.d, so this
   # is home-manager's job here rather than services.openssh's.
-  home.file.".ssh/authorized_keys" = lib.mkIf pkgs.stdenv.isDarwin {
-    text = lib.concatMapStrings (k: k + "\n") [
-      inputs.nix-private.data.sshKeys.laptop
-      inputs.nix-private.data.sshKeys.miren
-    ];
-  };
+  #
+  # A real file, not a home.file symlink: StrictModes walks the resolved path
+  # and /nix/store is group-writable, so sshd rejects anything living there.
+  home.activation.authorizedKeys = lib.mkIf pkgs.stdenv.isDarwin (
+    lib.hm.dag.entryAfter [ "writeBoundary" ] (
+      let
+        keys = pkgs.writeText "authorized_keys" (
+          lib.concatMapStrings (k: k + "\n") [
+            inputs.nix-private.data.sshKeys.laptop
+            inputs.nix-private.data.sshKeys.miren
+          ]
+        );
+      in
+      ''
+        run install -d -m 700 "$HOME/.ssh"
+        run install -m 600 ${keys} "$HOME/.ssh/authorized_keys"
+      ''
+    )
+  );
 
   # ssh matches agent keys by public key, not by comment, so IdentitiesOnly
   # needs these on disk.
