@@ -110,12 +110,16 @@ semantic-commit workflow.
 
 When I ask you to "run pr-time" (or "prep a PR"), or to "address review comments", you should equip the respective skill (`pr-time` or `address-pr-review`) to tidy our Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd the PR through CI and CodeRabbit reviews.
 
-You should actively drive the VCS process by preparing descriptions and
-drafting revisions for our changes. However, before running any command
-that modifies revision history or sets descriptions (like `jj describe`
-or `git commit`), show me a draft of your proposed message and wait for
-my go-ahead. Keep descriptions concise, focus heavily on the "why"
-behind the change, and make sure any non-obvious design choices are clear.
+Actively drive the VCS process. Write and apply concise descriptions that focus
+on the "why," and make any non-obvious design choices clear. Routine commits,
+description updates, rebases, and obvious stack cleanup do not need a separate
+approval step.
+
+Pause before a structural choice that materially changes the review story,
+especially splitting one cohesive change into several revisions or reordering a
+non-trivial stack. For work headed to a PR, include the final rev stack and its
+messages in the exact pre-push review alongside the PR title and body. That is
+the writing checkpoint; do not ask for piecemeal approval while building it.
 
 ## Memory Policy
 

@@ -7,8 +7,8 @@ description: Ship a change as a pull request. Tidy the jj rev stack, rebase on t
 
 ## Style Guide
 
-Applies to rev messages, and to a description when I've asked you for a draft.
-I write descriptions by default (step 5).
+Applies to rev messages and PR descriptions. You write the first draft; I own
+the intent, judgment, and final approval.
 
 The reader's attention is finite and worth being kind to. Give them the
 situation, what was wrong with it, and what we did. They can get the rest from
@@ -16,9 +16,8 @@ the code. No test plan section. Conversational and a little informal, and almost
 never an em-dash (per global CLAUDE.md).
 
 **Length is what this skill gets wrong.** Write it short the first time rather
-than padding and cutting back, and let the repo set the target. The last few
-merged PRs (`gh pr list --state merged --limit 3 --json title,body`) are a
-better gauge than any number, since they adapt per repo where a number wouldn't.
+than padding and cutting back. Follow a repo template or known local convention
+when one exists; otherwise draft from the change and use the cut list below.
 
 What has to come out is nearly always the same:
 
@@ -83,38 +82,73 @@ wrong.
    - Otherwise `jj rebase -d 'trunk()'`
    - On conflicts: stop. Surface what conflicted and let the human resolve.
 
-3. **Decide the rev structure**. One cohesive change or a natural sequence, either is fine. The only question is whether the current shape matches the story, and forcing structure for its own sake is worse than letting the shape match the work.
+3. **Decide the rev structure**. One cohesive change or a natural sequence, either is fine. The only question is whether the current shape matches the story, and forcing structure for its own sake is worse than letting the shape match the work. Handle obvious cleanup yourself. Before a split or reorder that would materially change the review story, show me the proposed stack and wait for a go-ahead.
    - **One big rev that's really two things**: `jj split -i` for an interactive hunk picker, or `jj split <paths>` to cut along file boundaries
    - **Several revs that are really one thing**: `jj squash --into <parent> -u` (`-u` keeps the destination's message and skips the editor)
    - **Noise** (WIP scratches, abandoned attempts): `jj abandon -r <rev>`
 
-4. **Polish the rev messages**. Short imperative summary line, blank line, brief narrative body hard-wrapped at 72 per git convention. `jj desc -r <rev> -m '<message>'` with the whole thing in one single-quoted string (newlines preserved), or `jj desc -r <rev>` for the editor.
+4. **Polish the rev messages**. Short imperative summary line, blank line, brief narrative body hard-wrapped at 72 per git convention. Write and apply them yourself; they do not need separate approval. `jj desc -r <rev> -m '<message>'` with the whole thing in one single-quoted string (newlines preserved), or `jj desc -r <rev>` for the editor.
 
    These carry more weight than their length suggests. The style guide sends mechanism here rather than into the description, so this is where the durable technical prose lives, and its reader arrives from `blame` with the diff already in front of them. Give that reader the why: what the situation was, what forced the change, what you considered and rejected. A body that restates the summary line, or narrates a diff they are already looking at, gives them nothing.
 
-5. **Hand over the material. I write the description.**
+5. **Draft the PR. You take the first pass; I make the call.**
 
-   A description argues for the change: what mattered, what the tradeoffs were, why one approach beat another. I made those calls and you weren't there, so reconstructing them from the diff yields a plausible rationale rather than the real one. Don't write it unprompted.
+   A description argues for the change: what mattered, what the tradeoffs were,
+   and why one approach beat another. Draft that argument from the conversation,
+   the rev stack, the combined diff, and any project context you actually have.
+   Follow any repo template that already exists.
 
-   Give me what I'd otherwise assemble by hand, then stop:
-   - The rev stack with its messages, and the combined diff
-   - What got deleted or moved, which is easy to miss reading top-down
-   - What this is stacked on, if anything
-   - The last few merged bodies (`gh pr list --state merged --limit 3 --json title,body`) for house register, and any repo template
+   Do not invent intent from code and present it as fact. When a material part
+   of the rationale is missing, either write a narrower draft that does not need
+   it or ask one focused question. Do not hand me the source material and a blank
+   page merely because some judgment is mine.
 
-   **Propose the title** yourself, a high-level summary of the whole change. I'll adjust it if it's off.
+   Draft both parts:
+   - **Title**: a high-level summary of the whole change
+   - **Description**: the short argument for the change, per the style guide.
+     With multiple revs it can reference the progression. Mention what the PR is
+     stacked on when the relationship matters to the reader.
 
-   If I ask you for a draft on a given PR, write one per the style guide, trim it against the cut list first, and show it with "Look good?". That's the exception.
+   Make the issue relationship explicit at the end of the body when the task
+   context carries one. For a Linear issue, use `Closes MIR-123` when this PR
+   completes the issue, `Part of MIR-123` when the issue remains open for more
+   work, or `Related to MIR-123` when the link is informational. Rig-created
+   branches leave out the exact Linear identifier, so this line is what links
+   the PR and controls issue automation. Infer the relationship from the agreed
+   scope when it is clear; ask one focused question when completion is genuinely
+   ambiguous.
 
-6. **Check what I wrote against the diff**, then assemble. Say so when something doesn't match: a claim about behavior the code doesn't have, a file I think changed and didn't, a rationale the rev messages contradict. Checking is the job here, not wording.
+   For a GitHub issue, use `Closes #123` (or
+   `Closes owner/repo#123` across repositories) only when the PR completes it.
+   `Part of #123` is a useful plain reference but is not a GitHub closing
+   keyword. GitHub only applies closing keywords when the PR targets the
+   default branch, so a PR currently stacked on another branch should reference
+   the issue without promising automatic closure.
 
-   Post it as I wrote it. Do NOT hard-wrap: it renders as markdown, and mid-sentence line breaks look broken on GitHub. And skip the meta scaffolding in your own reporting: which bookmark you picked, whether the repo opens drafts, how you settled the rev structure. Do it, don't narrate it.
+6. **Trim, verify, and show the exact draft.** Reread it against the cut list
+   and the combined diff. Say so when the available rationale is uncertain or
+   when a claim does not match the code. Do NOT hard-wrap the description; it
+   renders as Markdown, and mid-sentence line breaks look broken on GitHub.
+
+   Show me the final rev stack with its messages, followed by the exact PR title
+   and body, and ask "Look good?". This is the one writing checkpoint. Wait for
+   approval before pushing. If I revise the prose, check my factual claims
+   against the diff, preserve the intent and wording I chose, and show the final
+   artifact again if your corrections materially change it.
+
+   Skip meta scaffolding in the draft and in your own reporting: which bookmark
+   you picked, whether the repo opens drafts, or how you settled the rev
+   structure. Do it, don't narrate it.
 
 7. **After approval**: advance the bookmark, push, open the PR.
 
    `jj bookmark list` first.
    - **Existing bookmark on this stack**: `jj tug` moves the closest non-trunk ancestor bookmark to `@-` (or to `@` if `@` is the tip rev with no empty rev above it)
-   - **No bookmark yet**: `jj bookmark create <branch-name> -r @-`, with the name often inferrable from the workspace dir or a Linear issue
+   - **No bookmark yet**: in a Rig workspace, use the branch recorded for this
+     repo in the rig manifest. Do not reconstruct it from the workspace dir or
+     ask Linear for a branch name; Rig's work branch intentionally differs from
+     both. Outside Rig, `jj bookmark create <branch-name> -r @-` with a name
+     appropriate to the task.
 
    `gh pr create` defaults `--head` from git's current branch, which in a colocated repo still reports whatever git was on (usually `main`), not the bookmark we just moved. So pass it explicitly:
    ```bash
