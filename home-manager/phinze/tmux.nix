@@ -115,6 +115,12 @@ in
           # and every session/window/pane (and resumed Claude) comes back.
           set -g @continuum-restore 'on'
           set -g @continuum-save-interval '15'
+
+          # Resurrect binds these by default. Keep intentional save/restore in
+          # command mode, but remove the easy-to-hit prefix bindings after
+          # Resurrect has loaded.
+          unbind-key -T prefix C-s
+          unbind-key -T prefix C-r
         '';
       }
     ];
