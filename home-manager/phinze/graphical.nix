@@ -5,7 +5,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   # Create a custom desktop entry for 1Password with --silent flag for autostart
   xdg.desktopEntries."1password-silent" = {
     name = "1Password (Silent)";
@@ -19,7 +20,7 @@
       "x-scheme-handler/onepassword"
       "x-scheme-handler/onepassword8"
     ];
-    categories = ["Office"];
+    categories = [ "Office" ];
   };
 
   # Add the custom desktop entry to XDG autostart
@@ -31,7 +32,11 @@
   # GNOME settings for caps lock to ctrl
   dconf.settings = {
     "org/gnome/desktop/input-sources" = {
-      xkb-options = ["ctrl:nocaps"];
+      xkb-options = [ "ctrl:nocaps" ];
+    };
+    "org/gnome/shell/keybindings" = {
+      # Keep the same launcher muscle memory as Raycast on the other machines.
+      toggle-overview = [ "<Control>space" ];
     };
   };
   programs.ghostty = {
