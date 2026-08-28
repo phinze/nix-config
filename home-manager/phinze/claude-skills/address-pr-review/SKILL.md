@@ -30,11 +30,18 @@ first.
   non-blocking` and closes with a link to a full review note. Verdicts are
   `✅ ready to merge` or `⚠️ ready with caveats`.
 - Reviews once, about a minute after the PR opens. **It does not re-review on
-  push.** To get a fresh pass, comment `/biscuit review` on the PR and wait
-  roughly a minute.
-- Auto-resolves its own threads, but only when it re-runs. So after pushing
-  fixes, a `/biscuit review` is what clears them. Don't reason from CodeRabbit's
-  push behavior and conclude biscuit's threads will resolve themselves.
+  push.** When its findings need a fresh pass, comment `/biscuit review` on the
+  PR and wait roughly a minute.
+- Auto-resolves its own threads, but only when it re-runs. Before it has
+  declared the PR ready to merge, a `/biscuit review` after pushing its fixes
+  is what clears them. Don't reason from CodeRabbit's push behavior and
+  conclude biscuit's threads will resolve themselves.
+- A `✅ ready to merge` verdict carries forward across later pushes. Do not
+  request another biscuit review merely because the head moved. Re-request
+  only after a *major* new change: a new direction, a real scope change, or a
+  change that invalidates what biscuit actually reviewed. Rebases, conflict
+  resolutions, regenerated files, CI fixes, and fixes taken in a reviewer's
+  requested direction do not reset the verdict.
 - Findings arrive in two shapes and you need to read both: real inline threads,
   and a markdown `## Inline comments` section inside the review body. When they
   come through the body, GraphQL `reviewThreads` shows nothing from biscuit and
@@ -191,7 +198,7 @@ Work through the fixes, both the clear-cut ones you're running with and anything
 
 Land the fixes via jj. Edits autosnapshot into `@`. From there you can either land them as a new rev on top of the PR's last rev with `jj desc -m '<message>'`, or fold them into one of the existing PR revs with `jj squash --into <rev> -u` (the `-u` keeps the destination's message and skips the editor). After landing, push with `jj git push`. If a squash rewrote an already-pushed rev, jj moves the bookmark sideways and the remote updates without complaint.
 
-CodeRabbit auto-resolves its threads when it sees the fix in a new push, so addressed CodeRabbit items generally don't need manual replies or resolution. biscuit's threads don't clear on push; they clear when biscuit re-runs, which Phase 7 handles. Skipped items from either bot need replies (explaining why) and manual resolution. Continue to Phase 4 for any threads that need replies, then Phase 6 to resolve any that remain unresolved.
+CodeRabbit auto-resolves its threads when it sees the fix in a new push, so addressed CodeRabbit items generally don't need manual replies or resolution. biscuit's threads don't clear on push. Before biscuit has declared the PR ready to merge, its re-run in Phase 7 clears them; after that verdict, resolve any stale threads manually unless the work was a major new change that warrants another review. Skipped items from either bot need replies (explaining why) and manual resolution. Continue to Phase 4 for any threads that need replies, then Phase 6 to resolve any that remain unresolved.
 
 ## Phase 4: Draft Responses
 
@@ -276,7 +283,12 @@ Bot replies go out together. Human-facing ones go one at a time, confirming as w
 
 After responses are posted, check for any remaining unresolved threads. CodeRabbit auto-resolves its threads when it sees fixes in a new push, so addressed CodeRabbit items usually resolve themselves. Skipped items that we replied to need manual resolution. The PR review is not considered done until zero unresolved threads remain.
 
-**Leave biscuit's addressed threads alone here.** They resolve when biscuit re-runs, which Phase 7 triggers, and letting it resolve its own threads means it actually re-reads the fix instead of us just closing the thread over it. Only resolve a biscuit thread by hand if it's still open after the re-review in 7c, or if we're skipping the item and have posted a reply explaining why.
+**Leave biscuit's addressed threads alone here only when Phase 7 will re-run
+biscuit.** Letting it resolve its own threads proves it re-read the fix. If an
+existing `✅ ready to merge` still carries forward, do not re-run biscuit just
+to clear a thread; resolve the stale thread manually. Also resolve a biscuit
+thread by hand when it remains open after a warranted re-review, or when we're
+skipping the item and have posted a reply explaining why.
 
 First, re-fetch unresolved threads to get their node IDs:
 
@@ -327,19 +339,38 @@ Sleep 15 seconds for checks to register, then poll `gh pr checks $PR_NUMBER` eve
 - **All green**: move on to 7b.
 - **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident, write it at `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the failing one), `jj git push`, and loop back. **Two auto-fix attempts, then stop.** If the failure reveals something that needs discussion, stop and report instead of burning an attempt.
 
-**7b. Re-trigger biscuit**
+**7b. Decide whether to re-trigger biscuit**
 
-CodeRabbit re-reviews itself on the push. biscuit does not, so ask it:
+CodeRabbit re-reviews itself on the push. biscuit does not, but that does not
+make every new head require another biscuit pass. Read its substantive review
+bodies and apply this state:
+
+- If biscuit has said `✅ ready to merge`, carry that verdict forward. Do not
+  request another review after ordinary follow-up pushes. Re-trigger it only
+  if a major new change landed since that verdict: a new direction, a real
+  scope change, or a change that invalidates what biscuit reviewed.
+- Otherwise, request a re-review when this push addresses biscuit's findings.
+  A consciously accepted caveat, with no related fix to re-read, does not need
+  another pass.
+
+When a re-review is warranted, ask for it with:
 
 ```bash
 gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" -f body="/biscuit review"
 ```
 
-This is a bot-facing command on our own PR, not co-authored prose, so just post it. Do it as soon as CI is green (or right after the push, since the re-review is independent of CI) so biscuit's pass runs in parallel with everything else in 7c. Skip it only if biscuit had no findings and we changed nothing it commented on.
+This is a bot-facing command on our own PR, not co-authored prose, so just post
+it. Do it as soon as CI is green (or right after the push, since the re-review
+is independent of CI) so biscuit's pass runs in parallel with everything else
+in 7c.
 
-**7c. Wait for both bot re-reviews**
+**7c. Wait for the expected bot reviews**
 
-**Both bots are always expected on `mirendev/` repos.** Do not bail early assuming one isn't set up, and do not call the pass clean when only one has come back. Poll for up to 5 minutes, every 30 seconds:
+**Both bots are always expected at least once on `mirendev/` repos.** After a
+push, CodeRabbit's current-head review is expected. A new biscuit review is
+expected only when 7b requested one; otherwise its carried-forward
+`✅ ready to merge` satisfies the biscuit side. Poll for up to 5 minutes, every
+30 seconds:
 
 ```bash
 gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
@@ -347,7 +378,10 @@ gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
          | {author: .user.login, submitted_at, body}]'
 ```
 
-Compare against what was there before our push, per bot. Note that CodeRabbit also posts empty-bodied reviews when it replies inside a thread, so a new entry with an empty body is a reply, not a fresh finding. Check the body before treating it as new.
+Compare CodeRabbit against what was there before our push. If 7b requested
+biscuit, compare its reviews against the request. Note that bots also post
+empty-bodied reviews when replying inside threads, so a new entry with an empty
+body is a reply, not a fresh finding. Check the body before treating it as new.
 
 For each bot's new review:
 
@@ -358,13 +392,17 @@ For each bot's new review:
 
 **7d. Verify thread resolutions**
 
-Both bots resolve their own threads once they've re-read the code, CodeRabbit on the push and biscuit on the `/biscuit review` from 7b. After both re-reviews have landed, re-fetch unresolved threads to confirm they cleared. If an addressed thread is still open, resolve it manually with the `resolveReviewThread` mutation from Phase 6.
+CodeRabbit resolves its threads once it re-reads the push. biscuit does the
+same only when 7b requested it. Once the expected reviews have landed, re-fetch
+unresolved threads. Resolve any addressed thread that remains open with the
+`resolveReviewThread` mutation from Phase 6, including stale biscuit threads
+when its ready-to-merge verdict carried forward.
 
 A bot sometimes fails to connect a fix to its thread, usually when the code moved rather than changed in place. That's worth a short reply explaining where the fix went before resolving, so the thread reads correctly for whoever comes through next.
 
 **7e. Flip draft to ready**
 
-Work-repo PRs are opened as drafts (by pr-time) so both bots review before humans get pinged. Once everything above is genuinely clean (7a green, 7c surfaced no new findings from either bot, 7d resolutions confirmed), that bot-first pass is done. Check whether the PR is still a draft:
+Work-repo PRs are opened as drafts (by pr-time) so both bots review before humans get pinged. Once everything above is genuinely clean (7a green, 7c surfaced no new findings from the expected reviews, 7d resolutions confirmed), that bot-first pass is done. Check whether the PR is still a draft:
 
 ```bash
 gh pr view $PR_NUMBER --json isDraft --jq '.isDraft'
@@ -383,7 +421,10 @@ This is the moment CODEOWNERS review requests fire, so only reach it when the re
 By this point you've read a diff, several review bodies, and a pile of source files, which is exactly when steps get quietly skipped. Before telling me it's done, confirm all four and be able to point at the evidence:
 
 - [ ] CI green
-- [ ] `/biscuit review` posted **after the last push**, and biscuit's re-review read. It does not re-review on its own; this is the one that gets forgotten, because CodeRabbit needs no equivalent.
+- [ ] biscuit state accounted for: an existing `✅ ready to merge` carried
+      forward because no major new change invalidated it, or a warranted
+      `/biscuit review` completed and its result was read. No review was
+      requested merely because the head moved.
 - [ ] CodeRabbit's post-push review read (an empty body is a thread reply, not a finding)
 - [ ] Zero unresolved threads
 
@@ -413,8 +454,9 @@ Two things still gate the merge regardless of who approved:
   usual culprit, and the fix is to rerun the generator rather than hand-edit
   the conflict markers, so `generate-check` vouches for the resolution.
 
-biscuit's verdict is not a gate. It never was, and waiting on a re-review to
-merge a human-approved PR is wasted time.
+biscuit's verdict is not a gate. Once it says `✅ ready to merge`, that verdict
+also carries forward unless a major new change invalidates what it reviewed.
+Waiting on a re-review after an ordinary follow-up push is wasted time.
 
 ## Response Style
 - Mark your own prose with 🤖 (see Phase 4)
