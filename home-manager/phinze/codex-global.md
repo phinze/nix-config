@@ -100,6 +100,11 @@ I use jj (Jujutsu) for version control. Reach for jj first; only fall back
 to git when jj genuinely has no equivalent. Prefer semantic, single-purpose
 commits with descriptions that focus on the "why."
 
+Unless I or a repository's own instructions say otherwise, ship changes to
+GitHub repositories owned by `phinze` directly to `main`. Ship changes to
+repositories owned by anyone else through a pull request. An explicit request
+to open or prep a PR overrides the ownership default.
+
 When I ask you to "run pr-time" (or "prep a PR"), or to "address review
 comments", activate the `pr-time` or `address-pr-review` skill to tidy the
 Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd

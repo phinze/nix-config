@@ -1,9 +1,23 @@
 ---
 name: pr-time
-description: Ship a change as a pull request. Tidy the jj rev stack, rebase on trunk, draft narrative rev messages and a PR description, then babysit the PR through CI and both bot reviewers. Use when asked to run pr-time, prep or open a PR, ship this work, or when a finished change needs to become a pull request.
+description: Ship a finished change by direct push or pull request. Tidy the jj rev stack, rebase on trunk, polish revision messages, then follow the repository's delivery policy. Use when asked to run pr-time, ship this work, prep or open a PR, or otherwise publish a finished change.
 ---
 
-# Ship a PR
+# Ship a Change
+
+## Delivery Path
+
+Explicit user and repository instructions win. Otherwise, GitHub repositories
+owned by `phinze` ship directly to `main`; repositories owned by anyone else
+ship through a pull request. Check the owner rather than inferring it from a
+local path:
+
+```bash
+gh repo view --json owner --jq '.owner.login'
+```
+
+Both paths use Steps 1–4. A direct push then follows the direct-push branch
+below and stops. A pull request continues through Steps 5–8.
 
 ## Style Guide
 
@@ -90,6 +104,19 @@ wrong.
 4. **Polish the rev messages**. Short imperative summary line, blank line, brief narrative body hard-wrapped at 72 per git convention. Write and apply them yourself; they do not need separate approval. `jj desc -r <rev> -m '<message>'` with the whole thing in one single-quoted string (newlines preserved), or `jj desc -r <rev>` for the editor.
 
    These carry more weight than their length suggests. The style guide sends mechanism here rather than into the description, so this is where the durable technical prose lives, and its reader arrives from `blame` with the diff already in front of them. Give that reader the why: what the situation was, what forced the change, what you considered and rejected. A body that restates the summary line, or narrates a diff they are already looking at, gives them nothing.
+
+   **Direct-push branch:** Verify the stack is a direct descendant of current
+   `trunk()`, move `main` to the tip change revision (`@`, or `@-` when `@` is
+   an empty working-copy revision), and push it:
+
+   ```bash
+   jj bookmark move main --to <tip-revision>
+   jj git push --bookmark main
+   ```
+
+   A routine direct push needs no PR prose or writing checkpoint. If the push
+   rejects because `main` advanced, fetch, rebase onto the new `trunk()`, and
+   retry. Stop after the push and report the revisions that landed.
 
 5. **Draft the PR. You take the first pass; I make the call.**
 
