@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -92,6 +93,7 @@ let
   # loader matches on, so Codex can discover and activate one on its own. That
   # distinction is why the PR workflows live here and not in promptCommands.
   skillDirs = {
+    recto = "${inputs.recto}/skills/recto";
     improve-prose = ./claude-skills/improve-prose;
     second-opinion = ./claude-skills/second-opinion;
     pr-time = ./claude-skills/pr-time;
