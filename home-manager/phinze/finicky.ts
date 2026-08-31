@@ -3,6 +3,17 @@
 
 import type { FinickyConfig } from "/Applications/Finicky.app/Contents/Resources/finicky.d.ts";
 
+// Chrome profile *display* names, exactly as they appear in Chrome's profile
+// switcher. Finicky matches these against `profile.info_cache[*].name` in
+// ~/Library/Application Support/Google/Chrome/Local State, and a name that
+// doesn't match is silently ignored: it drops --profile-directory entirely
+// and Chrome reuses whichever profile was last open. Renaming a profile in
+// Chrome therefore breaks routing with no error, so re-check these after any
+// re-signin or fresh machine setup.
+const WORK = "miren.dev";
+const CTL = "chicagotoollibrary.org";
+const PERSONAL = "phinze.com";
+
 export default {
   defaultBrowser: "Zen",
 
@@ -22,7 +33,7 @@ export default {
       },
       browser: {
         name: "Google Chrome",
-        profile: "Work",
+        profile: WORK,
       },
     },
     {
@@ -35,7 +46,7 @@ export default {
         url.searchParams.get("client_id")?.startsWith("32555940559"),
       browser: {
         name: "Google Chrome",
-        profile: "Work",
+        profile: WORK,
       },
     },
     {
@@ -50,7 +61,7 @@ export default {
           ?.endsWith("@chicagotoollibrary.org"),
       browser: {
         name: "Google Chrome",
-        profile: "CTL",
+        profile: CTL,
       },
     },
     {
@@ -61,7 +72,7 @@ export default {
         url.searchParams.get("login_hint") === "phinze@phinze.com",
       browser: {
         name: "Google Chrome",
-        profile: "Personal",
+        profile: PERSONAL,
       },
     },
     {
@@ -73,7 +84,7 @@ export default {
         url.searchParams.get("login_hint") === "paul@miren.dev",
       browser: {
         name: "Google Chrome",
-        profile: "Work",
+        profile: WORK,
       },
     },
   ],
@@ -94,7 +105,7 @@ export default {
           "fbclid",
         ];
         trackingParams.forEach((param) => {
-          if (url.search) delete url.search[param];
+          url.searchParams.delete(param);
         });
         return url;
       },
