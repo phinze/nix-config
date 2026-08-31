@@ -844,11 +844,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788191973,
-        "narHash": "sha256-04/pYrbijcYfqjPeCCNa0uFi9f0dt557jAJujMlhusk=",
+        "lastModified": 1788194272,
+        "narHash": "sha256-ioXA21X3vM/Xy540uvFlgNaVOZgodUPvLqoh26hJNeM=",
         "owner": "phinze",
         "repo": "recto",
-        "rev": "5683f97397e631ac998df5efa73f8ff08962c755",
+        "rev": "59020ad4aa3a9408ae88466e9225c977eafbca42",
         "type": "github"
       },
       "original": {
