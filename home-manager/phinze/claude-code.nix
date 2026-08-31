@@ -168,7 +168,7 @@ in
           # Unhandled events are logged by the hook command and ignored.
           sophonHook = {
             type = "command";
-            command = config.services.sophon.hookCommand;
+            command = config.phinze.agentHooks.sophonCommand;
           };
           sophonOnly = [ { hooks = [ sophonHook ]; } ];
         in

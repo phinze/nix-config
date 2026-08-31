@@ -52,11 +52,11 @@ let
   # guessing which harness emitted an otherwise identical event.
   sophonHook = {
     type = "command";
-    command = "${config.services.sophon.hookCommand} --provider codex";
+    command = "${config.phinze.agentHooks.sophonCommand} --provider codex";
   };
   threadTitleHook = {
     type = "command";
-    command = "${codexThreadTitle}/bin/codex-thread-title";
+    command = "${config.home.profileDirectory}/bin/codex-thread-title";
   };
   codexHooksFile = pkgs.writeText "codex-hooks.json" (
     builtins.toJSON {

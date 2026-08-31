@@ -26,6 +26,8 @@ in
     inputs.double-agent.homeManagerModules.default
     # Sophon for Claude Code notification + response relay
     inputs.sophon.homeManagerModules.default
+    # Stable profile-based paths for agent hook commands
+    ./modules/agent-hook-paths.nix
     # Claude Code configuration (package + statusline)
     ./claude-code.nix
     # Antigravity CLI configuration (wrapped package + statusline + plugins)

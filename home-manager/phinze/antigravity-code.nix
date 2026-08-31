@@ -182,19 +182,19 @@ let
         PreInvocation = [
           {
             type = "command";
-            command = "${config.services.sophon.hookCommand} --provider antigravity --event PreInvocation";
+            command = "${config.phinze.agentHooks.sophonCommand} --provider antigravity --event PreInvocation";
           }
         ];
         PostInvocation = [
           {
             type = "command";
-            command = "${config.services.sophon.hookCommand} --provider antigravity --event PostInvocation";
+            command = "${config.phinze.agentHooks.sophonCommand} --provider antigravity --event PostInvocation";
           }
         ];
         Stop = [
           {
             type = "command";
-            command = "${config.services.sophon.hookCommand} --provider antigravity --event Stop";
+            command = "${config.phinze.agentHooks.sophonCommand} --provider antigravity --event Stop";
           }
         ];
       };
