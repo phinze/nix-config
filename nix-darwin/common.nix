@@ -189,6 +189,7 @@ in
     "godot"
     "google-chrome"
     "granola"
+    "handy"
     "istat-menus"
     "karabiner-elements"
     "keepingyouawake"
