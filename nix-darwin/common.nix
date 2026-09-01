@@ -191,6 +191,7 @@ in
     "granola"
     "handy"
     "istat-menus"
+    "jump-desktop"
     "karabiner-elements"
     "keepingyouawake"
     "keymapp"
