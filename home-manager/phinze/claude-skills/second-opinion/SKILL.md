@@ -22,7 +22,8 @@ Infer parameters from the request and avoid questions when these defaults fit:
 - Ask only when a required revision/base is missing or the request is genuinely
   ambiguous. A bare `/second-opinion` should run with the defaults.
 
-This workflow sends the selected diff and included project instructions to the
+The reviewer gets read-only access to the repository plus an authoritative diff
+snapshot that defines the review boundary. It may send files it inspects to the
 chosen model provider. Never use it silently as part of an ordinary local review.
 
 ## Run the review
@@ -30,40 +31,35 @@ chosen model provider. Never use it silently as part of an ordinary local review
 Resolve paths relative to this `SKILL.md`, then set `runner` to the absolute path
 of `scripts/review.sh` in this skill directory.
 
-1. Preview the selected diff:
+Run the reviewer and capture its JSON before presenting it:
 
-   ```bash
-   "$runner" --reviewer codex --scope working-copy --preview
-   ```
+```bash
+"$runner" \
+  --reviewer codex \
+  --scope working-copy \
+  --focus general \
+  > /tmp/second-opinion-codex.json
+```
 
-   Supported scopes are `working-copy`, `branch`, and `revision`. For a branch
-   diff, add `--base <rev>` when the default `trunk()` or remote default branch
-   is not right. For one revision, add `--revision <rev>`.
+Supported scopes are `working-copy`, `branch`, and `revision`. For a branch
+diff, add `--base <rev>` when the default `trunk()` or remote default branch is
+not right. For one revision, add `--revision <rev>`. Reviewer values are `codex`
+and `claude`. Focus values are `general`, `security`, `performance`,
+`error-handling`, or free-form text.
 
-2. If the preview reports no diff, stop. If it reports more than 2,000 changed
-   lines, ask whether to proceed or narrow the scope. Pass `--allow-large` only
-   after the user chooses to proceed.
+Context defaults to `auto`, which points the reviewer at repo-root `AGENTS.md`
+and `CLAUDE.md` when present. Use `--context none` or `--context <path>` to
+override it. Use `--preview` only when you want to inspect the selected scope
+without launching a reviewer. Large scopes run without a separate approval
+gate; narrow them only when the user asks or a reviewer cannot finish.
 
-3. Run the reviewer and capture its JSON before presenting it:
-
-   ```bash
-   "$runner" \
-     --reviewer codex \
-     --scope working-copy \
-     --focus general \
-     > /tmp/second-opinion-codex.json
-   ```
-
-   Reviewer values are `codex` and `claude`. Focus values are `general`,
-   `security`, `performance`, `error-handling`, or free-form text. Context
-   defaults to `auto`, which includes repo-root `AGENTS.md` and `CLAUDE.md` when
-   present. Use `--context none` or `--context <path>` to override it.
-
-4. For a comparison, invoke the runner twice in parallel with separate output
-   files. The commands are read-only and do not share mutable state.
+For a comparison, invoke the runner twice in parallel with separate output
+files. The reviewers are read-only and do not edit the workspace.
 
 The runner prefers jj whenever `jj root` succeeds. It uses git only outside a jj
-repository, including untracked files for git working-copy reviews.
+repository, including untracked files for git working-copy reviews. It snapshots
+the exact diff before starting the reviewer, then lets the reviewer inspect that
+boundary and explore related source, history, and tests with read-only tools.
 
 ## Triage the result
 
@@ -82,6 +78,7 @@ Treat the external review as evidence, not truth.
 
 ## Handle failures
 
+- If the selected scope is empty, report that there are no changes to review.
 - If a CLI is missing, report the missing command and use the other installed
   reviewer when that still satisfies the request.
 - If authentication fails, report it. Do not silently switch accounts, models,
