@@ -101,11 +101,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1788390097,
-        "narHash": "sha256-oofzNN6ZOgyc6o6yb4gSJlEGqRajejwBXOZeCM3oMno=",
+        "lastModified": 1788480218,
+        "narHash": "sha256-KAYzNrvsTQyXTzFckqobhCydzBwW/preXBCxAKb4e6U=",
         "owner": "sadjow",
         "repo": "claude-code-nix",
-        "rev": "98baea86e15af13581b9859e25857da994419ddd",
+        "rev": "cf835bf360e67ac461e08ba18154e9527c29cd8e",
         "type": "github"
       },
       "original": {
@@ -165,11 +165,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1788476814,
-        "narHash": "sha256-nDcz57LlbgP03ONwKjorBm0VK7cX6DvkSYaCmn1toS0=",
+        "lastModified": 1788477253,
+        "narHash": "sha256-I1RMlo/zIG38edUIYGjw1e0OOcpxD1sxhq8bLVPfNpw=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "89ebd467e0e4c32aa2a37cc0c9875dd4127f5c57",
+        "rev": "1dd995193ba20bba51ca6c681aa8d3398dbd80a2",
         "type": "github"
       },
       "original": {
@@ -425,11 +425,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1786403539,
-        "narHash": "sha256-lOhRS9GEDwPSyvOYhQ9zWR15VQCRhje+nAy6nRSfs3w=",
+        "lastModified": 1788478305,
+        "narHash": "sha256-VW7g+nUay4X1CrqhMjz8SmtmDlfKzjZ2m9y3QXeRr9w=",
         "ref": "refs/heads/main",
-        "rev": "f2ad11b7c1847e324bebc08c9bf6bad6e2b0d801",
-        "revCount": 77,
+        "rev": "c01782a6b7e38812925901d9e679b2f8b11a5827",
+        "revCount": 79,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
