@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -gt 2 || "${1:-}" == --help ]]; then
+  echo "usage: prototype-nix-sync-auth [path-to-terminal-notifier-3] [native|sudo-touch-id]"
+  echo "Offers an Install button, then runs only /usr/bin/id -u through the selected authorization route."
+  exit 0
+fi
+
+notifier=${1:-terminal-notifier}
+method=${2:-native}
+case "$method" in
+  native|sudo-touch-id) ;;
+  *) echo "Unknown authorization route: $method" >&2; exit 2 ;;
+esac
+command -v "$notifier" >/dev/null || {
+  echo "Pass the path to terminal-notifier 3.x" >&2
+  exit 1
+}
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+trap '"$notifier" -remove nix-config-sync-auth-prototype >/dev/null 2>&1 || true' EXIT
+
+echo "Waiting for Install. This prototype cannot build, install, or change configuration."
+notification_status=0
+answer=$("$notifier" -title "Nix sync: $method test" \
+  -message "Install tests authentication by running id as root. Nothing will be installed. No Terminal window." \
+  -group nix-config-sync-auth-prototype -action Install -timeout 180) || notification_status=$?
+
+if [[ "$notification_status" != 0 && "$notification_status" != 6 ]]; then
+  echo "Notification failed (exit $notification_status)" >&2
+  exit "$notification_status"
+fi
+if [[ "$notification_status" == 6 || "$answer" != Install ]]; then
+  echo "No Install click ($answer); no authentication requested."
+  exit 0
+fi
+
+echo "Install clicked. Testing $method authorization for /usr/bin/id -u."
+if [[ "$method" == sudo-touch-id ]]; then
+  if ! /usr/bin/sudo -S -p '' -v </dev/null; then
+    echo "Touch ID was cancelled or unavailable; password input is disabled."
+    exit 1
+  fi
+  result_file=$(mktemp)
+  trap 'rm -f "$result_file"; "$notifier" -remove nix-config-sync-auth-prototype >/dev/null 2>&1 || true' EXIT
+  { /usr/bin/sudo -n /usr/bin/id -u </dev/null; } > "$result_file"
+  effective_user=$(cat "$result_file")
+  result="authenticated: uid=$effective_user"
+else
+  result=$(/usr/bin/osascript "$script_dir/prototype-nix-sync-auth.applescript")
+fi
+echo "$result"
+if [[ "$result" == "authenticated: uid=0" ]]; then
+  "$notifier" -title "Nix sync: auth test passed" \
+    -message "$method authorization ran id as root. No configuration changed." \
+    -group nix-config-sync-auth-prototype-result || true
+elif [[ "$result" == cancelled ]]; then
+  echo "Authentication cancelled. No configuration changed."
+else
+  echo "Unexpected authorization result" >&2
+  exit 1
+fi

@@ -52,6 +52,7 @@ in
     ./modules/memex-autocommit.nix
     # Hourly main reconciliation + input bumps (gated by nodeConfig.isNixConfigSyncHost)
     ./modules/nix-config-sync.nix
+    ./modules/nix-config-sync-darwin.nix
     # Ghostty + cmux terminal theming on macOS (reads ~/.config/ghostty/config)
     ./ghostty.nix
   ]

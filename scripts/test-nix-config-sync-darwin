@@ -1,0 +1,282 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+source "$repo/home-manager/phinze/modules/nix-config-sync-darwin.sh"
+
+if [[ "${1:-}" == --handoff || "${1:-}" == install || "${1:-}" == _install ]]; then
+  [[ $# == 2 && "$2" =~ ^[A-Fa-f0-9-]{36}$ ]] || exit 2
+  STATE_DIR="/tmp/nix-sync-worker-$2"
+  LOG_DIR="$STATE_DIR"
+  LABEL=org.phinze.nix-sync-test
+  install_pending() {
+    echo entered > "$STATE_DIR/entered"
+    for attempt in {1..200}; do
+      if [[ -f "$STATE_DIR/proceed" ]]; then
+        echo completed > "$STATE_DIR/completed"
+        return 0
+      fi
+      sleep 0.05
+    done
+    return 1
+  }
+  if [[ "$1" == --handoff ]]; then
+    start_installer "$2"
+  else
+    main "$@"
+  fi
+  exit
+fi
+
+work=$(mktemp -d)
+work=$(cd "$work" && pwd -P)
+trap 'rm -rf "$work"; if [[ -n "${worker_state:-}" ]]; then /bin/launchctl bootout "gui/$(id -u)/org.phinze.nix-sync-test.install.$worker_token" 2>/dev/null || true; rm -rf "$worker_state"; fi' EXIT
+STATE_DIR="$work/state"
+HOST=phinze-mrn-mbp
+main_revision=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+old_revision=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+build_output="$work/system"
+initial_system="$work/previous"
+mkdir -p "$build_output" "$initial_system" "$STATE_DIR/repo/.git"
+
+on_power() { [[ "$power" == yes ]]; }
+active_system() { cat "$work/active"; }
+notify() { echo "$*" >> "$work/notifications"; }
+request_install() { echo "$notification_answer"; return "$notification_exit"; }
+start_installer() { echo "$1" > "$work/opened"; }
+authenticate() {
+  echo auth >> "$work/actions"
+  if [[ "$unplug_during_auth" == yes ]]; then power=no; fi
+  if [[ "$switch_during_auth" == yes ]]; then echo "$work/manual-preview" > "$work/active"; fi
+  return "$auth_exit"
+}
+activate_system() {
+  echo activate >> "$work/actions"
+  [[ "$activation_exit" == 0 ]] || return "$activation_exit"
+  echo "$1" > "$work/active"
+}
+git() {
+  echo "git $*" >> "$work/commands"
+  case "$1" in
+    fetch) return "$fetch_exit" ;;
+    rev-parse) echo "$main_revision" ;;
+    clone|reset|clean) return 0 ;;
+    *) echo "Unexpected git command: $*" >&2; return 1 ;;
+  esac
+}
+nix() {
+  echo "nix $*" >> "$work/commands"
+  [[ "$build_exit" == 0 ]] || return "$build_exit"
+  ln -sfn "$build_output" "$STATE_DIR/result"
+  if [[ "$unplug_during_build" == yes ]]; then power=no; fi
+}
+reset_case() {
+  rm -f "$STATE_DIR/"*.json "$work/opened"
+  : > "$work/actions"
+  : > "$work/commands"
+  echo "$initial_system" > "$work/active"
+  power=yes
+  notification_answer=Install
+  notification_exit=0
+  fetch_exit=0
+  build_exit=0
+  auth_exit=0
+  activation_exit=0
+  unplug_during_auth=no
+  switch_during_auth=no
+  unplug_during_build=no
+}
+phase_is() { [[ "$(jq -r .phase "$STATE_DIR/status.json")" == "$1" ]]; }
+offer() {
+  reconcile
+  token=$(cat "$work/opened")
+}
+passed() { echo "ok: $1"; }
+
+reset_case
+power=no
+reconcile
+phase_is deferred
+[[ ! -s "$work/commands" ]]
+passed "battery skips fetch and build"
+
+reset_case
+record_deployment "$main_revision" "$initial_system"
+reconcile
+phase_is current
+! grep -q '^nix ' "$work/commands"
+passed "unchanged revision skips building"
+
+reset_case
+record_deployment "$main_revision" "$build_output"
+reconcile
+phase_is preview
+[[ ! -e "$work/opened" ]]
+passed "manual preview survives unchanged main"
+
+reset_case
+echo "$build_output" > "$work/active"
+reconcile
+phase_is current
+[[ "$(jq -r .revision "$STATE_DIR/deployed.json")" == "$main_revision" ]]
+[[ ! -e "$work/opened" ]]
+passed "identical closure records revision without prompting"
+
+reset_case
+fetch_exit=1
+if reconcile; then echo "fetch should fail" >&2; exit 1; fi
+[[ ! -e "$work/opened" ]]
+! grep -q '^nix ' "$work/commands"
+passed "offline does not build or prompt"
+
+reset_case
+build_exit=1
+if reconcile; then echo "build should fail" >&2; exit 1; fi
+[[ ! -e "$STATE_DIR/pending.json" && ! -e "$STATE_DIR/deployed.json" ]]
+passed "failed build cannot offer an install"
+
+reset_case
+unplug_during_build=yes
+reconcile
+phase_is deferred
+[[ ! -e "$work/opened" ]]
+passed "unplugging during build suppresses offer"
+
+for answer_kind in @CLOSED @TIMEOUT @ACTIONCLICKED; do
+  reset_case
+  notification_answer="$answer_kind"
+  if [[ "$notification_answer" == @TIMEOUT ]]; then notification_exit=6; fi
+  reconcile
+  phase_is deferred
+  [[ ! -e "$STATE_DIR/pending.json" && ! -e "$work/opened" ]]
+  passed "$answer_kind never opens authentication"
+done
+
+reset_case
+notification_exit=3
+if reconcile; then echo "notification failure ignored" >&2; exit 1; fi
+[[ ! -e "$STATE_DIR/pending.json" && ! -e "$work/opened" ]]
+passed "notification permission failure cannot open authentication"
+
+reset_case
+offer
+phase_is awaiting-auth
+[[ ! -s "$work/actions" ]]
+install_pending "$token"
+phase_is current
+[[ "$(cat "$work/actions")" == $'auth\nactivate' ]]
+[[ "$(jq -r .system "$STATE_DIR/deployed.json")" == "$build_output" ]]
+[[ ! -e "$STATE_DIR/pending.json" ]]
+grep -q -- '--no-write-lock-file' "$work/commands"
+grep -q -- '--no-update-lock-file' "$work/commands"
+! grep -Eq 'git (push|commit)|nix flake' "$work/commands"
+passed "Install activates the offered closure and never publishes inputs"
+
+reset_case
+offer
+if install_pending wrong-token; then echo "wrong token accepted" >&2; exit 1; fi
+[[ ! -s "$work/actions" ]]
+passed "stale notification token cannot activate"
+
+reset_case
+offer
+jq '.expires = 0' "$STATE_DIR/pending.json" > "$work/expired.json"
+mv "$work/expired.json" "$STATE_DIR/pending.json"
+if install_pending "$token"; then echo "expired offer accepted" >&2; exit 1; fi
+[[ ! -s "$work/actions" ]]
+passed "expired offer cannot activate"
+
+reset_case
+offer
+power=no
+install_pending "$token"
+phase_is deferred
+[[ ! -s "$work/actions" ]]
+passed "battery at click time skips authentication"
+
+reset_case
+offer
+echo "$work/manual-preview" > "$work/active"
+install_pending "$token"
+phase_is deferred
+[[ ! -s "$work/actions" ]]
+passed "manual activation after offer is preserved"
+
+reset_case
+offer
+unplug_during_auth=yes
+install_pending "$token"
+phase_is deferred
+[[ "$(cat "$work/actions")" == auth ]]
+passed "unplugging during authentication skips activation"
+
+reset_case
+offer
+switch_during_auth=yes
+install_pending "$token"
+phase_is deferred
+[[ "$(cat "$work/actions")" == auth ]]
+passed "manual activation during authentication is preserved"
+
+reset_case
+offer
+auth_exit=1
+install_pending "$token"
+phase_is deferred
+[[ "$(cat "$work/actions")" == auth ]]
+[[ ! -e "$STATE_DIR/deployed.json" ]]
+passed "cancelled authentication never activates or records success"
+
+reset_case
+record_deployment "$old_revision" "$initial_system"
+offer
+activation_exit=1
+if install_pending "$token"; then echo "failed activation succeeded" >&2; exit 1; fi
+[[ "$(jq -r .revision "$STATE_DIR/deployed.json")" == "$old_revision" ]]
+passed "failed activation preserves last successful deployment"
+
+if [[ -x /usr/bin/lockf ]]; then
+  /usr/bin/lockf -k "$work/lock" /bin/sh -c 'echo ready > "$1"; sleep 1' sh "$work/locked" &
+  locker=$!
+  until [[ -f "$work/locked" ]]; do sleep 0.05; done
+  if /usr/bin/lockf -k -s -t 0 "$work/lock" /usr/bin/true; then
+    echo "competing run acquired lock" >&2
+    exit 1
+  else
+    [[ $? == 75 ]]
+  fi
+  wait "$locker"
+  /usr/bin/lockf -k -t 0 "$work/lock" /usr/bin/true
+  passed "native lockf excludes competing runs and releases on exit"
+fi
+
+if [[ -x /bin/launchctl && -x /usr/bin/plutil ]]; then
+  worker_token=$(/usr/bin/uuidgen)
+  worker_state="/tmp/nix-sync-worker-$worker_token"
+  (umask 077; mkdir "$worker_state")
+  "$repo/scripts/test-nix-config-sync-darwin" --handoff "$worker_token"
+  for attempt in {1..200}; do
+    [[ -f "$worker_state/entered" ]] && break
+    sleep 0.05
+  done
+  [[ -f "$worker_state/entered" ]]
+  /usr/bin/plutil -convert json -o "$worker_state/plist.json" "$worker_state/installer-$worker_token.plist"
+  jq -e '.RunAtLoad == true and .KeepAlive == false' "$worker_state/plist.json" >/dev/null
+  passed "one-shot worker runs after its submitting process exits"
+  touch "$worker_state/proceed"
+  for attempt in {1..200}; do
+    [[ ! -f "$worker_state/installer-$worker_token.plist" ]] && break
+    sleep 0.05
+  done
+  [[ -f "$worker_state/completed" && ! -f "$worker_state/installer-$worker_token.plist" ]]
+  for attempt in {1..200}; do
+    if ! /bin/launchctl print "gui/$(id -u)/org.phinze.nix-sync-test.install.$worker_token" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.05
+  done
+  ! /bin/launchctl print "gui/$(id -u)/org.phinze.nix-sync-test.install.$worker_token" >/dev/null 2>&1
+  passed "worker completes unprivileged activation and unloads itself"
+fi
+
+echo "All Darwin sync tests passed"

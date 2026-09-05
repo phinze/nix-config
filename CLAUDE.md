@@ -115,6 +115,11 @@ the boot default.
 
 ### How the Sync Bumps Inputs
 
+On `phinze-mrn-mbp`, a separate deploy-only LaunchAgent builds committed `main`
+on AC power and offers an Install notification. It never bumps inputs or pushes.
+See `nix-darwin/phinze-mrn-mbp/SYNC.md` for the authentication flow, commands,
+and validation. The Linux integrator described below remains unchanged.
+
 Three classes of flake input, and which one something belongs to is the whole
 decision. `syncInputs` follow their branch and get bumped every tick.
 `releaseInputs` follow their newest non-prerelease GitHub release: each tick
