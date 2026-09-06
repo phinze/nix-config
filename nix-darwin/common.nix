@@ -175,6 +175,7 @@ in
   homebrew.casks = [
     "1password"
     "1password-cli"
+    "ableton-live-lite"
     "balenaetcher"
     "bambu-studio"
     "blackhole-2ch"
