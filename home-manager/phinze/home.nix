@@ -156,11 +156,10 @@ in
 
   home.sessionVariables = {
     EDITOR = "nvim";
-    # pim resolves its config.json, credentials, and tokens from PIM_DATA_DIR.
-    # Point it at the pim-stuff checkout's gitignored .local/ so the globally
-    # installed `pim` works from any directory (the secrets live outside the
-    # nix store and can't be baked into the package).
-    PIM_DATA_DIR = "${config.home.homeDirectory}/src/github.com/phinze/pim-stuff/.local";
+    # pim's config, credentials, and tokens. Runtime state, not source, so it
+    # lives outside the pim-stuff checkout: a ghq clone should stay disposable,
+    # and the wipe took the credentials with it when they lived in its .local/.
+    PIM_DATA_DIR = "${config.xdg.dataHome}/pim";
   }
   // lib.optionalAttrs (osConfig.services.belowdeck.enable or false) {
     # The belowdeck darwin module hands the daemon its generated config through
