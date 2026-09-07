@@ -11,6 +11,14 @@ let
   };
 
   karabinerConfig = {
+    # Karabiner's `global` section is where the Settings UI's checkboxes live.
+    # Anything omitted here falls back to the app's built-in default, so a
+    # preference toggled in the UI survives only until the next activation
+    # rewrites this file. Declare what we want rather than toggling it.
+    global = {
+      show_in_menu_bar = false;
+    };
+
     profiles = [
       {
         name = "Default profile";
