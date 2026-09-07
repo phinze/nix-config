@@ -796,11 +796,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788362837,
-        "narHash": "sha256-eB/0YEvxNAcHN1OFFvgtfgr0o6z3y1LcFCjpbnQi5jA=",
+        "lastModified": 1788741125,
+        "narHash": "sha256-vNhnUKYho6jDnIBCKgZHOZfbJkYhcVevlcuVWKKrP7s=",
         "ref": "refs/heads/main",
-        "rev": "068dd8ec7409162a16c155cc632e4f59336cc01b",
-        "revCount": 106,
+        "rev": "cb1b4163f25556529035151375982c64f65744f8",
+        "revCount": 107,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
@@ -867,11 +867,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788544206,
-        "narHash": "sha256-vTsOhlMK2tMQn0hrzFYe7Lp1VnMdQbcITrxSMRKqtAc=",
+        "lastModified": 1788740064,
+        "narHash": "sha256-sg/8Rn5KJcGNoK7r+EBiWZ6vgy/FVLa1m7ndfDKxi8o=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "bb719d8fefeae8eb5062b2229537eff4e1261055",
+        "rev": "8084c1e079a7a8144499686cc6f72d1f91f27992",
         "type": "github"
       },
       "original": {
