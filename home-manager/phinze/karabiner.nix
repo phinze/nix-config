@@ -69,6 +69,6 @@ lib.mkIf pkgs.stdenv.isDarwin {
   # the next switch fails the .nix-backup check). Copy on activation instead
   # so the file is mutable in place; nix is the source of truth on every switch.
   home.activation.karabinerConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    $DRY_RUN_CMD install -Dm 0644 ${karabinerJson} "$HOME/.config/karabiner/karabiner.json"
+    $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -Dm 0644 ${karabinerJson} "$HOME/.config/karabiner/karabiner.json"
   '';
 }
