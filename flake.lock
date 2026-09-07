@@ -630,11 +630,11 @@
     },
     "nixpkgs-small": {
       "locked": {
-        "lastModified": 1788727954,
-        "narHash": "sha256-dN1qRLbSkzZUc0LrTdadoK50QtvfJ9luYwj6eN3/DOs=",
+        "lastModified": 1788761488,
+        "narHash": "sha256-mu5sizob4fS6ECwiwFMIlLRn5OZt/DlY29E1xK7ArZc=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "8c2aee38350491da9f92fa883a3cf0fea733bcb6",
+        "rev": "9485e5e151b6bcea0fef6980325ec8fb4194d30c",
         "type": "github"
       },
       "original": {
@@ -796,11 +796,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788741125,
-        "narHash": "sha256-vNhnUKYho6jDnIBCKgZHOZfbJkYhcVevlcuVWKKrP7s=",
+        "lastModified": 1788784306,
+        "narHash": "sha256-it2JXmML8O6PALDIqVOhsPiIxzUqIqopbh27TDQW8fo=",
         "ref": "refs/heads/main",
-        "rev": "cb1b4163f25556529035151375982c64f65744f8",
-        "revCount": 107,
+        "rev": "cee0bc5a1859fa3d1d269815c4f1d1fb54d534b5",
+        "revCount": 108,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
