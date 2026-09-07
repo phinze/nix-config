@@ -159,6 +159,20 @@ in
       # (the seen-count cap that's supposed to limit it to 3 shows never persists
       # in ~/.claude.json, so the nag fires every session until `tui` is defined).
       tui = "fullscreen";
+      # Retention for ~/.claude/projects/ transcripts, and everything that ages
+      # out with them (subagent transcripts, spilled tool results, file-history,
+      # plans, paste-cache). The default is 30 days and the sweep runs at every
+      # launch, which had already eaten every session older than 2026-07-16 by
+      # the time we went looking for the drafting history behind this year's
+      # essays. Not 0: the minimum is 1 and 0 fails validation (it used to
+      # silently disable transcript writes entirely, anthropics/claude-code#23710).
+      #
+      # Deliberately generous rather than correct. Transcripts are plaintext on
+      # an unencrypted disk and contain any credential a tool ever printed, so
+      # once the restic archive is live this should come back down to something
+      # short and the archive should hold the long tail instead.
+      # See ~/src/github.com/phinze/memex/Projects/Ideas/backup-strategy.md
+      cleanupPeriodDays = 3650;
       # Plugins auto-load from ~/.claude/skills/<name>/ (each carries a
       # .claude-plugin/plugin.json) as of Claude Code 2.1.157. No enabledPlugins
       # block, marketplace registry, or installed_plugins.json needed anymore.
