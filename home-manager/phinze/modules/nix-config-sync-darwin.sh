@@ -65,7 +65,12 @@ cleanup_installer() {
 
 reconcile() {
   local candidate current deployed_revision deployed_system built token answer notification_status
-  if ! on_power; then
+  local forced=0
+  if [[ -f "$STATE_DIR/kicked" ]]; then
+    forced=1
+    rm -f "$STATE_DIR/kicked"
+  fi
+  if [[ "$forced" -eq 0 ]] && ! on_power; then
     set_status deferred "On battery; leaving the system alone"
     return 0
   fi
@@ -99,14 +104,15 @@ reconcile() {
     set_status current "${candidate:0:12} produces the already active system"
     return 0
   fi
-  if ! on_power; then
+  if [[ "$forced" -eq 0 ]] && ! on_power; then
     set_status deferred "Build ready, but now on battery"
     return 0
   fi
   token=$(/usr/bin/uuidgen) || return
   jq -n --arg token "$token" --arg revision "$candidate" --arg system "$built" \
     --arg previous "$current" --argjson expires "$(($(date +%s) + 900))" \
-    '{token: $token, revision: $revision, system: $system, previous: $previous, expires: $expires}' \
+    --argjson forced "$forced" \
+    '{token: $token, revision: $revision, system: $system, previous: $previous, expires: $expires, forced: ($forced == 1)}' \
     > "$STATE_DIR/pending.json.tmp"
   mv "$STATE_DIR/pending.json.tmp" "$STATE_DIR/pending.json"
   set_status ready "${candidate:0:12} is built; waiting for Install"
@@ -127,18 +133,19 @@ reconcile() {
 }
 
 install_pending() {
-  local token candidate built previous expires
+  local token candidate built previous expires forced
   if [[ ! -f "$STATE_DIR/pending.json" ]]; then
     echo "No pending offer; run nix-config-sync kick" >&2
     return 1
   fi
   token=$(jq -er '.token' "$STATE_DIR/pending.json") || return
   expires=$(jq -er '.expires' "$STATE_DIR/pending.json") || return
+  forced=$(jq -r '.forced // false' "$STATE_DIR/pending.json" 2>/dev/null || echo "false")
   if [[ "$1" != "$token" || $(date +%s) -gt "$expires" ]]; then
     echo "This install offer has expired; run nix-config-sync kick" >&2
     return 1
   fi
-  if ! on_power; then
+  if [[ "$forced" != "true" ]] && ! on_power; then
     set_status deferred "On battery; install postponed"
     return 0
   fi
@@ -157,7 +164,7 @@ install_pending() {
     notify "Install deferred: Touch ID was cancelled or unavailable."
     return 0
   fi
-  if ! on_power; then
+  if [[ "$forced" != "true" ]] && ! on_power; then
     set_status deferred "Power disconnected during authentication; install postponed"
     return 0
   fi
@@ -184,6 +191,7 @@ main() {
   case "${1:-}" in
     kick)
       [[ $# -eq 1 ]] || return 2
+      touch "$STATE_DIR/kicked"
       launchctl kickstart "gui/$(id -u)/$LABEL"
       echo "Reconciliation requested; use nix-config-sync status or logs"
       ;;
