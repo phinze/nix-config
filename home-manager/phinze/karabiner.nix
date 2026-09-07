@@ -10,36 +10,12 @@ let
     product_id = 50477; # 0xc52d R400 receiver
   };
 
-  builtInDevice = {
-    is_built_in_keyboard = true;
-  };
-
   karabinerConfig = {
     profiles = [
       {
         name = "Default profile";
         selected = true;
         complex_modifications.rules = [
-          {
-            description = "Caps Lock → Escape (tap) / Control (hold), built-in only";
-            manipulators = [
-              {
-                type = "basic";
-                from = {
-                  key_code = "caps_lock";
-                  modifiers.optional = [ "any" ];
-                };
-                to = [ { key_code = "left_control"; } ];
-                to_if_alone = [ { key_code = "escape"; } ];
-                conditions = [
-                  {
-                    type = "device_if";
-                    identifiers = [ builtInDevice ];
-                  }
-                ];
-              }
-            ];
-          }
           {
             description = "Logitech R400 black-screen → Handy toggle (opt+space)";
             manipulators = [
