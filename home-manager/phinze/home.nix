@@ -13,6 +13,12 @@
 let
   # First port above Linux's default ephemeral range (32768-60999).
   bankshotBridgePort = 61000;
+
+  # True on nodes that hold no keys of their own and sign with whatever agent
+  # the attached session forwards in. Equivalently: the nodes where the
+  # IdentityAgent settings below do not apply, so SSH_AUTH_SOCK points at
+  # double-agent rather than at a local 1Password.
+  usesForwardedAgent = pkgs.stdenv.isLinux && !(nodeConfig.isGraphical or false);
 in
 {
   # You can import other home-manager modules here
@@ -844,6 +850,14 @@ in
     ${inputs.nix-private.data.sshKeys.miren}
   '';
 
+  # Only headless nodes need this one. It is not a key they connect *with*
+  # from a laptop session; it is the key an iOS Blink session forwards in.
+  home.file.".ssh/pub/delevingne.pub" = lib.mkIf usesForwardedAgent {
+    text = ''
+      ${inputs.nix-private.data.sshKeys.delevingne}
+    '';
+  };
+
   programs.ssh = {
     enable = true;
 
@@ -886,10 +900,23 @@ in
         # tears itself down in ~90s and the next connection just reconnects.
         ServerAliveInterval = 30;
 
-        # One key per host instead of the agent's whole keyring. The fleet all
-        # takes this one; blocks above override where a host wants otherwise.
+        # A short offer list instead of the agent's whole keyring. Blocks above
+        # override where a host wants otherwise.
+        #
+        # Which identity is *signable* on a headless node is a fact about the
+        # client at the far end of the agent chain, not about the target host:
+        # a laptop session forwards in the laptop key, a Blink session on iOS
+        # forwards in delevingne. Pinning the laptop key alone therefore broke
+        # every phone-driven connection, offering an identity the forwarded
+        # agent could not sign for while IdentitiesOnly forbade falling back to
+        # the one it actually held. So those nodes offer both clients. The
+        # fleet already authorizes both (see users.users.phinze in the NixOS
+        # baseline), and two keys still beats handing over all seven.
         IdentitiesOnly = lib.mkDefault true;
-        IdentityFile = lib.mkDefault "~/.ssh/pub/phinze-mrn-mbp.pub";
+        IdentityFile = lib.mkDefault (
+          [ "~/.ssh/pub/phinze-mrn-mbp.pub" ]
+          ++ lib.optional usesForwardedAgent "~/.ssh/pub/delevingne.pub"
+        );
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
