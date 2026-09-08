@@ -10,6 +10,10 @@ let
     product_id = 50477; # 0xc52d R400 receiver
   };
 
+  builtInDevice = {
+    is_built_in_keyboard = true;
+  };
+
   karabinerConfig = {
     # Karabiner's `global` section is where the Settings UI's checkboxes live.
     # Anything omitted here falls back to the app's built-in default, so a
@@ -24,6 +28,37 @@ let
         name = "Default profile";
         selected = true;
         complex_modifications.rules = [
+          {
+            # Mirrors the Moonlander's caps-lock mod-tap onto the laptop's own
+            # keyboard so the two feel the same. Built-in only: external
+            # keyboards bring their own remapping.
+            #
+            # Left deliberately untuned. to_if_alone_timeout_milliseconds
+            # defaults to 1000ms, which is generous enough that a hold-then-bail
+            # still emits Escape; tightening it would cut those strays but cost
+            # tap reliability, and reliable taps are the point of keeping this.
+            # The expensive case this used to cause (a stray Escape killing an
+            # agent turn) is handled in the agent configs instead, which is
+            # where the cost actually was.
+            description = "Caps Lock → Escape (tap) / Control (hold), built-in only";
+            manipulators = [
+              {
+                type = "basic";
+                from = {
+                  key_code = "caps_lock";
+                  modifiers.optional = [ "any" ];
+                };
+                to = [ { key_code = "left_control"; } ];
+                to_if_alone = [ { key_code = "escape"; } ];
+                conditions = [
+                  {
+                    type = "device_if";
+                    identifiers = [ builtInDevice ];
+                  }
+                ];
+              }
+            ];
+          }
           {
             description = "Logitech R400 black-screen → Handy toggle (opt+space)";
             manipulators = [
