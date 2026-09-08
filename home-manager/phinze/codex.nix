@@ -32,6 +32,23 @@ let
     # it does not overwrite that title on every spinner frame.
     tui.terminal_title = [ ];
 
+    # Take the interrupt off plain Escape. Caps-lock is tap-for-Escape,
+    # hold-for-Control, and a slightly slow Control chord leaks a stray Escape
+    # into whatever has focus - which in an agent TUI kills the turn in flight.
+    #
+    # An empty list means "no keymap binding at all", which is safe because
+    # ctrl+c is a *fixed* interrupt here, not a keymap entry: binding
+    # interrupt_turn to ctrl-c is rejected outright with "uses a key reserved
+    # by `fixed.interrupt_or_quit`". So the interrupt survives the unbind, it
+    # just stops being one mistimed keypress away. Same posture as the
+    # keybindings.json unbind in claude-code.nix.
+    #
+    # A double-Escape chord is not an option: Codex reserves plain `esc` for
+    # cancelling a pending chord and refuses it as a chord key. (Claude Code
+    # accepts the same chord and then silently never dispatches it, so the
+    # constraint is real in both, just louder here.)
+    tui.keymap.chat.interrupt_turn = [ ];
+
     tools.web_search = true;
 
     # Linear issue tracking over the official remote MCP endpoint. Same server

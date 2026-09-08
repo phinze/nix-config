@@ -147,6 +147,21 @@ let
   # normalizes), so they need to be regular files rather than nix-store
   # symlinks. Same pattern as settings.json above (see 31bc298).
   mutableJsonConfigs = {
+    # Take the interrupt off plain Escape. Caps-lock is tap-for-Escape,
+    # hold-for-Control, and a slightly slow Control chord leaks a stray Escape
+    # into whatever has focus - which in an agent TUI kills the turn in flight.
+    #
+    # `cli.escape` ships as ["ctrl+c", "esc"]; dropping "esc" leaves ctrl+c
+    # doing the interrupting, the same posture as the keybindings.json unbind
+    # in claude-code.nix and the empty `interrupt_turn` in codex.nix.
+    #
+    # Declaring only this one action is deliberate and works because agy merges
+    # rather than replaces: hand it a file containing nothing but cli.escape and
+    # it rewrites the file with all 30 default bindings restored and our
+    # override intact. So this never has to track upstream's default map.
+    "keybindings.json" = {
+      "cli.escape" = [ "ctrl+c" ];
+    };
     "plugins/nix-lsp/plugin.json" = {
       name = "nix-lsp";
     };

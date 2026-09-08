@@ -225,6 +225,43 @@ in
     force = true;
   };
 
+  # Take the interrupt off plain Escape.
+  #
+  # Caps-lock is tap-for-Escape, hold-for-Control, and a slightly slow Control
+  # chord leaks a stray Escape into whatever has focus. In an agent TUI that
+  # stray keystroke kills the turn in flight, which is the one keypress in the
+  # whole workflow you least want to fire by accident.
+  #
+  # `chat:cancel` is the only thing Escape does in the Chat context, so
+  # unbinding it there costs nothing else: Escape still dismisses autocomplete,
+  # closes the help overlay, cancels selects and answers confirmation dialogs,
+  # all of which live in their own contexts. Interrupting is now ctrl+c, which
+  # is `app:interrupt` in Global and is explicitly non-rebindable, so there is
+  # no way to end up unable to stop a running agent.
+  #
+  # A double-Escape chord was the obvious middle ground and does not work:
+  # `{"escape": null, "escape escape": "chat:cancel"}` loads clean (the
+  # validator reports 0 warnings) but never dispatches, because Escape cannot
+  # act as a chord prefix. Codex spells out the same constraint in its own
+  # keymap validator - "plain `esc` is reserved for cancelling a pending chord"
+  # - so this looks like a property of terminal keymaps generally, not a bug in
+  # one implementation. Tested against Claude Code 2.1.263.
+  home.file.".claude/keybindings.json" = {
+    text = builtins.toJSON {
+      "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
+      "$docs" = "https://code.claude.com/docs/en/keybindings";
+      bindings = [
+        {
+          context = "Chat";
+          bindings = {
+            escape = null;
+          };
+        }
+      ];
+    };
+    force = true;
+  };
+
   # Skills-directory plugins (Claude Code 2.1.157+): any dir under
   # ~/.claude/skills/<name>/ that carries a .claude-plugin/plugin.json loads
   # automatically as <name>@skills-dir — no marketplace, no installed_plugins.json,
