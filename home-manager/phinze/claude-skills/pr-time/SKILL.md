@@ -94,7 +94,9 @@ wrong.
    - `jj git fetch` refreshes remote-tracking state, so `trunk()` resolves to current `main@origin`
    - `jj log -r 'trunk() & ::@' --no-graph -T 'commit_id ++ "\n"'` shows the most recent trunk commit in this branch's history. If it matches `trunk()`, skip.
    - Otherwise `jj rebase -d 'trunk()'`
-   - On conflicts: stop. Surface what conflicted and let the human resolve.
+   - On conflicts: resolve what's mechanical or obvious, escalate what's a judgment
+     call. Then confirm `jj diff --from 'trunk()' --to '@'` shows our change with
+     none of trunk's work reverted, and say what you resolved.
 
 3. **Decide the rev structure**. One cohesive change or a natural sequence, either is fine. The only question is whether the current shape matches the story, and forcing structure for its own sake is worse than letting the shape match the work. Handle obvious cleanup yourself. Before a split or reorder that would materially change the review story, show me the proposed stack and wait for a go-ahead.
    - **One big rev that's really two things**: `jj split -i` for an interactive hunk picker, or `jj split <paths>` to cut along file boundaries
