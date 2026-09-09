@@ -775,7 +775,7 @@ in
 
   programs.gh = {
     enable = true;
-    package = pkgs.unstable.gh;
+    package = pkgs.small.gh;
     settings = {
       aliases = {
         cl = "repo clone";
