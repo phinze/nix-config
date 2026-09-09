@@ -15,11 +15,17 @@ in
 {
   imports = [
     ../modules/darwin/colima.nix
-    ../modules/darwin/cmux.nix
   ];
   environment.systemPackages = [
     pkgs.mosh
   ];
+
+  # Fonts land in /Library/Fonts/Nix Fonts, which nix-darwin rsyncs on every
+  # activation and prunes when an entry leaves this list. Commit Mono is the
+  # terminal face (see home-manager/phinze/ghostty.nix); the Nerd Font build
+  # carries the patched glyph range so editors without their own symbol
+  # fallback get the icons too.
+  fonts.packages = [ pkgs.nerd-fonts.commit-mono ];
 
   # Add Homebrew to PATH
   environment.systemPath = [ "/opt/homebrew/bin" ];

@@ -59,7 +59,7 @@ in
     # Hourly main reconciliation + input bumps (gated by nodeConfig.isNixConfigSyncHost)
     ./modules/nix-config-sync.nix
     ./modules/nix-config-sync-darwin.nix
-    # Ghostty + cmux terminal theming on macOS (reads ~/.config/ghostty/config)
+    # Ghostty terminal theming on macOS (writes ~/.config/ghostty/config)
     ./ghostty.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [

@@ -1,12 +1,10 @@
 # Ghostty terminal configuration for macOS.
 #
-# This writes ~/.config/ghostty/config, which on macOS is read by *two* apps:
-#   - Ghostty itself (the XDG config path takes effect alongside the native
-#     Application Support path)
-#   - cmux, a Ghostty-based terminal that has no theme system of its own and
-#     delegates all terminal coloring to this exact file
-#
-# So this single file is what keeps cmux's panes and Ghostty looking the same.
+# This writes ~/.config/ghostty/config. Ghostty reads the XDG config path on
+# macOS alongside the native Application Support one, so this is the whole
+# story. It used to be read by cmux too, which had no theme system of its own
+# and borrowed this file wholesale; cmux is gone as of 2026-09-09, so Ghostty
+# is the only consumer again.
 #
 # The Ghostty *binary* on macOS comes from the Homebrew cask (see
 # nix-darwin/common.nix), so package is null here to avoid pulling a
@@ -23,7 +21,10 @@ lib.mkIf pkgs.stdenv.isDarwin {
     package = null;
 
     settings = {
-      font-family = "Hack";
+      # Installed system-wide via fonts.packages in nix-darwin/common.nix.
+      # The "Mono" cut of the Nerd Font keeps patched glyphs single-cell,
+      # which is what a terminal grid wants.
+      font-family = "CommitMono Nerd Font Mono";
       macos-option-as-alt = true;
 
       # Catppuccin Mocha Theme
