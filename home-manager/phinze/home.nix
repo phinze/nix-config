@@ -162,6 +162,16 @@ in
 
   home.sessionVariables = {
     EDITOR = "nvim";
+    # macOS hands GUI-launched processes no locale at all, so anything that
+    # doesn't inherit env from a terminal (apps launched from the Dock, ssh
+    # sessions, agent-spawned shells) runs with LANG unset. Ghostty papered
+    # over this by synthesizing LANG from NSLocale at startup; most terminals
+    # don't, and the fallout is ugly: tmux 3.6 decides a client without a
+    # UTF-8 locale can't handle UTF-8 and runs its command output through
+    # utf8_sanitize, which rewrites every tab and non-ASCII byte to "_". That
+    # silently corrupts anything parsing `tmux -F` output (rig, notably).
+    # Setting it here instead of depending on the terminal covers every shell.
+    LANG = "en_US.UTF-8";
     # pim's config, credentials, and tokens. Runtime state, not source, so it
     # lives outside the pim-stuff checkout: a ghq clone should stay disposable,
     # and the wipe took the credentials with it when they lived in its .local/.
