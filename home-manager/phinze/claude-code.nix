@@ -368,9 +368,11 @@ in
   # Only nodes that borrow a forwarded agent can hit the failure this rule
   # describes, so only they pay for the context. Predicate mirrors
   # usesForwardedAgent in home.nix, which gates the matching ssh identities.
-  home.file.".claude/rules/ssh-agent.md" = lib.mkIf (pkgs.stdenv.isLinux && !(nodeConfig.isGraphical or false)) {
-    source = ./claude-rules/ssh-agent.md;
-  };
+  home.file.".claude/rules/ssh-agent.md" =
+    lib.mkIf (pkgs.stdenv.isLinux && !(nodeConfig.isGraphical or false))
+      {
+        source = ./claude-rules/ssh-agent.md;
+      };
 
   # jj skill: version control playbook, auto-loads on any jj/git-adjacent work
   home.file.".claude/skills/jj/SKILL.md".source = ./claude-skills/jj/SKILL.md;

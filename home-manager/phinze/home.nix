@@ -924,8 +924,7 @@ in
         # baseline), and two keys still beats handing over all seven.
         IdentitiesOnly = lib.mkDefault true;
         IdentityFile = lib.mkDefault (
-          [ "~/.ssh/pub/phinze-mrn-mbp.pub" ]
-          ++ lib.optional usesForwardedAgent "~/.ssh/pub/delevingne.pub"
+          [ "~/.ssh/pub/phinze-mrn-mbp.pub" ] ++ lib.optional usesForwardedAgent "~/.ssh/pub/delevingne.pub"
         );
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {

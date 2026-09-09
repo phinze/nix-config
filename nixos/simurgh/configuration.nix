@@ -16,7 +16,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/baseline.nix
@@ -27,8 +28,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # ZFS support
-  boot.supportedFilesystems = ["zfs"];
-  boot.zfs.extraPools = ["tank"];
+  boot.supportedFilesystems = [ "zfs" ];
+  boot.zfs.extraPools = [ "tank" ];
   services.zfs.autoScrub.enable = true;
   services.zfs.trim.enable = true;
 
@@ -62,7 +63,7 @@
 
   # Docker for running services
   virtualisation.docker.enable = true;
-  users.users.phinze.extraGroups = ["docker"];
+  users.users.phinze.extraGroups = [ "docker" ];
 
   # nh helper with automatic cleanup
   programs.nh = {

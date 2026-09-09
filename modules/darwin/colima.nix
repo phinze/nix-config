@@ -4,9 +4,11 @@
   pkgs,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.services.colima;
-in {
+in
+{
   options.services.colima = {
     enable = mkEnableOption "Colima - container runtimes on macOS";
 
@@ -42,7 +44,10 @@ in {
     };
 
     vmType = mkOption {
-      type = types.enum ["qemu" "vz"];
+      type = types.enum [
+        "qemu"
+        "vz"
+      ];
       default = "qemu";
       description = "VM type to use. VZ requires macOS 13+.";
     };
@@ -54,17 +59,21 @@ in {
     };
 
     mountType = mkOption {
-      type = types.enum ["sshfs" "9p" "virtiofs"];
+      type = types.enum [
+        "sshfs"
+        "9p"
+        "virtiofs"
+      ];
       default = "sshfs";
       description = "Mount type for the VM. virtiofs requires vmType = vz.";
     };
 
     arch = mkOption {
-      type = types.enum ["x86_64" "aarch64"];
-      default =
-        if pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64
-        then "aarch64"
-        else "x86_64";
+      type = types.enum [
+        "x86_64"
+        "aarch64"
+      ];
+      default = if pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64 then "aarch64" else "x86_64";
       description = "Architecture for the VM.";
     };
   };
@@ -81,28 +90,37 @@ in {
     };
 
     launchd.user.agents.colima = {
-      path = [cfg.package pkgs.docker-client "/usr/bin" "/bin" "/usr/sbin" "/sbin"];
+      path = [
+        cfg.package
+        pkgs.docker-client
+        "/usr/bin"
+        "/bin"
+        "/usr/sbin"
+        "/sbin"
+      ];
       serviceConfig = {
-        ProgramArguments =
-          [
-            "${cfg.package}/bin/colima"
-            "start"
-            "--foreground" # foreground mode
-            "--cpu"
-            (toString cfg.cpus)
-            "--memory"
-            (toString cfg.memory)
-            "--disk"
-            (toString cfg.disk)
-            "--vm-type"
-            cfg.vmType
-            "--mount-type"
-            cfg.mountType
-            "--arch"
-            cfg.arch
-          ]
-          ++ optionals cfg.vzRosetta ["--vz-rosetta"]
-          ++ optionals cfg.docker ["--runtime" "docker"];
+        ProgramArguments = [
+          "${cfg.package}/bin/colima"
+          "start"
+          "--foreground" # foreground mode
+          "--cpu"
+          (toString cfg.cpus)
+          "--memory"
+          (toString cfg.memory)
+          "--disk"
+          (toString cfg.disk)
+          "--vm-type"
+          cfg.vmType
+          "--mount-type"
+          cfg.mountType
+          "--arch"
+          cfg.arch
+        ]
+        ++ optionals cfg.vzRosetta [ "--vz-rosetta" ]
+        ++ optionals cfg.docker [
+          "--runtime"
+          "docker"
+        ];
         KeepAlive = true;
         RunAtLoad = true;
         StandardOutPath = "/tmp/colima.out.log";

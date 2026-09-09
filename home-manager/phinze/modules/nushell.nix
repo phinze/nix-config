@@ -4,7 +4,12 @@
 # with starship, zoxide, atuin, and direnv integrations so it feels like home.
 #
 # Usage: launch `nu` from fish to try it out. Does not change default shell.
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.phinze.nushell;
 in

@@ -4,7 +4,8 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   # Required packages
   home.packages = with pkgs; [
     asciinema # Record terminal sessions

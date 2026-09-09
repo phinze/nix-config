@@ -6,7 +6,8 @@
   outputs,
   inputs,
   ...
-}: {
+}:
+{
   imports = [
     inputs.bankshot.nixosModules.default
   ];
@@ -23,23 +24,25 @@
   };
 
   # Nix configuration
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    settings = {
-      experimental-features = "nix-command flakes";
-      flake-registry = "";
-      nix-path = config.nix.nixPath;
-      trusted-users = [
-        "root"
-        "@wheel"
-      ];
-      download-buffer-size = 1073741824; # 1GB (default is 64MB)
+  nix =
+    let
+      flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+    in
+    {
+      settings = {
+        experimental-features = "nix-command flakes";
+        flake-registry = "";
+        nix-path = config.nix.nixPath;
+        trusted-users = [
+          "root"
+          "@wheel"
+        ];
+        download-buffer-size = 1073741824; # 1GB (default is 64MB)
+      };
+      channel.enable = false;
+      registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+      nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
     };
-    channel.enable = false;
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-  };
 
   # Time zone
   time.timeZone = "America/Chicago";
@@ -143,7 +146,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEu+8Why8CmSWV5FHEeIsaAgYTN156U3kpCa/QMxdnaC phinze@phinze-mrn-mbp"
       "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKri4aveRRo7osskk6Wg8urqRm1RuAZK0bksJvKiHcKUk55kQoES/aPIr+vC5tVETE+2AHrFmIuZfGf2PHeruwM= phinze@delevingne"
     ];
-    extraGroups = ["wheel"];
+    extraGroups = [ "wheel" ];
     shell = pkgs.fish;
   };
 }

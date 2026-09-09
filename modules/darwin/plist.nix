@@ -1,16 +1,17 @@
 # Converts an attribute set into a plist.
-{lib, ...}:
-with builtins; let
-  writeBool = x:
-    if x
-    then "true"
-    else "false";
-in rec {
-  removeNewlines = builtins.replaceStrings ["\n"] [""];
-  removeSpaces = s: let
-    tokens = split "[[:space:]]+" s;
-    nonSpaces = filter isString tokens;
-  in
+{ lib, ... }:
+with builtins;
+let
+  writeBool = x: if x then "true" else "false";
+in
+rec {
+  removeNewlines = builtins.replaceStrings [ "\n" ] [ "" ];
+  removeSpaces =
+    s:
+    let
+      tokens = split "[[:space:]]+" s;
+      nonSpaces = filter isString tokens;
+    in
     concatStringsSep "" nonSpaces;
 
   clean = s: removeNewlines s;
@@ -20,32 +21,28 @@ in rec {
   mkReal = n: "<real>${toString n}</real>";
   mkBool = x: "<${writeBool x}/>";
 
-  mkArray = xs:
-    clean
-    ''<array>${concatStringsSep "\n" (map mkPlist xs)}</array>'';
+  mkArray = xs: clean "<array>${concatStringsSep "\n" (map mkPlist xs)}</array>";
 
-  mkField = key: value:
-    clean
-    ''<key>${key}</key>${mkPlist value}'';
+  mkField = key: value: clean "<key>${key}</key>${mkPlist value}";
 
-  mkDict = attrs:
-    clean
-    ''<dict>${concatStringsSep "\n" (lib.mapAttrsToList mkField attrs)}</dict>'';
+  mkDict = attrs: clean "<dict>${concatStringsSep "\n" (lib.mapAttrsToList mkField attrs)}</dict>";
 
-  mkPlist = x:
-    if isString x
-    then mkString x
-    else if isInt x
-    then mkInt x
-    else if isFloat x
-    then mkReal x
-    else if isBool x
-    then mkBool x
-    else if isList x
-    then mkArray x
-    else if isAttrs x
-    then mkDict x
-    else throw "invalid value type";
+  mkPlist =
+    x:
+    if isString x then
+      mkString x
+    else if isInt x then
+      mkInt x
+    else if isFloat x then
+      mkReal x
+    else if isBool x then
+      mkBool x
+    else if isList x then
+      mkArray x
+    else if isAttrs x then
+      mkDict x
+    else
+      throw "invalid value type";
 
   # # Converts an attribute set into a list of attribute path statements.
   # flatten = let go = path: key: value:

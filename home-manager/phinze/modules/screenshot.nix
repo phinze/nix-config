@@ -4,9 +4,11 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+{
   # Required packages - only install on Linux since pageres-cli depends on Chromium
-  home.packages = with pkgs;
+  home.packages =
+    with pkgs;
     lib.optionals pkgs.stdenv.isLinux [
       pageres-cli # Capture website screenshots
 

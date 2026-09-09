@@ -5,7 +5,12 @@
 # - programs.git.signing.key
 # - programs.git.settings."gpg \"ssh\"".program
 # - ~/.ssh/allowed_signers (generated from keys × emails)
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.phinze.git.signing;
 
@@ -23,11 +28,11 @@ let
   };
 
   # Build the allowed_signers content: every key trusted for every email
-  allowedSignersContent = lib.concatStringsSep "\n" (
-    lib.concatMap (email:
-      map (key: "${email} ${key.publicKey}") cfg.keys
-    ) cfg.emails
-  ) + "\n";
+  allowedSignersContent =
+    lib.concatStringsSep "\n" (
+      lib.concatMap (email: map (key: "${email} ${key.publicKey}") cfg.keys) cfg.emails
+    )
+    + "\n";
 
   # 1Password agent socket path on macOS (use $HOME since ~ won't expand in the script)
   opAgentSock = "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
@@ -35,10 +40,7 @@ let
   # Build the git-ssh-sign wrapper package
   gitSshSign = pkgs.callPackage ../../../pkgs/git-ssh-sign.nix {
     signingKeys = cfg.keys;
-    sshAuthSock =
-      if pkgs.stdenv.isDarwin
-      then opAgentSock
-      else null;
+    sshAuthSock = if pkgs.stdenv.isDarwin then opAgentSock else null;
   };
 in
 {

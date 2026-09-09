@@ -13,7 +13,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   systemd.settings.Manager = {
     # Hardware watchdog - forces reboot if system hangs during shutdown.
     # This is the ultimate backstop that guarantees reboot within 3 minutes.
@@ -34,10 +35,10 @@
   # NBD devices before other services (like Docker) try to unmount them
   systemd.services.nbd-disconnect = {
     description = "Disconnect NBD devices on shutdown";
-    documentation = ["man:nbd-client(8)"];
+    documentation = [ "man:nbd-client(8)" ];
 
     # Stay resident, run disconnect on stop
-    wantedBy = ["multi-user.target"];
+    wantedBy = [ "multi-user.target" ];
 
     # ORDERING FOR STOP (which is what matters here):
     # systemd stops services in REVERSE start order.
@@ -49,8 +50,8 @@
     ];
 
     # Stop this service when shutdown begins, before shutdown.target completes
-    conflicts = ["shutdown.target"];
-    before = ["shutdown.target"];
+    conflicts = [ "shutdown.target" ];
+    before = [ "shutdown.target" ];
 
     unitConfig = {
       DefaultDependencies = false;

@@ -21,109 +21,114 @@ in
     # See https://github.com/nix-community/home-manager/issues/6266
     sensibleOnTop = false;
 
-    plugins = let
-      loadCommand = if pkgs.stdenv.isDarwin
-        then "sysctl -n vm.loadavg | awk '{print $2}'"
-        else "awk '{print $1}' /proc/loadavg";
-      tmux-smooth-scroll = pkgs.tmuxPlugins.mkTmuxPlugin {
-        pluginName = "smooth-scroll";
-        rtpFilePath = "smooth-scroll.tmux";
-        version = "unstable-2025-03-02";
-        src = pkgs.fetchFromGitHub {
-          owner = "phinze";
-          repo = "tmux-smooth-scroll";
-          rev = "073729b62610279b8baa8b853f03652602997d96";
-          hash = "sha256-8z+HzHLFo3DBBZLBNOKHyoBsMIyQ4M4lEl/72V3J78Y=";
+    plugins =
+      let
+        loadCommand =
+          if pkgs.stdenv.isDarwin then
+            "sysctl -n vm.loadavg | awk '{print $2}'"
+          else
+            "awk '{print $1}' /proc/loadavg";
+        tmux-smooth-scroll = pkgs.tmuxPlugins.mkTmuxPlugin {
+          pluginName = "smooth-scroll";
+          rtpFilePath = "smooth-scroll.tmux";
+          version = "unstable-2025-03-02";
+          src = pkgs.fetchFromGitHub {
+            owner = "phinze";
+            repo = "tmux-smooth-scroll";
+            rev = "073729b62610279b8baa8b853f03652602997d96";
+            hash = "sha256-8z+HzHLFo3DBBZLBNOKHyoBsMIyQ4M4lEl/72V3J78Y=";
+          };
         };
-      };
-    in with pkgs.tmuxPlugins; [
-      {
-        plugin = catppuccin;
-        extraConfig = ''
-          set -g @catppuccin_window_status_style "rounded"
-          set -g @catppuccin_window_flags "icon"
+      in
+      with pkgs.tmuxPlugins;
+      [
+        {
+          plugin = catppuccin;
+          extraConfig = ''
+            set -g @catppuccin_window_status_style "rounded"
+            set -g @catppuccin_window_flags "icon"
 
-          set -g status-right-length 100
-          set -g status-left-length 100
-          set -g status-left ""
-          set -g @catppuccin_load_text " #(${loadCommand})"
+            set -g status-right-length 100
+            set -g status-left-length 100
+            set -g status-left ""
+            set -g @catppuccin_load_text " #(${loadCommand})"
 
-          # Collapse the session name to just its basename on narrow clients so
-          # the full ghq path stops eating the bar; the hostname already lives
-          # in the terminal title (set-titles-string below), so it can go first.
-          set -g @catppuccin_session_text " #{?${narrowerThan 120},#{b:session_name},#S}"
+            # Collapse the session name to just its basename on narrow clients so
+            # the full ghq path stops eating the bar; the hostname already lives
+            # in the terminal title (set-titles-string below), so it can go first.
+            set -g @catppuccin_session_text " #{?${narrowerThan 120},#{b:session_name},#S}"
 
-          # Tiers by client width: session always shows, host drops below 90,
-          # load below 120.
-          set -g status-right ""
-          set -ag status-right "${whenWide 120 "#{E:@catppuccin_status_load}"}"
-          set -ag status-right "#{E:@catppuccin_status_session}"
-          set -ag status-right "${whenWide 90 "#{E:@catppuccin_status_host}"}"
-        '';
-      }
-      {
-        plugin = session-wizard;
-        extraConfig = ''
-          # custom session-wizard activation key
-          set -g @session-wizard "t"
-          # sometimes I edit multiple repos w/ the same name
-          set -g @session-wizard-mode "full-path"
-        '';
-      }
-      {
-        plugin = tmux-smooth-scroll;
-        extraConfig = ''
-          set -g @smooth-scroll-mouse "false"
-        '';
-      }
-      vim-tmux-navigator
-      {
-        plugin = pain-control;
-        extraConfig = ''
-          # I like vim-style splits vs pain-control's pipe-ish mnemonics.
-          bind s split-window -v -c "#{pane_current_path}"
-          bind v split-window -h -c "#{pane_current_path}"
+            # Tiers by client width: session always shows, host drops below 90,
+            # load below 120.
+            set -g status-right ""
+            set -ag status-right "${whenWide 120 "#{E:@catppuccin_status_load}"}"
+            set -ag status-right "#{E:@catppuccin_status_session}"
+            set -ag status-right "${whenWide 90 "#{E:@catppuccin_status_host}"}"
+          '';
+        }
+        {
+          plugin = session-wizard;
+          extraConfig = ''
+            # custom session-wizard activation key
+            set -g @session-wizard "t"
+            # sometimes I edit multiple repos w/ the same name
+            set -g @session-wizard-mode "full-path"
+          '';
+        }
+        {
+          plugin = tmux-smooth-scroll;
+          extraConfig = ''
+            set -g @smooth-scroll-mouse "false"
+          '';
+        }
+        vim-tmux-navigator
+        {
+          plugin = pain-control;
+          extraConfig = ''
+            # I like vim-style splits vs pain-control's pipe-ish mnemonics.
+            bind s split-window -v -c "#{pane_current_path}"
+            bind v split-window -h -c "#{pane_current_path}"
 
-          bind ^s split-window -v -c "#{pane_current_path}"
-          bind ^v split-window -h -c "#{pane_current_path}"
+            bind ^s split-window -v -c "#{pane_current_path}"
+            bind ^v split-window -h -c "#{pane_current_path}"
 
-          bind B break-pane
-        '';
-      }
-      {
-        plugin = resurrect;
-        extraConfig = ''
-          # Keep pane text visible across restarts.
-          set -g @resurrect-capture-pane-contents 'on'
+            bind B break-pane
+          '';
+        }
+        {
+          plugin = resurrect;
+          extraConfig = ''
+            # Keep pane text visible across restarts.
+            set -g @resurrect-capture-pane-contents 'on'
 
-          # Resurrect Claude Code panes by RESUMING the on-disk conversation for
-          # the pane's directory instead of starting a fresh chat. resurrect's
-          # inline strategy is `match->restore-command`. The leading ~ is
-          # resurrect's "match leniently as a substring" token (NOT a home dir),
-          # so `bin/claude` matches the real command line
-          # (.../bin/claude ...) regardless of its profile path, and the pane is
-          # relaunched as `claude --continue`, reattaching to the latest session
-          # for that cwd. Assumes one Claude pane per directory.
-          set -g @resurrect-processes '"~bin/claude->claude --continue --dangerously-skip-permissions"'
-        '';
-      }
-      {
-        plugin = continuum;
-        extraConfig = ''
-          # Auto-save every 15 min and auto-restore on a fresh server. This is
-          # what makes the post-upgrade `tmux kill-server` cheap: reopen a pane
-          # and every session/window/pane (and resumed Claude) comes back.
-          set -g @continuum-restore 'on'
-          set -g @continuum-save-interval '15'
+            # Resurrect Claude Code panes by RESUMING the on-disk conversation for
+            # the pane's directory instead of starting a fresh chat. resurrect's
+            # inline strategy is `match->restore-command`. The leading ~ is
+            # resurrect's "match leniently as a substring" token (NOT a home dir),
+            # so `bin/claude` matches the real command line
+            # (.../bin/claude ...) regardless of its profile path, and the pane is
+            # relaunched as `claude --continue`, reattaching to the latest session
+            # for that cwd. Assumes one Claude pane per directory.
+            set -g @resurrect-processes '"~bin/claude->claude --continue --dangerously-skip-permissions"'
+          '';
+        }
+        {
+          plugin = continuum;
+          extraConfig = ''
+            # Auto-save every 15 min and auto-restore on a fresh server. This is
+            # what makes the post-upgrade `tmux kill-server` cheap: reopen a pane
+            # and every session/window/pane (and resumed Claude) comes back.
+            set -g @continuum-restore 'on'
+            set -g @continuum-save-interval '15'
 
-          # Resurrect binds these by default. Keep intentional save/restore in
-          # command mode, but remove the easy-to-hit prefix bindings after
-          # Resurrect has loaded.
-          unbind-key -T prefix C-s
-          unbind-key -T prefix C-r
-        '';
-      }
-    ];
+            # Resurrect binds these by default. Keep intentional save/restore in
+            # command mode, but remove the easy-to-hit prefix bindings after
+            # Resurrect has loaded.
+            unbind-key -T prefix C-s
+            unbind-key -T prefix C-r
+          '';
+        }
+      ];
 
     extraConfig = ''
       # Reload lives on capital R because lowercase r went to radar below.

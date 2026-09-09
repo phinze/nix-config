@@ -4,7 +4,8 @@
   lib,
   inputs,
   ...
-}: {
+}:
+{
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos/baseline.nix
@@ -13,7 +14,7 @@
   ];
 
   # Add networkmanager group for graphical environment
-  users.users.phinze.extraGroups = ["networkmanager"];
+  users.users.phinze.extraGroups = [ "networkmanager" ];
 
   # Hostname
   networking.hostName = "xiezhi";
