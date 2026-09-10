@@ -150,7 +150,7 @@ in
 
       # Ghostty's terminfo has Tc/setrgbf/setrgbb but tmux doesn't auto-promote
       # those to feature flags; hyperlinks (OSC 8) has no terminfo representation at all.
-      set -as terminal-features ",xterm-ghostty:RGB:hyperlinks"
+      set -as terminal-features ",xterm-ghostty:RGB:hyperlinks:extkeys"
 
       # Report modified keys (Shift+Enter and friends) to programs that ask for
       # them. Without this tmux collapses Shift+Enter back to a bare CR and
@@ -159,6 +159,10 @@ in
       # depend on the CSI-u path, which is what this turns on.
       set -s extended-keys on
       set -s extended-keys-format csi-u
+      # Stopgap: a Ghostty-based terminal here still reports the generic
+      # xterm-256color, which misses the line above. Drop this once it reports
+      # xterm-ghostty (or ships its own terminfo) and it picks up RGB and
+      # hyperlinks along with extkeys.
       set -as terminal-features ",xterm-256color:extkeys"
 
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
