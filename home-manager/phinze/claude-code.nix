@@ -153,6 +153,11 @@ in
         command = "${claude-statusline}";
       };
       includeCoAuthoredBy = false;
+      # Suppress the "Claude-Session: https://claude.ai/code/..." trailer that
+      # otherwise lands in every commit and PR body from web or Remote Control
+      # sessions. includeCoAuthoredBy above only covers the co-author line;
+      # this is a separate knob.
+      attribution.sessionUrl = false;
       skipDangerousModePermissionPrompt = true;
       # Opt into the fullscreen (flicker-free) renderer. Defining `tui` at all
       # also permanently silences the "Try the new fullscreen renderer?" upsell:
