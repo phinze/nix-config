@@ -21,6 +21,10 @@ first.
 - **Re-reviews automatically on every push.** Never trigger it manually.
 - Auto-resolves its own threads once it sees the fix land in a push.
 - Treat its findings as actionable.
+- **A rate limit makes it skip the head.** Its check still reports `pass`, so
+  the description carries the signal: `Review rate limited` rather than the
+  usual `Review completed`. The window runs tens of minutes and clears itself,
+  and the next push gets a normal review.
 
 **biscuit** (`miren-code-agent[bot]`)
 - The name and the login differ. "biscuit" is what we call it, the API returns
@@ -387,13 +391,18 @@ For each bot's new review:
 
 - **Clean**: CodeRabbit's is just a summary walkthrough with no actionable sections or new inline threads; biscuit's comes back `✅ ready to merge` (or repeats a caveat we've consciously accepted) with nothing new raised. Move on.
 - **Has new comments**: Loop back to Phase 1 and work through the new feedback, attributed to whichever bot raised it.
+- **CodeRabbit rate-limited**: its check description reads `Review rate limited`
+  (`gh pr checks $PR_NUMBER --json name,state,description`). Don't wait it out.
+  Treat it as no new findings, carry on to 7d, and name it in the 7f summary.
 
 **Polling mechanics**: Check every 30 seconds. Use `sleep 30` between checks. Keep it simple.
 
 **7d. Verify thread resolutions**
 
 CodeRabbit resolves its threads once it re-reads the push. biscuit does the
-same only when 7b requested it. Once the expected reviews have landed, re-fetch
+same only when 7b requested it. A rate-limited CodeRabbit re-read nothing, so
+its threads won't clear on their own; resolve the addressed ones by hand. Once
+the expected reviews have landed, re-fetch
 unresolved threads. Resolve any addressed thread that remains open with the
 `resolveReviewThread` mutation from Phase 6, including stale biscuit threads
 when its ready-to-merge verdict carried forward.
@@ -425,7 +434,8 @@ By this point you've read a diff, several review bodies, and a pile of source fi
       forward because no major new change invalidated it, or a warranted
       `/biscuit review` completed and its result was read. No review was
       requested merely because the head moved.
-- [ ] CodeRabbit's post-push review read (an empty body is a thread reply, not a finding)
+- [ ] CodeRabbit's post-push review read (an empty body is a thread reply, not
+      a finding), or confirmed rate-limited and named in the summary
 - [ ] Zero unresolved threads
 
 If any one of these is an assumption rather than something you checked, it isn't done. Say which and go check it.

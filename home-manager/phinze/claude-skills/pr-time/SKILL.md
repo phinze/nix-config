@@ -63,6 +63,10 @@ wrong.
 - **Re-reviews automatically on every push.** Never trigger it manually.
 - Auto-resolves its own threads once it sees the fix land in a push.
 - Treat its findings as actionable.
+- **A rate limit makes it skip the head.** Its check still reports `pass`, so
+  the description carries the signal: `Review rate limited` rather than the
+  usual `Review completed`. The window runs tens of minutes and clears itself,
+  and the next push gets a normal review.
 
 **biscuit** (`miren-code-agent[bot]`)
 - The name and the login differ. "biscuit" is what we call it, the API returns
@@ -208,7 +212,7 @@ wrong.
 
    **8b. Wait for both bot reviews**
 
-   Don't bail early assuming one isn't set up, and don't call the pass done when only one has landed. See Bot Reviewers above for where each one's findings hide. Both usually arrive within a couple of minutes; give them up to 5.
+   Don't bail early assuming one isn't set up, and don't call the pass done when only one has landed (the rate limit below is the exception). See Bot Reviewers above for where each one's findings hide. Both usually arrive within a couple of minutes; give them up to 5.
 
    ```bash
    gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
@@ -218,7 +222,14 @@ wrong.
 
    Poll every 30 seconds until both show up, then read both bodies and any inline threads.
 
+   When CodeRabbit's is the only one missing, check for a rate limit rather than
+   waiting out the 5 minutes: `gh pr checks $PR_NUMBER --json name,state,description`.
+
    - **Both clean** (CodeRabbit's body is just the summary walkthrough with no actionable sections or threads, biscuit came back `✅ ready to merge` with nothing raised): if it's still a draft, `gh pr ready $PR_NUMBER`. Report green CI, clean bots, ready for review. Done.
+   - **CodeRabbit rate-limited and biscuit clean**: the rate limit satisfies the
+     CodeRabbit gate. Graduate on green CI and a clean biscuit, and say in the
+     report that CodeRabbit never reviewed. Converting back to draft is free
+     if it later posts findings.
    - **Either has findings**: report what turned up, attributed by name so it's clear which bot said what, then kick off `/address-pr-review`.
 
    A `⚠️ ready with caveats` isn't automatically work. Sometimes it names a real gap worth a follow-up issue, sometimes it's biscuit narrating a worry it then resolves on its own. Judge it, don't reflex-fix it.
