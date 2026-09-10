@@ -152,6 +152,15 @@ in
       # those to feature flags; hyperlinks (OSC 8) has no terminfo representation at all.
       set -as terminal-features ",xterm-ghostty:RGB:hyperlinks"
 
+      # Report modified keys (Shift+Enter and friends) to programs that ask for
+      # them. Without this tmux collapses Shift+Enter back to a bare CR and
+      # Claude Code submits instead of inserting a newline. Ghostty dodged this
+      # via a shift+enter=text:\x1b\r keybind; terminals without keybind config
+      # depend on the CSI-u path, which is what this turns on.
+      set -s extended-keys on
+      set -s extended-keys-format csi-u
+      set -as terminal-features ",xterm-256color:extkeys"
+
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
 
