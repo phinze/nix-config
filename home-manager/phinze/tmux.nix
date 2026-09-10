@@ -159,10 +159,12 @@ in
       # depend on the CSI-u path, which is what this turns on.
       set -s extended-keys on
       set -s extended-keys-format csi-u
-      # Stopgap: a Ghostty-based terminal here still reports the generic
-      # xterm-256color, which misses the line above. Drop this once it reports
-      # xterm-ghostty (or ships its own terminfo) and it picks up RGB and
-      # hyperlinks along with extkeys.
+      # xterm-256color is Blink's default, and asking a terminal for extended
+      # keys costs nothing when it cannot do them. RGB and hyperlinks are
+      # deliberately absent: unlike extkeys, a false RGB claim makes tmux stop
+      # doing its own 24-bit downsampling and hand raw SGR to a terminal that
+      # drops it, so colors go wrong rather than approximate. Add them here
+      # only after confirming Blink handles both.
       set -as terminal-features ",xterm-256color:extkeys"
 
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
