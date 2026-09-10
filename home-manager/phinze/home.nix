@@ -936,14 +936,6 @@ in
 
       "foxtrotbase" = {
         ForwardAgent = true;
-
-        # The Ghostty derivative reports a generic xterm-256color, which costs
-        # it truecolor, OSC 8 hyperlinks and extended keys (Shift+Enter) both in
-        # tmux and in every terminfo-reading program on the far end. It is
-        # Ghostty-compatible, xterm-ghostty terminfo ships in ncurses 6.6, and
-        # real Ghostty has been sending this string here for months. TERM is
-        # special-cased in SetEnv and needs no AcceptEnv on the server.
-        SetEnv = "TERM=xterm-ghostty";
       }
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         RemoteForward = [

@@ -159,13 +159,19 @@ in
       # depend on the CSI-u path, which is what this turns on.
       set -s extended-keys on
       set -s extended-keys-format csi-u
-      # xterm-256color is Blink's default, and asking a terminal for extended
-      # keys costs nothing when it cannot do them. RGB and hyperlinks are
-      # deliberately absent: unlike extkeys, a false RGB claim makes tmux stop
-      # doing its own 24-bit downsampling and hand raw SGR to a terminal that
-      # drops it, so colors go wrong rather than approximate. Add them here
-      # only after confirming Blink handles both.
-      set -as terminal-features ",xterm-256color:extkeys"
+      # Blink and the Ghostty derivative both report the generic xterm-256color.
+      # Declaring the features here rather than fixing TERM at the ssh layer is
+      # deliberate: a pane's TERM comes from default-terminal, not from the
+      # client, so the client's TERM feeds nothing but tmux's own feature
+      # detection, which is what this line sets directly. Forcing TERM would
+      # mean asserting from a client-side ssh config, keyed on destination host
+      # rather than on which terminal launched it, to reach the same switch.
+      #
+      # The usual objection to claiming features for a string as widely shared
+      # as xterm-256color is that it speaks for clients you do not control. The
+      # set here is closed and known: Blink, Ghostty, and the derivative. If a
+      # colour ever looks wrong from Blink, RGB is the first thing to drop.
+      set -as terminal-features ",xterm-256color:RGB:hyperlinks:extkeys"
 
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents
       set -s set-clipboard on
