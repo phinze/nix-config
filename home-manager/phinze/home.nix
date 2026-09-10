@@ -236,6 +236,7 @@ in
       small.jjui # TUI frontend for jj
       jq
       linearis # CLI tool for Linear.app with JSON output
+      linear-tui # TUI for Linear.app (3-pane browse/edit, vim keys)
       mtr
       nh # Nix helper for more convenient nix commands
       nixvim # My configured copy of neovim
