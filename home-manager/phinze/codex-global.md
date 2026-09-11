@@ -55,6 +55,9 @@ Exceptions:
 - Bulk triage or batch operations where we've already agreed on the pattern
 - When a skill's own instructions already handle the review flow (e.g.
   `pr-time`)
+- Routine capture, edits, comments, and verified completion in our private
+  Vikunja projects (Paul + bots only). Capturing a task does not authorize
+  executing it. Shared trackers and messages to others retain their review flow.
 - Read-only operations (fetching, searching, listing) never need approval
 - Local notes-to-self that nobody else will read (milestone diary appends,
   scratch files). Just write them.
@@ -121,6 +124,21 @@ especially splitting one cohesive change into several revisions or reordering a
 non-trivial stack. For work headed to a PR, include the final rev stack and its
 messages in the exact pre-push review alongside the PR title and body. That is
 the writing checkpoint; do not ask for piecemeal approval while building it.
+
+## Personal Task Tracking
+
+Use the `personal-tasks` skill for durable personal, household, CTL, and NDSM
+outcomes and follow-ups at https://tasks.inze.ph/. Keep execution checklists
+inside the session. Search before capture, record enough context to resume,
+and let bots close tasks when the stated outcome is complete and verified.
+Capture new follow-ups without taking on unrelated work. Keep existing
+Linear/GitHub issues authoritative instead of mirroring them into Vikunja.
+
+Vikunja holds actionable task state; memex holds context, research, decisions,
+and selective milestone history. Link the two using stable memex paths and
+task URLs. A rig is a workspace, so ending a session or tearing down a rig does
+not close its task. Shared bot claims are not exclusive locks: check the task
+and rig state before starting and leave a useful handoff when work pauses.
 
 ## Memory Policy
 

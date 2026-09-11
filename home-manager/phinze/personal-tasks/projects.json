@@ -1,0 +1,53 @@
+{
+  "personal": {
+    "server": "https://tasks.inze.ph",
+    "project_id": 4,
+    "project_identifier": "PERS",
+    "view_id": 16,
+    "buckets": {
+      "todo": 12,
+      "in_progress": 13,
+      "in_review": 21,
+      "done": 14,
+      "scrapped": 22
+    },
+    "bot": {
+      "username": "bot-personal",
+      "user_id": 4
+    }
+  },
+  "ctl": {
+    "server": "https://tasks.inze.ph",
+    "project_id": 5,
+    "project_identifier": "CTL",
+    "view_id": 20,
+    "buckets": {
+      "todo": 15,
+      "in_progress": 16,
+      "in_review": 23,
+      "done": 17,
+      "scrapped": 24
+    },
+    "bot": {
+      "username": "bot-personal",
+      "user_id": 4
+    }
+  },
+  "ndsm": {
+    "server": "https://tasks.inze.ph",
+    "project_id": 6,
+    "project_identifier": "NDSM",
+    "view_id": 24,
+    "buckets": {
+      "todo": 18,
+      "in_progress": 19,
+      "in_review": 25,
+      "done": 20,
+      "scrapped": 26
+    },
+    "bot": {
+      "username": "bot-personal",
+      "user_id": 4
+    }
+  }
+}

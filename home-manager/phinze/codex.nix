@@ -117,6 +117,7 @@ let
     address-pr-review = ./claude-skills/address-pr-review;
     review-pr = ./claude-skills/review-pr;
     whatsup-home = ./claude-skills/whatsup-home;
+    personal-tasks = ./claude-skills/personal-tasks;
     whatsup-work = ./claude-skills/whatsup-work;
   };
 

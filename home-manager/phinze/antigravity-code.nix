@@ -287,6 +287,11 @@ in
     source = ./claude-skills/whatsup-home;
     recursive = true;
   };
+
+  home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/personal-tasks" = {
+    source = ./claude-skills/personal-tasks;
+    recursive = true;
+  };
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/whatsup-work" = {
     source = ./claude-skills/whatsup-work;
     recursive = true;

@@ -18,6 +18,17 @@ alongside side projects.
 
 Fetch in parallel:
 
+0. **Vikunja** (durable queued work, waiting items, and commitments):
+   - Load `personal-tasks` for domain mappings and task policy. Start with
+     `personal-tasks <domain> list --filter 'done = false'` for `personal`,
+     `ctl`, and `ndsm`; narrow to the requested domains when specified.
+   - For completions in the last week, use a real cutoff date:
+     `personal-tasks <domain> list --filter 'done = true && done_at >= "YYYY-MM-DD"'`.
+   - Surface due dates, `veans:waiting` labels, and the next action in handoff
+     comments. Read comments on the relevant tasks instead of fetching all
+     task histories. A task may have no rig yet, or span several rigs.
+   - If the tracker cannot be reached, say task state is unavailable and use
+     the remaining sources. Missing access is not evidence of an empty queue.
 1. **Rig board** (what's alive right now):
    - `rig ls` for every rig in flight with age and state (working / idle /
      parked). Add `--full` for PR and CI status when a side project is
@@ -60,16 +71,17 @@ outright with "not a git repository."
 
 ## Synthesis posture
 
-- **Group by domain, not status**. Personal stuff doesn't have ticket
-  workflows; the question is which thread is alive.
+- **Group by domain**, connecting recent progress to queued work, waiting
+  items, and upcoming commitments. Task status comes from Vikunja; memex
+  supplies context. Avoid reporting a linked task and its rig as separate work.
 - **Lead with what moved**, then what stalled. If a domain was quiet, name it
   briefly ("nothing on NDSM this week") rather than padding.
 - **Connect dots to memex sketches**: a `Projects/Ideas/` sketch from earlier
   in the week plus an active rig usually means the idea is graduating to
   implementation.
-- **A parked personal rig is usually a dropped thread, not a review queue.**
-  Unlike work, there's rarely anyone to review it, so an old parked rig is a
-  finish-or-tear-down call.
+- **Check the task before interpreting a parked rig.** It may have a real
+  dependency or a useful handoff. Parking or tearing down a rig does not
+  complete its task, and an idle agent does not imply human review is needed.
 - **Convert relative dates** to absolute when retelling.
 - **End with concrete resumption recommendations**, same shape as
   `whatsup-work`:

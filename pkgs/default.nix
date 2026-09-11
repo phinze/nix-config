@@ -18,6 +18,7 @@ pkgs: rec {
   coderabbit = pkgs.callPackage ./coderabbit { };
   antigravity-cli = pkgs.callPackage ./antigravity-cli { };
   linearis = pkgs.callPackage ./linearis { };
+  veans = pkgs.callPackage ./veans.nix { };
   linear-tui = pkgs.callPackage ./linear-tui.nix { };
   osc-copy = pkgs.callPackage ./osc-copy { };
   whoson = pkgs.callPackage ./whoson.nix { };

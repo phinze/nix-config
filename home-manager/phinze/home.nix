@@ -40,6 +40,8 @@ in
     ./antigravity-code.nix
     # Codex CLI configuration (package + config.toml + AGENTS.md + prompts)
     ./codex.nix
+    # Durable private tasks shared by human and agents
+    ./modules/personal-tasks.nix
     # Karabiner-Elements for keyboard remapping (incl. R400 → Handy)
     ./karabiner.nix
     # Tmux terminal multiplexer

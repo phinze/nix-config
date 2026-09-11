@@ -141,10 +141,6 @@ in
     (pkgs.writeShellScriptBin "snap" (builtins.readFile ./scripts/snap.sh))
   ];
 
-  # Ignore SWT (Simple Work Tracker) directories globally
-  # SWT is a task tracker designed for AI agents that creates .swt/ dirs
-  programs.git.ignores = [ ".swt" ];
-
   # Claude Code settings with statusline and LSP plugins
   home.file.".claude/settings.json" = {
     text = builtins.toJSON {
@@ -202,6 +198,7 @@ in
               value = sophonOnly;
             })
             [
+              "SessionStart"
               "Notification"
               "Stop"
               "SessionEnd"
@@ -214,21 +211,7 @@ in
               "SubagentStop"
               "PreCompact"
             ]
-        )
-        // {
-          # SessionStart has additional hooks beyond sophon
-          SessionStart = [
-            {
-              hooks = [
-                {
-                  type = "command";
-                  command = ''[ -d "$CLAUDE_PROJECT_DIR/.swt" ] && swt agent-help || true'';
-                }
-                sophonHook
-              ];
-            }
-          ];
-        };
+        );
     };
     force = true;
   };
@@ -481,5 +464,6 @@ in
   # it from Linear and gh, which is what they did back when work lived in
   # git worktrees and rig didn't exist.
   home.file.".claude/skills/whatsup-home".source = ./claude-skills/whatsup-home;
+  home.file.".claude/skills/personal-tasks".source = ./claude-skills/personal-tasks;
   home.file.".claude/skills/whatsup-work".source = ./claude-skills/whatsup-work;
 }
