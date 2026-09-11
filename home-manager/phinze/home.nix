@@ -247,7 +247,11 @@ in
       unstable.fabric-ai # AI framework for augmenting humans
       unstable.deno # JS runtime required by yt-dlp for YouTube signature solving
       unstable.mpv # Media player for YouTube DJ sets and streams
-      unstable.yt-dlp # Video downloader, used by mpv and fabric
+      # Video downloader, used by mpv and fabric. Reads from the small channel
+      # on purpose: YouTube breaks yt-dlp releases within weeks, so the
+      # regular unstable pin is stale by the time it lands (2026-09: a
+      # two-month-old build 403'd on every video).
+      small.yt-dlp
     ]
     ++ lib.optionals pkgs.stdenv.isDarwin [
       # Docker CLI tools for macOS with Colima

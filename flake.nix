@@ -8,8 +8,8 @@
     # Fast lane for the jj toolchain. Same packages as nixos-unstable, but the
     # small channel advances days rather than weeks earlier — and jj cuts a
     # release monthly, which was otherwise waiting on a manual nixpkgs-unstable
-    # bump that history says happens every month or two. Only jujutsu and jjui
-    # read from this (see overlays/default.nix), so unlike nixpkgs-unstable it
+    # bump that history says happens every month or two. Only jujutsu, jjui and
+    # yt-dlp read from this (see overlays/default.nix), so unlike nixpkgs-unstable it
     # can ride in syncInputs: bumping it rebuilds two packages, not the world.
     # Resist the urge to pull anything else from here without weighing that.
     nixpkgs-small.url = "github:nixos/nixpkgs/nixos-unstable-small";
