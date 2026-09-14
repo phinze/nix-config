@@ -1,6 +1,6 @@
 ---
 name: snap
-description: Capture a macOS window to a PNG by app name + title, without stealing focus or interrupting the user. Use whenever you need a screenshot of a UI the user is iterating on, or when handed off a request like "snap window X" from another session.
+description: Capture a native macOS window to a PNG by app name + title, without stealing focus or interrupting the user. Use for a desktop app or a browser window the user is iterating on by hand, or when handed off a request like "snap window X" from another session. For a web page you can drive yourself, use the pr-shots skill (agent-browser) instead.
 ---
 
 # snap

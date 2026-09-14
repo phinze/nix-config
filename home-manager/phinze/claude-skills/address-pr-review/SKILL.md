@@ -279,6 +279,14 @@ gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" \
   -f body="Response text"
 ```
 
+**Show, don't describe.** When a fix changed what renders, a screenshot in
+the reply beats a paragraph about it. Capture per the `pr-shots` skill and
+attach with `gh pr comment $PR_NUMBER --body "..." --attach ./fixed.png`;
+`gh pr edit $PR_NUMBER --attach ./after.png` appends to the description when
+the PR's own illustration is what went stale. Inline review replies via the
+API have no attach flag, so put the image in a top-level comment and point the
+thread at it.
+
 **Editing vs. appending:** `in_reply_to` always creates a new comment. It does not replace an existing one. If you need to revise a reply you already posted, use the PATCH endpoint to edit it in place. If appending a follow-up instead, word it as an update (e.g., "Update: we ended up going with X instead") so the thread reads naturally.
 
 Bot replies go out together. Human-facing ones go one at a time, confirming as we go.

@@ -476,6 +476,11 @@ in
   home.file.".claude/skills/address-pr-review".source = ./claude-skills/address-pr-review;
   home.file.".claude/skills/review-pr".source = ./claude-skills/review-pr;
 
+  # pr-shots: the one way to get a screenshot of a UI change into a PR
+  # (agent-browser above, then `gh --attach`). Exists because every UI rig was
+  # rediscovering a headless chromium and hand-rolling a driver script.
+  home.file.".claude/skills/pr-shots".source = ./claude-skills/pr-shots;
+
   # Catch-up skills, same move for the same reason. These also lean on the rig
   # board (`rig ls`, `rig waiting`, `rig history`) rather than reconstructing
   # it from Linear and gh, which is what they did back when work lived in

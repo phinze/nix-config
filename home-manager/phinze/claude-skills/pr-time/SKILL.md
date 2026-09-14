@@ -136,6 +136,12 @@ wrong.
    it or ask one focused question. Do not hand me the source material and a blank
    page merely because some judgment is mine.
 
+   **UI change? Shoot it first.** When the diff touches what someone sees
+   (web components, templates, styles, a CLI's output), capture the states the
+   description will argue about before drafting, per the `pr-shots` skill.
+   Reference them in the body as `![alt](/abs/path/shot.png)`; step 7 passes
+   each file to `gh pr create --attach` and gh rewrites the references.
+
    Draft both parts:
    - **Title**: a high-level summary of the whole change
    - **Description**: the short argument for the change, per the style guide.
@@ -164,8 +170,9 @@ wrong.
    renders as Markdown, and mid-sentence line breaks look broken on GitHub.
 
    Show me the final rev stack with its messages, followed by the exact PR title
-   and body, and ask "Look good?". This is the one writing checkpoint. Wait for
-   approval before pushing. If I revise the prose, check my factual claims
+   and body, and ask "Look good?". List any screenshot paths the body references
+   so I can open them. This is the one writing checkpoint. Wait for approval
+   before pushing. If I revise the prose, check my factual claims
    against the diff, preserve the intent and wording I chose, and show the final
    artifact again if your corrections materially change it.
 
@@ -188,7 +195,8 @@ wrong.
    jj git push
    gh pr create \
      --head "$(jj log -r '@-' --no-graph -T 'bookmarks.join(\",\")')" \
-     --title "..." --body "..."
+     --title "..." --body "..." \
+     --attach /abs/path/shots/one.png   # one per image the body references
    ```
 
    **Stacked on another open PR?** Don't hand-set `--base`. `gh stack link` sets the base to the parent's head branch *and* groups the PRs in GitHub's stack UI, so run it right after creation:
