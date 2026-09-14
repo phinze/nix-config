@@ -48,8 +48,6 @@ in
     ./tmux.nix
     # Demo recorder for terminal sessions
     ./modules/demo-recorder.nix
-    # Screenshot module for website captures
-    ./modules/screenshot.nix
     # Dynamic SSH git signing key selection
     ./modules/git-signing.nix
     # Nushell experiment (launch `nu` to try it)

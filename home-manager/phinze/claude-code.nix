@@ -127,11 +127,28 @@ let
 
     echo "$out"
   '';
+
+  # agent-browser: headless Chrome driven one shell command at a time, the
+  # capture half of the pr-shots skill. It only needs a Chrome binary, so on
+  # Linux bake in nixpkgs' chromium (which doesn't build on Darwin, where the
+  # Rust binary finds the installed Chrome on its own). ffmpeg rides along for
+  # `record start`, which is how a PR gets a video instead of a still.
+  agent-browser = pkgs.symlinkJoin {
+    name = "agent-browser-wrapped";
+    paths = [ pkgs.small.agent-browser ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/agent-browser \
+        --prefix PATH : ${lib.makeBinPath [ pkgs.ffmpeg-headless ]} \
+        ${lib.optionalString pkgs.stdenv.isLinux "--set-default AGENT_BROWSER_EXECUTABLE_PATH ${lib.getExe pkgs.chromium}"}
+    '';
+  };
 in
 {
   # Claude Code package with LSP fallbacks
   home.packages = [
     claude-code-wrapped
+    agent-browser
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)

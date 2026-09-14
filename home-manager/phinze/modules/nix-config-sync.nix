@@ -12,9 +12,10 @@ let
   # release-branch pins) stays manual on purpose — those are deliberate.
   #
   # nixpkgs-small is the one nixpkgs branch that rides along, and it earns the
-  # exception by being narrow rather than by being safe: exactly two packages
-  # read from it, so a bump rebuilds the jj toolchain and nothing else. Moving
-  # nixpkgs-unstable on a timer would be a mass rebuild every tick; this isn't.
+  # exception by being narrow rather than by being safe: a handful of small
+  # packages read from it (jj, jjui, gh, yt-dlp, agent-browser), so a bump
+  # rebuilds those and nothing else. Moving nixpkgs-unstable on a timer would
+  # be a mass rebuild every tick; this isn't.
   # The cost is that a jj release the binary cache hasn't caught up on turns one
   # tick into a ~30min source build. It still lands, it just takes a while, and
   # deploy_main has already run by then so a real config push never waits on it.
