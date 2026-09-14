@@ -1,4 +1,4 @@
-# Demo recorder module - Record terminal demos and share as GIFs via GitHub gists
+# Demo recorder module - Record terminal demos as GIFs for gh --attach
 {
   config,
   lib,
