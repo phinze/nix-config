@@ -101,11 +101,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1789426921,
-        "narHash": "sha256-y2t7oErHRcX4gvVTct7ymosqXrsDc+VJzTEo2WsyIxQ=",
+        "lastModified": 1789434921,
+        "narHash": "sha256-ppvKlpoPL41TrSC3UjpvrHT8zcjnokLqacHMLeq356U=",
         "owner": "sadjow",
         "repo": "claude-code-nix",
-        "rev": "5ddca8e77f32b00c12874d24ea4fdf8e28747690",
+        "rev": "21f45473c72a5c902fc7a6156cd0195a656a2e9e",
         "type": "github"
       },
       "original": {
