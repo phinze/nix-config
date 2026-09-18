@@ -74,10 +74,10 @@ wrong.
   commenting on the PR. The implementation is `mirendev/reviewagent`, under
   `internal/biscuit/`, on the rare occasion you actually need it.
 - Its body opens `**🍪 biscuit: <verdict>** — auto-review, non-blocking`.
-  Verdicts are `✅ ready to merge` or `⚠️ ready with caveats`, and the verdict is
-  advisory. It never gates the merge.
-- Reviews once, about a minute after the PR opens. **It does not re-review on
-  push.** Comment `/biscuit review` for a fresh pass. That's also what clears its
+  Verdicts are `✅ ready to merge`, `⚠️ ready with caveats`, or `🚧 not ready`,
+  and the verdict is advisory. It never gates the merge.
+- Reviews once when the PR opens, taking five to ten minutes. **It does not
+  re-review on push.** Comment `/biscuit review` for a fresh pass. That's also what clears its
   threads, since it only auto-resolves when it re-runs.
 - Findings arrive in two shapes and you need to read both: real inline threads,
   and a markdown `## Inline comments` section inside the review body. In the

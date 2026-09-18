@@ -32,10 +32,11 @@ first.
   find, so don't go looking for one.
 - Its review body opens with `**🍪 biscuit: <verdict>** — auto-review,
   non-blocking` and closes with a link to a full review note. Verdicts are
-  `✅ ready to merge` or `⚠️ ready with caveats`.
-- Reviews once, about a minute after the PR opens. **It does not re-review on
-  push.** When its findings need a fresh pass, comment `/biscuit review` on the
-  PR and wait roughly a minute.
+  `✅ ready to merge`, `⚠️ ready with caveats`, or `🚧 not ready`.
+- Reviews once when the PR opens, taking five to ten minutes. **It does not
+  re-review on push.** When its findings need a fresh pass, comment
+  `/biscuit review` on the PR; the re-review reads its previous review and
+  reports the delta.
 - Auto-resolves its own threads, but only when it re-runs. Before it has
   declared the PR ready to merge, a `/biscuit review` after pushing its fixes
   is what clears them. Don't reason from CodeRabbit's push behavior and
@@ -364,6 +365,15 @@ bodies and apply this state:
 - Otherwise, request a re-review when this push addresses biscuit's findings.
   A consciously accepted caveat, with no related fix to re-read, does not need
   another pass.
+- One re-review per round, not per push. Land every fix for the current set of
+  findings, push once, then request. If a fix gets reverted or reworked, wait
+  for the head to settle before asking. Reviews take five to ten minutes and
+  nothing supersedes one in flight, so a request per push produces overlapping
+  reviews of different heads and duplicate inline comments (runtime#1246 got
+  five reviews in 28 minutes this way).
+- Never post `/biscuit review` while the PR still carries biscuit's 👀
+  reaction: a review is already running. Wait for it to post, read it, and
+  only then decide whether another pass is needed.
 
 When a re-review is warranted, ask for it with:
 
