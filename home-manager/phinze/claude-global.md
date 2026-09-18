@@ -104,6 +104,18 @@ Reach for these instead, roughly in order:
 it (e.g. `git log | head -5`), or as a deliberate `rg -m` style bounded
 match. The rule is about not reflexively discarding output you might need.
 
+## Artifacts
+
+Don't publish an Artifact unless I ask for one. Default to the terminal:
+prose for explanation, ASCII or box-drawing for anything diagram-shaped.
+Timelines, dependency graphs, architecture sketches and status boards all
+read fine as text, and text stays in the transcript with the rest of the
+conversation instead of becoming a page to find, keep current, and clean up
+by hand later (the tool can publish but not delete).
+
+Offering one is fine when a page would genuinely be better. One line, then
+drop it if I don't bite.
+
 ## Version Control
 
 I use jj (Jujutsu) for version control. Reach for jj first; only fall back
