@@ -94,11 +94,31 @@ wrong.
   `<!-- biscuit:superseded -->` marker. The API still returns them, so when
   listing reviews skip any body carrying that marker or you'll read a stale
   verdict as current.
-- The 👀 reaction on the PR means a review is running; it becomes 🚀 when the
-  review posts.
+- **Its progress is a check run named `biscuit` on the head**, in the merge
+  box next to CI. `queued` while the settle window runs, `in_progress` once
+  the review starts, then the verdict as the conclusion: `success` for ready,
+  `neutral` for caveats, `action_required` for not ready, `cancelled` for a
+  review that stopped without a verdict (superseded by a push, or failed). A
+  head with no row hasn't been looked at. `gh pr checks` shows the state but
+  drops the check's title, so read the row itself:
+
+  ```bash
+  gh api "repos/$OWNER/$REPO/commits/$(gh pr view $PR_NUMBER --json headRefOid --jq .headRefOid)/check-runs" \
+    --jq '.check_runs[] | select(.name == "biscuit") | "\(.status) \(.conclusion // "-") \(.output.title)"'
+  ```
+
+  That prints e.g. `queued - waiting for pushes to settle`, `in_progress -
+  reviewing 08dd23e`, or `completed success ready to merge`; nothing means no
+  row on this head yet.
+
+  **Keep that row out of the CI gate.** `gh pr checks` buckets
+  `action_required` and `cancelled` as failures and `queued` as pending, so
+  a `not ready` verdict or a settle window in progress looks like broken CI
+  if you don't filter the row out.
 - `/biscuit review` is the escape hatch, not the routine: it reviews right now,
   skipping the settle window, and cancels any review in flight. Don't post it
-  while 👀 is up, since that just restarts a review of the same head.
+  while its check row is `queued` or `in_progress`, since that just restarts a
+  review of the same head.
 - Auto-resolves its own threads when its re-review lands, later than CodeRabbit
   but on its own.
 - Findings arrive in two shapes and you need to read both: real inline threads,
@@ -235,7 +255,14 @@ wrong.
 
    **8a. Watch CI**
 
-   Sleep 15 seconds for checks to register, then poll `gh pr checks $PR_NUMBER` every 30 seconds until everything is final. **Not `--watch`**, which streams and bloats context. **CI always runs**, so zero checks means they haven't registered yet; flag it if they're still missing after 5 minutes.
+   Sleep 15 seconds for checks to register, then poll every 30 seconds until everything is final. **Not `--watch`**, which streams and bloats context. **CI always runs**, so zero checks means they haven't registered yet; flag it if they're still missing after 5 minutes.
+
+   ```bash
+   gh pr checks $PR_NUMBER --json name,state,bucket,description \
+     --jq 'map(select(.name != "biscuit"))'
+   ```
+
+   The `biscuit` row is its review progress, not CI (see Bot Reviewers); 8b reads it. Leaving it in makes a `not ready` verdict look like a red build and a settle window look like a hung one.
 
    - **All green**: on to 8b.
    - **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's straightforward (lint, formatting, typo, simple test update) and you're confident, write the fix into `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the breaking one), then `jj tug && jj git push` and loop. **Two auto-fix attempts, then stop.** If the failure needs discussion, report what failed, what you tried, and the options.
@@ -266,7 +293,7 @@ wrong.
               else "stale: reviewed at \($sha)" end'
    ```
 
-   A stale review with 👀 still up means the re-review is in progress; keep waiting. Stale with no 👀 well past the 12 minutes is the one case that warrants `/biscuit review`.
+   A stale review with the `biscuit` check `queued` or `in_progress` means the re-review is on its way; keep waiting. Stale with the check `cancelled` (or no row for this head) well past the 12 minutes is the one case that warrants `/biscuit review`.
 
    When CodeRabbit's is the only one missing, check for a rate limit rather than
    waiting out the 5 minutes: `gh pr checks $PR_NUMBER --json name,state,description`.

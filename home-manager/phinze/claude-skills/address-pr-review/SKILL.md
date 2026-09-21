@@ -47,14 +47,34 @@ first.
   commit, and "superseded by a newer review", plus an
   `<!-- biscuit:superseded -->` marker. The API still returns them, so filter
   the marker out when listing reviews or you'll act on a stale verdict.
-- The 👀 reaction on the PR means a review is running; it becomes 🚀 when the
-  review posts.
+- **Its progress is a check run named `biscuit` on the head**, in the merge
+  box next to CI. `queued` while the settle window runs, `in_progress` once
+  the review starts, then the verdict as the conclusion: `success` for ready,
+  `neutral` for caveats, `action_required` for not ready, `cancelled` for a
+  review that stopped without a verdict (superseded by a push, or failed). A
+  head with no row hasn't been looked at. `gh pr checks` shows the state but
+  drops the check's title, so read the row itself:
+
+  ```bash
+  gh api "repos/$OWNER/$REPO/commits/$(gh pr view $PR_NUMBER --json headRefOid --jq .headRefOid)/check-runs" \
+    --jq '.check_runs[] | select(.name == "biscuit") | "\(.status) \(.conclusion // "-") \(.output.title)"'
+  ```
+
+  That prints e.g. `queued - waiting for pushes to settle`, `in_progress -
+  reviewing 08dd23e`, or `completed success ready to merge`; nothing means no
+  row on this head yet.
+
+  **Keep that row out of the CI gate.** `gh pr checks` buckets
+  `action_required` and `cancelled` as failures and `queued` as pending, so
+  a `not ready` verdict or a settle window in progress looks like broken CI
+  if you don't filter the row out.
 - `/biscuit review` is the escape hatch, not the routine. It reviews right now,
   skipping the settle window, and cancels any review in flight. Never post it
-  while 👀 is up (that only restarts a review of the same head), and don't post
-  it just because the head moved, since the push already scheduled one. Reach
-  for it when the current review is stale, no 👀 is up, and the settle window
-  plus a review's worth of time has passed with nothing posted.
+  while its check row is `queued` or `in_progress` (that only restarts a
+  review of the same head), and don't post it just because the head moved,
+  since the push already scheduled one. Reach for it when the current review
+  is stale, the row for this head is `cancelled` or missing, and the settle
+  window plus a review's worth of time has passed with nothing posted.
 - Auto-resolves its own threads when its re-review lands. That is later than
   CodeRabbit, which resolves as soon as it sees the push, but it happens on its
   own; a biscuit thread still open a minute after the push isn't a signal.
@@ -365,7 +385,14 @@ After fixes are pushed, stick around and make sure everything actually lands cle
 
 **7a. Watch CI**
 
-Sleep 15 seconds for checks to register, then poll `gh pr checks $PR_NUMBER` every 30 seconds until everything reaches a final status. **Not `--watch`**, which streams and bloats context. **CI always runs**, so zero checks means they haven't registered yet, not that the repo has none; flag it if they're still missing after 5 minutes.
+Sleep 15 seconds for checks to register, then poll every 30 seconds until everything reaches a final status. **Not `--watch`**, which streams and bloats context. **CI always runs**, so zero checks means they haven't registered yet, not that the repo has none; flag it if they're still missing after 5 minutes.
+
+```bash
+gh pr checks $PR_NUMBER --json name,state,bucket,description \
+  --jq 'map(select(.name != "biscuit"))'
+```
+
+The `biscuit` row is its review progress, not CI (see Bot Reviewers); 7b reads it. Leaving it in makes a `not ready` verdict look like a red build and a settle window look like a hung one.
 
 - **All green**: move on to 7b.
 - **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident, write it at `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the failing one), `jj git push`, and loop back. **Two auto-fix attempts, then stop.** If the failure reveals something that needs discussion, stop and report instead of burning an attempt.
@@ -400,9 +427,10 @@ gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
            else "stale: reviewed at \($sha)" end'
 ```
 
-`current` means biscuit is done with this head. `stale` with 👀 on the PR
-means the re-review is running; keep polling. `stale` with no 👀 and the 12
-minutes gone is the one case for the escape hatch:
+`current` means biscuit is done with this head. `stale` with the `biscuit`
+check `queued` or `in_progress` means the re-review is on its way; keep
+polling. `stale` with that check `cancelled` (or no row for this head) and the
+12 minutes gone is the one case for the escape hatch:
 
 ```bash
 gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" -f body="/biscuit review"
@@ -410,8 +438,9 @@ gh api "repos/$OWNER/$REPO/issues/$PR_NUMBER/comments" -f body="/biscuit review"
 
 That's a bot-facing command on our own PR, not co-authored prose, so just post
 it. Don't post it for any other reason: not because the head moved (the push
-already scheduled a review), and never while 👀 is up (it cancels the running
-review and starts over on the same head).
+already scheduled a review), and never while the check is `queued` or
+`in_progress` (it cancels the running review and starts over on the same
+head).
 
 Bots also post empty-bodied reviews when replying inside threads, so a new
 entry with an empty body is a reply, not a fresh finding. Check the body before
