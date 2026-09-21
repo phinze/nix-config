@@ -70,15 +70,37 @@ wrong.
 
 **biscuit** (`miren-code-agent[bot]`)
 - The name and the login differ. "biscuit" is what we call it, the API returns
-  `miren-code-agent[bot]`. There's no CLI to run, since you trigger it by
-  commenting on the PR. The implementation is `mirendev/reviewagent`, under
-  `internal/biscuit/`, on the rare occasion you actually need it.
+  `miren-code-agent[bot]`. There's no CLI to run; it triggers itself on PR
+  events and takes one command, as a PR comment. The implementation is
+  `mirendev/reviewagent`, under `internal/biscuit/`, on the rare occasion you
+  actually need it.
 - Its body opens `**🍪 biscuit: <verdict>** — auto-review, non-blocking`.
   Verdicts are `✅ ready to merge`, `⚠️ ready with caveats`, or `🚧 not ready`,
   and the verdict is advisory. It never gates the merge.
-- Reviews once when the PR opens, taking five to ten minutes. **It does not
-  re-review on push.** Comment `/biscuit review` for a fresh pass. That's also what clears its
-  threads, since it only auto-resolves when it re-runs.
+- Reviews when the PR opens, taking five to ten minutes, and **re-reviews on
+  push**: a push cancels any review still reading the old head, then waits for
+  the pushes to settle (two minutes after the last one) and reviews the new
+  head once, as a delta on its previous review. So a review after a push lands
+  seven to twelve minutes after the push, and each push inside that window
+  restarts the clock. Batch pushes rather than trickling them.
+- A push that lands back on a head it already reviewed is skipped, so a
+  revert doesn't buy a new review.
+- **Every review names its commit**: the footer reads ``reviewed at `abc1234` ``.
+  Compare that against `gh pr view --json headRefOid` to know whether the
+  verdict is of the current head, rather than guessing from what changed.
+- **Earlier reviews get folded.** When a new review posts, each older one is
+  rewritten into a `<details>` block whose summary line carries the old verdict,
+  its commit, and "superseded by a newer review", with an
+  `<!-- biscuit:superseded -->` marker. The API still returns them, so when
+  listing reviews skip any body carrying that marker or you'll read a stale
+  verdict as current.
+- The 👀 reaction on the PR means a review is running; it becomes 🚀 when the
+  review posts.
+- `/biscuit review` is the escape hatch, not the routine: it reviews right now,
+  skipping the settle window, and cancels any review in flight. Don't post it
+  while 👀 is up, since that just restarts a review of the same head.
+- Auto-resolves its own threads when its re-review lands, later than CodeRabbit
+  but on its own.
 - Findings arrive in two shapes and you need to read both: real inline threads,
   and a markdown `## Inline comments` section inside the review body. In the
   second case GraphQL `reviewThreads` shows nothing and there's nothing to
@@ -220,15 +242,31 @@ wrong.
 
    **8b. Wait for both bot reviews**
 
-   Don't bail early assuming one isn't set up, and don't call the pass done when only one has landed (the rate limit below is the exception). See Bot Reviewers above for where each one's findings hide. Both usually arrive within a couple of minutes; give them up to 5.
+   Don't bail early assuming one isn't set up, and don't call the pass done when only one has landed (the rate limit below is the exception). See Bot Reviewers above for where each one's findings hide. CodeRabbit usually arrives within a couple of minutes; give it 5. biscuit takes five to ten from the PR opening, and if 8a pushed a CI fix the clock restarts from that push plus the two-minute settle, so allow up to 12 minutes from the last push.
 
    ```bash
    gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
      | jq '[.[] | select(.user.login == "coderabbitai[bot]" or .user.login == "miren-code-agent[bot]")
+            | select(.body // "" | contains("biscuit:superseded") | not)
             | {author: .user.login, submitted_at, body}]'
    ```
 
    Poll every 30 seconds until both show up, then read both bodies and any inline threads.
+
+   biscuit's review counts only if it's of the head you pushed. Its footer names the commit, so check it rather than trusting the timestamp:
+
+   ```bash
+   HEAD=$(gh pr view $PR_NUMBER --json headRefOid --jq .headRefOid)
+   gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
+     | jq -r --arg head "$HEAD" '[.[] | select(.user.login == "miren-code-agent[bot]" and .body != ""
+            and (.body // "" | contains("biscuit:superseded") | not))]
+            | last.body // "" | (capture("reviewed at `(?<sha>[0-9a-f]+)`").sha // null) as $sha
+            | if $sha == null then "no biscuit review yet"
+              elif ($head | startswith($sha)) then "current"
+              else "stale: reviewed at \($sha)" end'
+   ```
+
+   A stale review with 👀 still up means the re-review is in progress; keep waiting. Stale with no 👀 well past the 12 minutes is the one case that warrants `/biscuit review`.
 
    When CodeRabbit's is the only one missing, check for a rate limit rather than
    waiting out the 5 minutes: `gh pr checks $PR_NUMBER --json name,state,description`.
