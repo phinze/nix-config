@@ -85,6 +85,7 @@
     wget
     curl
     bind.dnsutils # provides dig for DNS lookups
+    rex-terminfo
   ];
 
   # Environment variables

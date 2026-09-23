@@ -151,6 +151,8 @@ in
       # Ghostty's terminfo has Tc/setrgbf/setrgbb but tmux doesn't auto-promote
       # those to feature flags; hyperlinks (OSC 8) has no terminfo representation at all.
       set -as terminal-features ",xterm-ghostty:RGB:hyperlinks:extkeys"
+      # Rex's terminfo covers the rest; these are tmux-specific caps it lacks.
+      set -as terminal-features ",xterm-rex:hyperlinks:extkeys"
 
       # Report modified keys (Shift+Enter and friends) to programs that ask for
       # them. Without this tmux collapses Shift+Enter back to a bare CR and
@@ -159,7 +161,7 @@ in
       # depend on the CSI-u path, which is what this turns on.
       set -s extended-keys on
       set -s extended-keys-format csi-u
-      # Blink and the Ghostty derivative both report the generic xterm-256color.
+      # Blink reports the generic xterm-256color.
       # Declaring the features here rather than fixing TERM at the ssh layer is
       # deliberate: a pane's TERM comes from default-terminal, not from the
       # client, so the client's TERM feeds nothing but tmux's own feature
@@ -169,8 +171,8 @@ in
       #
       # The usual objection to claiming features for a string as widely shared
       # as xterm-256color is that it speaks for clients you do not control. The
-      # set here is closed and known: Blink, Ghostty, and the derivative. If a
-      # colour ever looks wrong from Blink, RGB is the first thing to drop.
+      # set here is closed and known: Blink and Ghostty. If a colour ever looks
+      # wrong from Blink, RGB is the first thing to drop.
       set -as terminal-features ",xterm-256color:RGB:hyperlinks:extkeys"
 
       # Allow programs inside tmux (Neovim specifically) to set clipboard contents

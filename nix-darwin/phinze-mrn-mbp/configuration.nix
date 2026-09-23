@@ -48,6 +48,9 @@
     };
   };
 
+  # Claim xterm-rex outright rather than via Rex's ssh guard.
+  launchd.user.envVariables.REX_TERM = "xterm-rex";
+
   homebrew.brews = [ "terminal-notifier" ];
 
   # Add host-specific homebrew casks

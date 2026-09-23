@@ -22,4 +22,5 @@ pkgs: rec {
   linear-tui = pkgs.callPackage ./linear-tui.nix { };
   osc-copy = pkgs.callPackage ./osc-copy { };
   whoson = pkgs.callPackage ./whoson.nix { };
+  rex-terminfo = pkgs.callPackage ./rex-terminfo { };
 }
