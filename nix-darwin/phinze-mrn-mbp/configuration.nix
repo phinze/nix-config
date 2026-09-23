@@ -48,8 +48,18 @@
     };
   };
 
-  # Claim xterm-rex outright rather than via Rex's ssh guard.
-  launchd.user.envVariables.REX_TERM = "xterm-rex";
+  # Claim xterm-rex outright rather than via Rex's ssh guard. An agent rather
+  # than launchd.user.envVariables, which only setenvs during activation and
+  # so is gone after a reboot.
+  launchd.user.agents.rex-term.serviceConfig = {
+    ProgramArguments = [
+      "/bin/launchctl"
+      "setenv"
+      "REX_TERM"
+      "xterm-rex"
+    ];
+    RunAtLoad = true;
+  };
 
   homebrew.brews = [ "terminal-notifier" ];
 
