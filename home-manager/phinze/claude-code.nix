@@ -476,6 +476,12 @@ in
   home.file.".claude/skills/address-pr-review".source = ./claude-skills/address-pr-review;
   home.file.".claude/skills/review-pr".source = ./claude-skills/review-pr;
 
+  # review-queue: the coordinator above review-pr. One session triages
+  # everything awaiting review and pitches a rig per substantial PR; the
+  # rigs run review-pr. It's a skill before it's a rig kind so the passes can
+  # show what a `rig reviews` read model actually needs.
+  home.file.".claude/skills/review-queue".source = ./claude-skills/review-queue;
+
   # pr-shots: the one way to get a screenshot of a UI change into a PR
   # (agent-browser above, then `gh --attach`). Exists because every UI rig was
   # rediscovering a headless chromium and hand-rolling a driver script.
