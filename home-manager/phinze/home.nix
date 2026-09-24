@@ -61,6 +61,8 @@ in
     ./modules/nix-config-sync-darwin.nix
     # Ghostty terminal theming on macOS (writes ~/.config/ghostty/config)
     ./ghostty.nix
+    # Rex keybinds on macOS (writes ~/.config/rex/init.lua)
+    ./rex.nix
   ]
   ++ lib.optionals (nodeConfig.isGraphical or false) [
     # Graphical-specific configuration
