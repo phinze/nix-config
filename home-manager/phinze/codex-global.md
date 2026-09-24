@@ -111,7 +111,7 @@ to open or prep a PR overrides the ownership default.
 When I ask you to "run pr-time" (or "prep a PR"), or to "address review
 comments", activate the `pr-time` or `address-pr-review` skill to tidy the
 Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd
-the PR through CI and CodeRabbit reviews. These are skills, not prompts, so
+the PR through CI and biscuit reviews. These are skills, not prompts, so
 you can reach for them yourself; you don't need me to type the slash command.
 
 Actively drive the VCS process. Write and apply concise descriptions that focus

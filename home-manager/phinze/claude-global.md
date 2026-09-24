@@ -128,7 +128,7 @@ GitHub repositories owned by `phinze` directly to `main`. Ship changes to
 repositories owned by anyone else through a pull request. An explicit request
 to open or prep a PR overrides the ownership default.
 
-When I ask you to "run pr-time" (or "prep a PR"), or to "address review comments", you should equip the respective skill (`pr-time` or `address-pr-review`) to tidy our Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd the PR through CI and CodeRabbit reviews.
+When I ask you to "run pr-time" (or "prep a PR"), or to "address review comments", you should equip the respective skill (`pr-time` or `address-pr-review`) to tidy our Jujutsu rev stack, rebase on trunk, draft narrative descriptions, and shepherd the PR through CI and biscuit reviews.
 
 Actively drive the VCS process. Write and apply concise descriptions that focus
 on the "why," and make any non-obvious design choices clear. Routine commits,

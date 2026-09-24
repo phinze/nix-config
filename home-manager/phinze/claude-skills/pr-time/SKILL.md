@@ -52,21 +52,10 @@ the reader only needs the shape.
 
 ## Bot Reviewers
 
-Every `mirendev/` PR gets reviewed by two bots. Both are always expected, they
-behave differently, and confusing one for the other is the usual way this goes
-wrong.
-
-**CodeRabbit** (`coderabbitai[bot]`)
-- Posts a summary issue comment, plus a review whose body carries actionable
-  sections (`🧹 Nitpick comments`, `⚠️ Outside diff range comments`), plus real
-  inline review threads.
-- **Re-reviews automatically on every push.** Never trigger it manually.
-- Auto-resolves its own threads once it sees the fix land in a push.
-- Treat its findings as actionable.
-- **A rate limit makes it skip the head.** Its check still reports `pass`, so
-  the description carries the signal: `Review rate limited` rather than the
-  usual `Review completed`. The window runs tens of minutes and clears itself,
-  and the next push gets a normal review.
+Every `mirendev/` PR gets reviewed by biscuit, and biscuit is the only bot
+reviewer. CodeRabbit was our second one until 2026-09-24, when we suspended the
+app after measuring biscuit as the stronger reviewer (RFD-95, MIR-1896). A
+`coderabbitai[bot]` review on an older PR is history, not something to wait for.
 
 **biscuit** (`miren-code-agent[bot]`)
 - The name and the login differ. "biscuit" is what we call it, the API returns
@@ -119,8 +108,7 @@ wrong.
   skipping the settle window, and cancels any review in flight. Don't post it
   while its check row is `queued` or `in_progress`, since that just restarts a
   review of the same head.
-- Auto-resolves its own threads when its re-review lands, later than CodeRabbit
-  but on its own.
+- Auto-resolves its own threads when its re-review lands.
 - Findings arrive in two shapes and you need to read both: real inline threads,
   and a markdown `## Inline comments` section inside the review body. In the
   second case GraphQL `reviewThreads` shows nothing and there's nothing to
@@ -249,7 +237,7 @@ wrong.
    ```
    A stack number appends to an existing stack; falling back to the parent's PR number starts a new two-PR one. Skip entirely for a PR based on trunk.
 
-   **Work repos open as drafts.** Check with `gh repo view --json owner --jq '.owner.login'`, and if it's `mirendev`, add `--draft`. CODEOWNERS review requests don't fire until a PR leaves draft, which keeps the ordering bot-first, humans-after. Both bots review drafts, so step 8 works unchanged and 8b flips it to ready. Personal repos open normally.
+   **Work repos open as drafts.** Check with `gh repo view --json owner --jq '.owner.login'`, and if it's `mirendev`, add `--draft`. CODEOWNERS review requests don't fire until a PR leaves draft, which keeps the ordering bot-first, humans-after. biscuit reviews drafts, so step 8 works unchanged and 8b flips it to ready. Personal repos open normally.
 
 8. **Babysit the PR**: fully autonomous from here. Only check in if something needs human judgment.
 
@@ -267,18 +255,18 @@ wrong.
    - **All green**: on to 8b.
    - **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's straightforward (lint, formatting, typo, simple test update) and you're confident, write the fix into `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the breaking one), then `jj tug && jj git push` and loop. **Two auto-fix attempts, then stop.** If the failure needs discussion, report what failed, what you tried, and the options.
 
-   **8b. Wait for both bot reviews**
+   **8b. Wait for biscuit's review**
 
-   Don't bail early assuming one isn't set up, and don't call the pass done when only one has landed (the rate limit below is the exception). See Bot Reviewers above for where each one's findings hide. CodeRabbit usually arrives within a couple of minutes; give it 5. biscuit takes five to ten from the PR opening, and if 8a pushed a CI fix the clock restarts from that push plus the two-minute settle, so allow up to 12 minutes from the last push.
+   Don't bail early assuming it isn't set up. See Bot Reviewers above for where its findings hide. biscuit takes five to ten minutes from the PR opening, and if 8a pushed a CI fix the clock restarts from that push plus the two-minute settle, so allow up to 12 minutes from the last push.
 
    ```bash
    gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
-     | jq '[.[] | select(.user.login == "coderabbitai[bot]" or .user.login == "miren-code-agent[bot]")
+     | jq '[.[] | select(.user.login == "miren-code-agent[bot]")
             | select(.body // "" | contains("biscuit:superseded") | not)
             | {author: .user.login, submitted_at, body}]'
    ```
 
-   Poll every 30 seconds until both show up, then read both bodies and any inline threads.
+   Poll every 30 seconds until it shows up, then read the body and any inline threads.
 
    biscuit's review counts only if it's of the head you pushed. Its footer names the commit, so check it rather than trusting the timestamp:
 
@@ -295,15 +283,8 @@ wrong.
 
    A stale review with the `biscuit` check `queued` or `in_progress` means the re-review is on its way; keep waiting. Stale with the check `cancelled` (or no row for this head) well past the 12 minutes is the one case that warrants `/biscuit review`.
 
-   When CodeRabbit's is the only one missing, check for a rate limit rather than
-   waiting out the 5 minutes: `gh pr checks $PR_NUMBER --json name,state,description`.
-
-   - **Both clean** (CodeRabbit's body is just the summary walkthrough with no actionable sections or threads, biscuit came back `✅ ready to merge` with nothing raised): if it's still a draft, `gh pr ready $PR_NUMBER`. Report green CI, clean bots, ready for review. Done.
-   - **CodeRabbit rate-limited and biscuit clean**: the rate limit satisfies the
-     CodeRabbit gate. Graduate on green CI and a clean biscuit, and say in the
-     report that CodeRabbit never reviewed. Converting back to draft is free
-     if it later posts findings.
-   - **Either has findings**: report what turned up, attributed by name so it's clear which bot said what, then kick off `/address-pr-review`.
+   - **Clean** (`✅ ready to merge` with nothing raised): if it's still a draft, `gh pr ready $PR_NUMBER`. Report green CI, clean review, ready for humans. Done.
+   - **Findings**: report what turned up, then kick off `/address-pr-review`.
 
    A `⚠️ ready with caveats` isn't automatically work. Sometimes it names a real gap worth a follow-up issue, sometimes it's biscuit narrating a worry it then resolves on its own. Judge it, don't reflex-fix it.
 
