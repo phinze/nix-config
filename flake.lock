@@ -149,11 +149,11 @@
     "claude-plugin-miren-team": {
       "flake": false,
       "locked": {
-        "lastModified": 1784921099,
-        "narHash": "sha256-sIR6Ay/A3FPH5D1RwticrQzV+mL22eviM7VwnTnnDps=",
+        "lastModified": 1790364212,
+        "narHash": "sha256-5OVi6mZ8jAcvNttjJyCEGgQO4t8jFoqFisNWPwU8Z7I=",
         "ref": "refs/heads/main",
-        "rev": "dd2a1d0af1a7407f99cefc8545bae67833a9d09c",
-        "revCount": 20,
+        "rev": "f0e5623c7cda5bd65f785289724657293bd1acbe",
+        "revCount": 22,
         "type": "git",
         "url": "https://github.com/mirendev/claude-skills.git"
       },
@@ -165,11 +165,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1790283899,
-        "narHash": "sha256-h0PAEOOst6xzTiFO5C6oQRwuRgQVQqUXqQqML3yL/mc=",
+        "lastModified": 1790364804,
+        "narHash": "sha256-42uD6umF52d1CaHIT3Fvzm3A3I0lVA6FAm64yhjqgXg=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "ad30d62cd52ad0d0af1beda1eab7f61c601045d0",
+        "rev": "ca08d5e47d6402db586d37780c559a0c4c7ded9a",
         "type": "github"
       },
       "original": {
@@ -867,11 +867,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790359412,
-        "narHash": "sha256-AYiU7BEvix9HqsBNF3G102hk5js/HVD0sW4hpqT7AMA=",
+        "lastModified": 1790366882,
+        "narHash": "sha256-gyftua+OU8Evqy3DUv6lSjdEURTQgJzKyw95UTN+FiY=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "75555a884eb46ce14953eee8bd9068a2fffdbaa9",
+        "rev": "b5ee7944511ddcfc86370fdb3c739757b4378841",
         "type": "github"
       },
       "original": {
