@@ -1,6 +1,13 @@
 ---
 name: miren-brand
-description: Miren's brand system — the canonical color palette, typography, and logo assets. Load before choosing any color, font, or logo for anything Miren-facing: web UI, dashboards, docs sites, marketing pages, slides, diagrams, README banners, social images, or charts. Also load when reviewing existing Miren UI for brand drift, or when asked for "the brand colors", "our blue", "the Miren logo", or which logo variant to use on a given background.
+description: >-
+  Miren's brand system — the canonical color palette, typography, and logo
+  assets. Load before choosing any color, font, or logo for anything
+  Miren-facing: web UI, dashboards, docs sites, marketing pages, slides,
+  diagrams, README banners, social images, or charts. Also load when reviewing
+  existing Miren UI for brand drift, or when asked for "the brand colors",
+  "our blue", "the Miren logo", or which logo variant to use on a given
+  background.
 ---
 
 # Miren Brand
