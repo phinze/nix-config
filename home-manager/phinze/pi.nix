@@ -151,8 +151,6 @@ let
         PI_MCP_ADAPTER_OAUTH_FILE_KEY=$(<${oauthKeyFile})
         export PI_MCP_ADAPTER_OAUTH_FILE_KEY
       fi
-      # Nix owns the version; Pi's own update check can only nag.
-      export PI_SKIP_VERSION_CHECK=1
       exec ${lib.getExe piPackage} "$@"
     '';
   };
