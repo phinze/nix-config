@@ -61,6 +61,9 @@
     RunAtLoad = true;
   };
 
+  # The terminfo to go with that claim (by path: no `additions` overlay here).
+  environment.systemPackages = [ (pkgs.callPackage ../../pkgs/rex-terminfo { }) ];
+
   homebrew.brews = [ "terminal-notifier" ];
 
   # Add host-specific homebrew casks
