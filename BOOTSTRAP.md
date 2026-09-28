@@ -28,15 +28,51 @@ Set Caps Lock in System Settings if you want it before then. The switch
 converges it either way.
 
 Machine names are set at step 7, before Tailscale logs in at step 9, so they
-need no attention. The exception is bringing Tailscale up early to work
-remotely during the long build: a node keeps whatever name it registered with,
-so set the names first if you do that.
+need no attention unless you bring Tailscale up early (see "Work from another
+machine" after step 3).
+
+## 0. Erase and install macOS
+
+Skip this if the Mac is already erased and sitting at Setup Assistant.
+
+A USB installer is the predictable route, and the only one when the target is
+a new major release. On the old system, with an empty drive of 32 GB or more
+plugged in:
 
 ```bash
-sudo scutil --set ComputerName phinze-mrn-mbp
-sudo scutil --set LocalHostName phinze-mrn-mbp
-sudo scutil --set HostName phinze-mrn-mbp
+softwareupdate --list-full-installers
+softwareupdate --fetch-full-installer --full-installer-version <version>
+diskutil eraseDisk JHFS+ INSTALLER GPT <diskN>
+sudo "/Applications/Install macOS <name>.app/Contents/Resources/createinstallmedia" \
+  --volume /Volumes/INSTALLER --nointeraction
 ```
+
+`createinstallmedia` wants a Mac OS Extended volume; the `eraseDisk` gives it
+one. Wait for `Install media now available`. On Apple silicon the finished
+drive holds little more than the installer app, with no `System/` or
+`.IABootFiles` at its root. That is expected, and the line above is the real
+signal.
+
+Shut down, hold the power button until "Loading startup options" appears, and
+pick the installer. Recovery first asks you to "select a volume to recover".
+That is an ownership check, not a restore: pick the internal volume and give
+your login password (Touch ID does not work in Recovery).
+
+In Disk Utility, choose View → Show All Devices and expand the tree down to
+the **Macintosh HD volume group** inside the internal container. Erase that.
+Erasing the top-level SSD fails with "disk in use", on purpose, because it
+also holds the containers Apple silicon boots from.
+
+**Expect "Activate Mac" right after the erase.** Erasing the volume group
+takes the activation record with it, so the Mac has to check in with Apple
+before it will do anything else. Join Wi-Fi and, if Activation Lock asks, sign
+in with the Apple ID *email address*; a phone number spun indefinitely on
+2026-09-28. Do not reboot out of this screen. Doing so leaves Recovery with
+"no volumes to recover", and the way back is Erase Mac from the internal
+recovery, which reruns the erase and activation and resets the volume name to
+Macintosh HD.
+
+Then install from the USB onto the erased volume.
 
 ## 1. macOS Setup Assistant, and the old tailnet node
 
@@ -57,6 +93,10 @@ actually has to download the app.
 If this machine is already in the tailnet, delete the old node from the
 Tailscale admin console now. The name is otherwise taken when the new machine
 joins and you get `phinze-mrn-mbp-2` permanently.
+
+The account's short name must be `phinze`; paths throughout the config are
+built from it. Until the switch installs the declared browsers, Safari handles
+every web sign-in below (GitHub, Tailscale, 1Password).
 
 ## 2. Homebrew
 
@@ -80,8 +120,9 @@ with none of the casks. It does not fail, which makes it easy to miss.
 brew install --cask 1password
 ```
 
-Sign in, then open Settings → Developer and turn on **Use the SSH agent**.
-Verify the socket:
+Sign in, then open Settings → Developer and turn on both **Use the SSH agent**
+and **Integrate with 1Password CLI**. `op` itself arrives with the switch but
+has no accounts until the second toggle is on. Verify the socket:
 
 ```bash
 ls ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
@@ -94,11 +135,60 @@ Nix can write the config that references the socket but cannot create it.
 Install it by hand rather than waiting for the declared cask, because you need
 a password manager to log into GitHub at step 5.
 
+## Optional: work from another machine
+
+The build and switch are long, and following along from a real keyboard beats
+reading instructions off a phone. With Homebrew and the 1Password agent in
+place, Tailscale can come up now instead of at step 9. It is the same cask the
+config declares, so the switch treats it as already installed.
+
+Set the machine names first. A node keeps whatever name it registered with:
+
+```bash
+sudo scutil --set ComputerName phinze-mrn-mbp
+sudo scutil --set LocalHostName phinze-mrn-mbp
+sudo scutil --set HostName phinze-mrn-mbp
+brew install --cask tailscale-app
+open -a Tailscale
+```
+
+Approve the VPN and system extension prompts, then log in from the menu bar.
+There is no `~/.ssh/config` until the switch, so point ssh at the 1Password
+agent and forward it explicitly:
+
+```bash
+export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+ssh -A phinze@foxtrotbase
+```
+
+For the reverse direction, so an agent on foxtrotbase can reach the Mac, turn
+on System Settings → General → Sharing → Remote Login. Nothing in the config
+declares it. Home-manager writes `authorized_keys` at the switch, but until
+then seed it from the agent:
+
+```bash
+mkdir -p -m 700 ~/.ssh
+ssh-add -L > ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys
+```
+
+Expect a host-key mismatch from foxtrotbase's side, since a reinstall means new
+host keys. `ssh-keygen -R phinze-mrn-mbp` there clears the old entry.
+
+An ssh session cannot use the login keychain, which holds the `gh` token, the
+codesigning identities and anything else guarded by it. Steps 5 and 6, the
+switch's sudo, and any Keychain writes still belong in a local terminal. A
+remote session can run the long `nix build` once step 6 has fetched the
+private inputs into the store.
+
 ## 4. Determinate Nix
 
 ```bash
 curl -fsSL https://install.determinate.systems/nix | sh -s -- install --determinate
 ```
+
+On macOS this now steers you to Determinate's `.pkg` installer instead of
+installing directly. Follow it and run the package. `determinate-nixd status`
+confirms it afterward.
 
 Determinate specifically, not the upstream installer. `nix-darwin/common.nix`
 sets `nix.enable = false` to hand daemon and `/etc/nix/nix.conf` ownership to
@@ -111,8 +201,14 @@ Open a new shell afterward so `/nix/var/nix/profiles/default/bin` is on PATH.
 ```bash
 nix profile add nixpkgs#gh
 gh auth login
-git config --global credential.helper "!$HOME/.nix-profile/bin/gh auth git-credential"
+git config --global credential.helper '!/Users/phinze/.nix-profile/bin/gh auth git-credential'
 ```
+
+Keep the single quotes. macOS's default shell is zsh, and inside double quotes
+zsh expands `!$` to the last argument of the previous command, which here is
+`login`. The helper silently becomes `loginHOME/.nix-profile/...` and the clone
+fails later. `git config --global credential.helper` should echo the path
+back intact.
 
 Install gh into the profile rather than using `nix run`. The credential helper
 has to invoke a gh that still exists later, and the helper is what lets Nix
@@ -150,22 +246,33 @@ repository` means step 5 did not take.
 ## 7. First switch
 
 There is no `darwin-rebuild` yet, and `nh` arrives with home-manager. Build the
-system closure using the nix-darwin pinned in `flake.lock`, then run the
-`darwin-rebuild` that falls out of it:
+system closure as yourself, using the nix-darwin pinned in `flake.lock`, then
+activate exactly that closure:
 
 ```bash
 nix build .#darwinConfigurations.phinze-mrn-mbp.system
-sudo ./result/sw/bin/darwin-rebuild switch --flake .
+sudo /nix/var/nix/profiles/default/bin/nix-env -p /nix/var/nix/profiles/system --set "$(readlink -f result)"
+sudo ./result/sw/bin/darwin-rebuild activate
 ```
 
-Prefer this to `sudo nix run nix-darwin -- switch`, which resolves an unpinned
-nix-darwin that need not match what the config expects.
+Those two sudo lines are `darwin-rebuild switch` minus its evaluation. Don't
+use `sudo darwin-rebuild switch --flake .` here: it evaluates the flake again
+as root, root has neither the credential helper nor your fetcher cache, and
+the private inputs fail with `could not read Username for
+'https://github.com'`. `nh darwin switch` avoids this on later rebuilds,
+because it evaluates as you and only escalates to activate. The full `nix-env`
+path is needed because sudo resets PATH.
+
+Prefer all of this to `sudo nix run nix-darwin -- switch`, which resolves an
+unpinned nix-darwin that need not match what the config expects.
 
 The build is pure nix and touches Homebrew not at all; it only produces the
 generated Brewfile. Casks, formulae and Mac App Store apps are installed by
 `brew bundle`, which nix-darwin runs from an activation script during the
-switch. So expect the long tail of downloads to arrive in the second command,
-not the first.
+switch. So expect the long tail of downloads to arrive during activation, not
+the build. `.pkg` casks run `sudo installer`, so watch the terminal for a
+password prompt; Touch ID for sudo is part of this same activation and isn't
+there yet.
 
 Files you wrote by hand that home-manager also manages are moved aside rather
 than clobbered: `backupFileExtension = "nix-backup"`, so `~/.ssh/config`
@@ -187,7 +294,7 @@ chsh -s /etc/profiles/per-user/phinze/bin/fish
 
 None of this is declarable:
 
-- **Tailscale**: open the app and log in.
+- **Tailscale**: open the app and log in, unless you already did so early.
 - **Karabiner-Elements**: Input Monitoring and Accessibility, then approve its
   system extension in Login Items.
 - **Raycast, Rectangle, CleanShot, iStat Menus**: Accessibility and Screen
@@ -219,6 +326,17 @@ None of this is declarable:
 - **atuin**: `atuin login` to sync shell history, unless you restored
   `~/.local/share/atuin` from a backup. That directory holds `key` and
   `session`, so the login comes back with it.
+- **personal-tasks**: `personal-tasks personal login`. The token lives in the
+  login Keychain under `veans`, so a wipe takes it with it.
+- **terminal-notifier**: allow its notifications (Banners or Alerts), or the
+  nix-config-sync Install offers never appear. See
+  `nix-darwin/phinze-mrn-mbp/SYNC.md`.
+- **Xcode**: `mas` installs it, but the developer directory stays on the
+  Command Line Tools from step 2. SwiftUI macro builds (dj's GUI, for one)
+  then fail with `plugin for module 'SwiftUIMacros' not found`. Switch once:
+  `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`.
+- **dj** (music-stuff): its own re-provisioning steps live in that repo's
+  `CLAUDE.md`, under "After a machine wipe".
 
 ### Restore app preferences before the first launch
 
@@ -247,5 +365,11 @@ and time-limited, so that one really does need reactivating.
 An app that was never launched has no live state to clobber, which makes this
 free — but only until you open it. Do the restore pass first.
 
-Once the switch has landed, `nix profile remove gh`. Home-manager provides it
-from then on.
+Once the switch has landed, remove the bootstrap scaffolding. Home-manager
+provides `gh` and its credential helper from then on, and the hand-written
+`~/.gitconfig` shadows home-manager's `~/.config/git/config` if it stays:
+
+```bash
+nix profile remove gh
+rm ~/.gitconfig
+```
