@@ -57,7 +57,11 @@ let
         exit 1
       fi
 
-      git push
+      # Name the destination explicitly. Once memex is colocated with jj (any
+      # rig that adds it does this), git's HEAD is detached and a bare
+      # `git push` refuses with "not currently on a branch". The rebase above
+      # already put HEAD on top of origin/main, so this is a fast-forward.
+      git push origin HEAD:main
     '';
   };
 in
