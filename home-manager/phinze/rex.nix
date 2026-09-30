@@ -34,6 +34,12 @@ lib.mkIf pkgs.stdenv.isDarwin {
       os.execute("REX_SESSION=" .. ctx.session_id .. " " .. rig .. " radar --popup >/dev/null 2>&1 &")
     end)
 
+    -- No cmd+w. It's File > Close, which destroys the whole session without
+    -- asking, and it sits one modifier away from ctrl+w (delete word). Two
+    -- sessions lost to that slip mid-typing. The menu item stays for when
+    -- closing a session is actually the point.
+    rex.unbind("cmd+w")
+
     -- Palette: the radar again, for when the chord isn't in your fingers.
     -- A rex.action lands in the command palette on its own; no bind needed.
     rex.action({
