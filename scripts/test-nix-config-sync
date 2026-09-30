@@ -32,7 +32,7 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
 # Lift the function definitions we want to test out of the generated script.
-for fn in find_culprits bump_outcome bench unbench benched; do
+for fn in find_culprits bump_outcome bench unbench benched release_pin retag; do
   sed -n "/^$fn() {/,/^}/p" "$SCRIPT" >> "$WORK/fns.sh"
 done
 
@@ -159,6 +159,34 @@ check "stale bench is retried" "" "$(benched | tr -d ' \n')"
 
 unbench atuin
 check "unbench clears entry" "0" "$(jq -r 'length' "$QUARANTINE")"
+
+# --- release pins: which url shapes we can track --------------------------
+check "github pin" "github atuinsh/atuin v18.18.1" \
+  "$(release_pin github:atuinsh/atuin/v18.18.1)"
+check "github without tag is untracked" "" "$(release_pin github:atuinsh/atuin)"
+check "miren pin" "miren miren v0.16.2" \
+  "$(release_pin https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip)"
+check "other https is untracked" "" "$(release_pin https://example.com/foo/v1.zip)"
+
+# --- retag rewrites only the named input's url -----------------------------
+(
+  cd "$WORK"
+  cat > flake.nix <<'NIX'
+    atuin.url = "github:atuinsh/atuin/v18.18.1";
+    miren-cli.url = "https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip";
+    other.url = "https://example.com/v0.16.2/thing.zip";
+NIX
+  retag miren-cli v0.16.2 v0.17.0
+  retag atuin v18.18.1 v18.19.0
+  cat flake.nix
+) > "$WORK/retagged"
+check "retag mid-path segment" \
+  '    miren-cli.url = "https://api.miren.cloud/assets/release/miren/v0.17.0/miren-linux-amd64.zip";' \
+  "$(sed -n 2p "$WORK/retagged")"
+check "retag trailing segment" '    atuin.url = "github:atuinsh/atuin/v18.19.0";' \
+  "$(sed -n 1p "$WORK/retagged")"
+check "retag leaves other inputs alone" '    other.url = "https://example.com/v0.16.2/thing.zip";' \
+  "$(sed -n 3p "$WORK/retagged")"
 
 echo
 if [[ $fails -eq 0 ]]; then echo "all bisect/quarantine checks passed"; else echo "$fails check(s) failed"; exit 1; fi

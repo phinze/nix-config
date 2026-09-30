@@ -484,6 +484,19 @@
         "url": "https://github.com/mirendev/brand.git"
       }
     },
+    "miren-cli": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790703662,
+        "narHash": "sha256-I9OgYUplBHP1bxpDajYsSo3dI2WpLFOHMxafzMfQJpw=",
+        "type": "tarball",
+        "url": "https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip"
+      }
+    },
     "multipass": {
       "inputs": {
         "flake-utils": [
@@ -897,6 +910,7 @@
         "home-manager": "home-manager",
         "iso": "iso",
         "miren-brand": "miren-brand",
+        "miren-cli": "miren-cli",
         "multipass": "multipass",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",

@@ -48,17 +48,20 @@ let
   ];
 
   # Inputs that follow their newest *release* rather than a branch. Each tick
-  # asks GitHub for releases/latest and rewrites the tag pinned in flake.nix, so
-  # you get "latest stable" without riding anyone's main. The flake.nix URL must
-  # be `github:owner/repo/TAG` — that's where the repo and the current tag are
-  # read from, so the list here is just names.
+  # looks up the latest release and rewrites the version pinned in flake.nix, so
+  # you get "latest stable" without riding anyone's main. The pin is read from
+  # the input's one-line `NAME.url = "...";` in flake.nix, so the list here is
+  # just names. Two url shapes are understood (see release_pin):
   #
-  # Empty on purpose right now. atuin used to live here — it's the reason this
-  # mechanism exists at all — but release tracking turned out not to fix its
-  # breakage, because the bad binary ships in the tags too. See the note on the
-  # atuin input in flake.nix. The machinery stays for the next input that wants
-  # it; `scripts/test-nix-config-sync` is what keeps it honest while unused.
+  #   github:owner/repo/TAG                        GitHub releases/latest
+  #   https://api.miren.cloud/assets/release/PRODUCT/TAG/FILE
+  #                                                PRODUCT/latest/version.json
+  #
+  # atuin used to live here (it's the reason this mechanism exists at all), but
+  # release tracking turned out not to fix its breakage, because the bad binary
+  # ships in the tags too. See the note on the atuin input in flake.nix.
   releaseInputs = [
+    "miren-cli"
   ];
 
   host = "foxtrotbase";
@@ -74,6 +77,7 @@ let
       coreutils
       gnugrep
       jq
+      curl # api.miren.cloud release lookups
       gh # git credential helper shells out to `gh auth git-credential`
       systemd
     ];
@@ -335,30 +339,57 @@ let
       # a release input as cleanly as any other.
       declare -A RELEASE_TARGET=()
       declare -A RELEASE_FROM=()
+
+      # Split a release-tracked url into "KIND LOCATOR TAG", where LOCATOR is
+      # whatever release_latest needs to find the newest version. Prints
+      # nothing for a shape we don't know how to track.
+      release_pin() { # url
+        local rest owner repo tag product
+        case "$1" in
+          github:*)
+            IFS=/ read -r owner repo tag <<<"''${1#github:}"
+            [[ -n "$tag" ]] && echo "github $owner/$repo $tag"
+            ;;
+          https://api.miren.cloud/assets/release/*)
+            rest=''${1#https://api.miren.cloud/assets/release/}
+            IFS=/ read -r product tag _ <<<"$rest"
+            [[ -n "$tag" ]] && echo "miren $product $tag"
+            ;;
+        esac
+        return 0
+      }
+
+      release_latest() { # kind locator
+        case "$1" in
+          github) gh api "repos/$2/releases/latest" -q .tag_name ;;
+          miren)
+            curl -fsSL "https://api.miren.cloud/assets/release/$2/latest/version.json" |
+              jq -r .version
+            ;;
+        esac
+      }
+
       resolve_releases() {
-        local input url owner repo tag latest
+        local input url pin kind locator tag latest
         for input in "''${RELEASE_INPUTS[@]}"; do
           # A benched input is not a candidate this tick, so resolving it spends
-          # a GitHub call to learn something we will not act on — and worse, logs
-          # "$input release X → Y" for an input that is not going to move. That
-          # is why the 12:06 log announced atuin was benched and then, one line
-          # later, appeared to bump it.
+          # a network call to learn something we will not act on — and worse,
+          # logs "$input release X → Y" for an input that is not going to move.
+          # That is why the 12:06 log announced atuin was benched and then, one
+          # line later, appeared to bump it.
           if ! contains "$input" ''${CANDIDATES[@]+"''${CANDIDATES[@]}"}; then
             continue
           fi
-          url=$(sed -n "s|^[[:space:]]*$input\.url = \"github:\([^\"]*\)\";.*|\1|p" flake.nix.pre)
-          if [[ -z "$url" ]]; then
-            echo "nix-config-sync: $input is release-tracked but has no github: pin, skipping" >&2
+          url=$(sed -n "s|^[[:space:]]*$input\.url = \"\([^\"]*\)\";.*|\1|p" flake.nix.pre)
+          pin=$(release_pin "$url")
+          if [[ -z "$pin" ]]; then
+            echo "nix-config-sync: $input is release-tracked but its url has no pin we understand, skipping" >&2
             continue
           fi
-          IFS=/ read -r owner repo tag <<<"$url"
-          if [[ -z "$tag" ]]; then
-            echo "nix-config-sync: $input has no tag in its url, skipping" >&2
-            continue
-          fi
-          # Offline, rate-limited, or a repo that has never cut a release: all
-          # non-fatal. The input simply doesn't move this tick.
-          latest=$(gh api "repos/$owner/$repo/releases/latest" -q .tag_name 2>/dev/null || true)
+          read -r kind locator tag <<<"$pin"
+          # Offline, rate-limited, or never released: all non-fatal. The input
+          # simply doesn't move this tick.
+          latest=$(release_latest "$kind" "$locator" 2>/dev/null || true)
           if [[ -z "$latest" || "$latest" == "null" || "$latest" == "$tag" ]]; then
             continue
           fi
@@ -368,8 +399,10 @@ let
         done
       }
 
-      retag() { # input tag
-        sed -i "s|^\([[:space:]]*$1\.url = \"github:[^\"]*\)/[^\"/]*\";|\1/$2\";|" flake.nix
+      # Swap the pinned tag in one input's url line. The tag is always a whole
+      # path segment, followed by either the next segment or the closing quote.
+      retag() { # input from to
+        sed -i "/^[[:space:]]*$1\.url = \"/s|/$2\([/\"]\)|/$3\1|" flake.nix
       }
 
       # Reset to the pristine tree, then apply exactly the named inputs. Every
@@ -381,7 +414,7 @@ let
         local input
         for input in "$@"; do
           if [[ -n "''${RELEASE_TARGET[$input]:-}" ]]; then
-            retag "$input" "''${RELEASE_TARGET[$input]}"
+            retag "$input" "''${RELEASE_FROM[$input]}" "''${RELEASE_TARGET[$input]}"
           fi
         done
         if [[ $# -gt 0 ]]; then

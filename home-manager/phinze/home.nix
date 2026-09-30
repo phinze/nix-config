@@ -108,6 +108,7 @@ in
       outputs.overlays.recto
       outputs.overlays.rig
       outputs.overlays.pim
+      outputs.overlays.miren
 
       # Claude Code 2.0 overlay
       inputs.claude-code-nix.overlays.default
@@ -262,6 +263,7 @@ in
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       osc-copy # Provides pbcopy/xclip/xsel via OSC 52 for clipboard access through SSH/tmux
+      miren # Latest Miren release as `miren` and `m`; the Mac gets it from the brew cask
     ]
     # Packages from private repos. These need an authenticated gh for the
     # git+https flake inputs to fetch, which BOOTSTRAP.md makes step one on a
