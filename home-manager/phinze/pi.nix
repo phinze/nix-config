@@ -69,6 +69,14 @@ let
     # PATH and update itself behind our back.
     packages = [ "${pkgs.pi-mcp-adapter}/lib/node_modules/pi-mcp-adapter" ];
 
+    # rig-peer is the pi half of `rig send`'s pi transport: presence file +
+    # socket, so peer rigs can deliver messages at the turn boundary. It
+    # ships inside the rig package so both sides version together; the
+    # extension and its wire format are one change in one repo. A session
+    # loads it at startup, so a bumped rig input means a restart to pick it
+    # up — until then the rig simply has no presence and sends fail loudly.
+    extensions = [ "${pkgs.rig}/share/rig/rig-peer.ts" ];
+
     # Every skill Claude Code has, read in place. interface-design keeps its
     # SKILL.md under a hidden .claude/ directory, which discovery skips, so it
     # is named explicitly.
