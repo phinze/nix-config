@@ -487,11 +487,14 @@ in
   # rediscovering a headless chromium and hand-rolling a driver script.
   home.file.".claude/skills/pr-shots".source = ./claude-skills/pr-shots;
 
-  # Catch-up skills, same move for the same reason. These also lean on the rig
-  # board (`rig ls`, `rig waiting`, `rig history`) rather than reconstructing
-  # it from Linear and gh, which is what they did back when work lived in
-  # git worktrees and rig didn't exist.
-  home.file.".claude/skills/whatsup-home".source = ./claude-skills/whatsup-home;
+  # Chief-of-staff skill: one board, two modes. It replaces whatsup-home and
+  # whatsup-work, which were three same-shaped skills competing for the same
+  # routing decision (three catch-up skills, one board). brief mode is the old
+  # read-only narrative; run mode is the acting pass that board -> plan ->
+  # rig send -> re-sweep. Domain (Linear vs Vikunja) is decided per row, not
+  # per skill, so the split that motivated two whatsups is gone. The rig board
+  # is the spine either way; the enrichment sources hang off the rows that
+  # need them.
+  home.file.".claude/skills/chief-of-staff".source = ./claude-skills/chief-of-staff;
   home.file.".claude/skills/personal-tasks".source = ./claude-skills/personal-tasks;
-  home.file.".claude/skills/whatsup-work".source = ./claude-skills/whatsup-work;
 }

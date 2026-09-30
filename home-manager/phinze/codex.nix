@@ -116,9 +116,8 @@ let
     pr-time = ./claude-skills/pr-time;
     address-pr-review = ./claude-skills/address-pr-review;
     review-pr = ./claude-skills/review-pr;
-    whatsup-home = ./claude-skills/whatsup-home;
+    chief-of-staff = ./claude-skills/chief-of-staff;
     personal-tasks = ./claude-skills/personal-tasks;
-    whatsup-work = ./claude-skills/whatsup-work;
   };
 
   # Keep each slash command tiny: it explicitly activates the installed skill,
@@ -141,8 +140,7 @@ let
     pr-time = "ship this work as a PR";
     address-pr-review = "work through the review feedback on the PR";
     review-pr = "review a pull request";
-    whatsup-home = "catch up on what's been happening outside work";
-    whatsup-work = "catch up on where mirendev work stands";
+    chief-of-staff = "catch up on the board, or run it";
   };
 in
 {
