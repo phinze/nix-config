@@ -38,24 +38,40 @@ let
       # and --autostash only stashes tracked changes, so it can't save us.
       # Committing first turns them tracked, so the rebase can always proceed
       # and divergent days get reconciled via the merge driver instead.
-      git add -A
-      if ! git diff --cached --quiet; then
-        git commit --no-gpg-sign -m "Sync: $(TZ=America/Chicago date '+%Y-%m-%d %H:%M')"
-      fi
+      commit_pending() {
+        git add -A
+        if ! git diff --cached --quiet; then
+          git commit --no-gpg-sign -m "Sync: $(TZ=America/Chicago date '+%Y-%m-%d %H:%M')"
+        fi
+      }
+
+      # Tolerate fetch failure (offline is OK; rebase against the known origin).
+      git fetch --quiet || true
 
       # Now reconcile with remote. Two machines editing the same day's diary is
       # expected; `.gitattributes` marks Daily/*.md as merge=union so git keeps
       # both sides' entries automatically rather than producing conflict markers.
-      # Tolerate fetch failure (offline is OK; rebase against the known origin).
-      git fetch --quiet || true
+      #
+      # Agents append to the diary at any moment, so a line can land between
+      # the commit and the rebase, and the rebase then refuses with "unstaged
+      # changes" (seen 2026-10-01 13:04). Sweep up the latecomer and try again
+      # rather than leaving the push for the next hourly tick.
+      #
       # Rebasing recreates commits, so the global commit.gpgsign=true setting
-      # applies even though the sync commit above uses --no-gpg-sign. This job
-      # has no interactive signing agent; disable signing for the replay too.
-      if ! git -c commit.gpgsign=false rebase origin/main; then
-        echo "memex-autocommit: rebase failed, aborting" >&2
-        git rebase --abort
-        exit 1
-      fi
+      # applies even though the sync commit uses --no-gpg-sign. This job has
+      # no interactive signing agent; disable signing for the replay too.
+      attempt=1
+      until commit_pending && git -c commit.gpgsign=false rebase origin/main; do
+        if [[ -d .git/rebase-merge || -d .git/rebase-apply ]]; then
+          git rebase --abort
+        fi
+        if (( attempt >= 3 )); then
+          echo "memex-autocommit: rebase failed after $attempt attempts, aborting" >&2
+          exit 1
+        fi
+        attempt=$((attempt + 1))
+        sleep 2
+      done
 
       # Name the destination explicitly. Once memex is colocated with jj (any
       # rig that adds it does this), git's HEAD is detached and a bare
