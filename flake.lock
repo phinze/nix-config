@@ -149,11 +149,11 @@
     "claude-plugin-miren-team": {
       "flake": false,
       "locked": {
-        "lastModified": 1790364212,
-        "narHash": "sha256-5OVi6mZ8jAcvNttjJyCEGgQO4t8jFoqFisNWPwU8Z7I=",
+        "lastModified": 1790874608,
+        "narHash": "sha256-nCOGD2ceotniLS6TfGwxXcAAoW00UDkxB3z13Ip6y/Q=",
         "ref": "refs/heads/main",
-        "rev": "f0e5623c7cda5bd65f785289724657293bd1acbe",
-        "revCount": 22,
+        "rev": "ddfad8e88c77930ab176dee9ea739346705f91a7",
+        "revCount": 24,
         "type": "git",
         "url": "https://github.com/mirendev/claude-skills.git"
       },
@@ -809,11 +809,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790780329,
-        "narHash": "sha256-tG/172oQlpjNUxYkS/rAiS+avkMlNt/ocBTjbegZb2g=",
+        "lastModified": 1790877054,
+        "narHash": "sha256-lr3zb5014qlXP1EsNlRjGVb64aKrhk61uQDmLhZXryM=",
         "ref": "refs/heads/main",
-        "rev": "85b29cb87e420c84bfe63a560172ebcbf2b389b1",
-        "revCount": 111,
+        "rev": "6a6e09c9bb8379f855f7ea73ff5d58627a04080f",
+        "revCount": 112,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
