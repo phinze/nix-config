@@ -101,11 +101,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1790798517,
-        "narHash": "sha256-KUudJ87dsfhnM2LVa4QXJdrLSjCNbuWOLFZGtiDDrtE=",
+        "lastModified": 1790877775,
+        "narHash": "sha256-99y6MBHLBNKhcUl4PprE5m4/ooopH8nuOCwxh8uKMCs=",
         "owner": "sadjow",
         "repo": "claude-code-nix",
-        "rev": "cf73bd2bece41565ca483050a3a7385ef3663aec",
+        "rev": "eca59bb0000a0f3ebf7db73717ebd3838de940fe",
         "type": "github"
       },
       "original": {
@@ -425,11 +425,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1788478305,
-        "narHash": "sha256-VW7g+nUay4X1CrqhMjz8SmtmDlfKzjZ2m9y3QXeRr9w=",
+        "lastModified": 1790879530,
+        "narHash": "sha256-m6ZNz11DrOq4rt7Lqt+pgDIV1QLblGdB0bAD31ExzLI=",
         "ref": "refs/heads/main",
-        "rev": "c01782a6b7e38812925901d9e679b2f8b11a5827",
-        "revCount": 79,
+        "rev": "3cce7e8dc23cec9495295149464b02f505ed2522",
+        "revCount": 81,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
@@ -880,11 +880,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790808672,
-        "narHash": "sha256-R1bge6vRs8B8O7bf8lVcB13Psos2lXCCY/0rx3UYxzk=",
+        "lastModified": 1790880189,
+        "narHash": "sha256-a+HPDaLGNxuyNKFr9VxN93wxR3Y0fQ4M5XHD3g5uoJk=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "f4b48756d8e51856ed9b9a77edd73bbb1bf11f65",
+        "rev": "e8a3a4f802a5f93dcb102f4898ee16764e7e202a",
         "type": "github"
       },
       "original": {
