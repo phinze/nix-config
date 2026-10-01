@@ -181,6 +181,14 @@ If the daily file doesn't exist, create it with frontmatter:
 Diary lines ride along in the hourly memex auto-sync. Leave them uncommitted
 and the cron rolls them into a `Sync:` wrapper commit.
 
+One caveat for rigs: the auto-sync only ever commits the shared checkout at
+`~/src/github.com/phinze/memex`. Inside a rig, memex is a jj workspace with
+its own working copy, so lines written there never ride the cron — they sit
+uncommitted until the rig tears down, and the teardown takes them with it.
+From a rig, commit and push diary lines from the workspace like any other
+repo change (fetch first; if a `Sync:` landed meanwhile, rebase and resolve
+diary conflicts by interleaving entries by timestamp).
+
 ## Tooling
 
 Non-standard CLI tools available globally — prefer them over general-purpose

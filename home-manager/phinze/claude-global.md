@@ -211,3 +211,11 @@ docs, novel patterns) deserves an explicit commit with a real message
 before the cron picks it up. "Sync:" is fine as a wrapper for diary
 appends but a poor message for prose you'd later want to bisect or
 blame.
+
+One caveat for rigs: the auto-sync only ever commits the shared checkout
+at `~/src/github.com/phinze/memex`. Inside a rig, memex is a jj workspace
+with its own working copy, so lines written there never ride the cron —
+they sit uncommitted until the rig tears down, and the teardown takes
+them with it. From a rig, commit and push diary lines from the workspace
+like any other repo change (fetch first; if a `Sync:` landed meanwhile,
+rebase and resolve diary conflicts by interleaving entries by timestamp).
