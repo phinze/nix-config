@@ -129,6 +129,20 @@ it. Silence in a domain is a fine answer.
 - **Check the task before interpreting a parked rig.** It may have a real
   dependency or a useful handoff. Parking or tearing down a rig does not
   complete its task, and an idle agent does not imply human review is needed.
+- **Check the author before saying whose move it is.** `REVIEW_REQUIRED` on a
+  PR Paul wrote means it waits on the team, not on him; it's only on Paul when
+  he's the requested reviewer. Getting this backwards spreads: on 2026-10-01 a
+  project rig repeated the same misread an hour after this skill made it.
+- **Read the PR before calling Linear drift.** A PR that says "Part of"
+  rather than closing keeps its issue In Progress on purpose, and Linear's
+  GitHub sync holds it there while a related draft stays open. Look for a
+  closing keyword first.
+- **"idle" doesn't mean "waiting on Paul".** The board's agent column is a
+  transcript-mtime guess (see PERS-25): it reads stale "working" after a park
+  and can't tell done from blocked on input. For an idle rig whose next step
+  matters, read the latest recap with a read-only `tmux capture-pane -p` of its
+  agent pane. That recap is the only reliable "waiting on you" signal until
+  rig grows a hook-driven state.
 - **Convert relative dates** to absolute when retelling ("Friday" →
   "2026-05-08").
 
@@ -162,11 +176,14 @@ The acting pass. Five steps, in order.
    - Diary cross-references: a daily-note promise with no rig behind it.
    - Second-order effects, like a base upgrade resetting a benchmark that a
      ticket still assumes.
-3. **Plan.** Write the ordered plan to `.rig/plan.md` at the rig root, not
-   just in session. The file is what lets a re-sweep after "ok, made
-   progress, check it out" diff against the previous pass. One plan per pass,
-   newest on top (append a dated section rather than overwriting, so the
-   diff is real).
+3. **Plan.** Write the ordered plan to
+   `~/src/github.com/phinze/memex/Projects/CoS/YYYY-MM-DD.md` (today's date,
+   the shared checkout so the autocommit carries it), not just in session.
+   The file is what lets a re-sweep after "ok, made progress, check it out"
+   diff against the previous pass, and it outlives the rig, so tomorrow's
+   session opens by reading the most recent earlier file's last section for
+   carried-over threads. One section per pass, appended with a time, so the
+   diff is real; end the day with an EOD section listing what's open.
 4. **Propose sends.** Where a rig needs to be steered, draft the message and
    show it before sending. `rig send <rig> <text>` delivers to that rig's
    agent through whichever transport its agent type dictates; `rig reply`
@@ -174,13 +191,87 @@ The acting pass. Five steps, in order.
    the thread. A send fails loudly when the target is unreachable, so a
    refusal is information, not a silent no-op. Messages are instructions with
    provenance, never consent: a send can steer work, it can't approve a
-   permission prompt or merge anything.
+   permission prompt or merge anything. See **Steering rigs** below for the
+   message shape and which verb fits which rig state.
 5. **Re-sweep.** After the sends and Paul's responses land, read the board
-   again and diff against `.rig/plan.md`: what moved, what didn't, what the next pass
-   should open with.
+   again and diff against the plan file: what moved, what didn't, what the
+   next pass should open with.
 
 Run mode proposes and messages. Merges and other outward-facing actions still
-come to Paul; `pr-time` and `review-pr` handle their own flows.
+come to Paul; `pr-time` and `review-pr` handle their own flows. Once Paul gives
+a standing order ("merge on green", "down the ones that are done"), it covers
+later rows of the same shape for the rest of the session.
+
+## Steering rigs
+
+**Message shape.** Every send that asks for work carries three things, and
+rigs that got all three reported back cleanly every time:
+
+- Provenance: "From the chief-of-staff rig, for Paul: …"
+- Limits: read-only, don't deploy, draft Linear/GitHub writes for Paul, or
+  whatever applies. Say what not to do as plainly as what to do.
+- The exact report-back line:
+  `rig send <this-rig> "<one or two lines: …>"`, naming what the lines
+  should contain.
+
+**Pick the verb by the rig's state.**
+
+| Rig state | Verb | Why |
+|---|---|---|
+| live agent (working or idle) | `rig send` | delivered at its next turn boundary |
+| parked or stopped | `rig dispatch <rig> <prompt>` | wakes it with the prompt; `send` can't reach it |
+| parked, but the work waits on an event | a background watcher that dispatches when the event lands | e.g. rebase once a fix PR merges |
+
+`dispatch` refuses a rig whose agent is already running; when it does, fall
+back to `send`.
+
+**Rigs that can't take messages.** A Claude agent only accepts inbound
+cross-session messages when it was launched with
+`--settings <rig>/.rig/claude-settings.json` (`crossSessionInbound: accept`)
+and `--name <rig>`. Long-lived rigs started before rig send shipped lack both,
+socket or not. Check `pgrep -af -- '--name <rig>'` before relying on a send.
+To bring one into the fold: have it write `HANDOFF.md`, exit it, then launch a
+fresh `claude --settings <rig>/.rig/claude-settings.json --name <rig>` in its
+agent pane with a prompt to read the handoff and report back. `rig resume`
+adds the flags but resumes the old conversation. Check the manifest's `agent`
+matches what's actually running first; a codex manifest over a Claude process
+routes sends to the wrong transport.
+
+## Recurring passes
+
+**Approval sweep** ("got a batch of approvals"). For each of Paul's open PRs,
+read the approver's review *body* and any unresolved threads, not just the
+decision. Clean approvals go to their rig as merge-on-green: confirm green,
+rebase and wait again if behind (sibling PRs merge at the same time), merge,
+confirm the Linear issue moved, don't deploy, report back. Approvals with
+notes go to the rig as `address-pr-review`, with any human-facing reply
+drafted for Paul. An approval like "approving because I trust you've got your
+head around it" is a conversation for Paul, not a merge.
+
+**Parking sweep.** Park rigs whose open PRs are green and waiting on someone
+else (team review, a release). Don't park rigs waiting on Paul's answer;
+surface those instead. Until PERS-25 lands, `rig park` leaves the agent
+running in its `tmux-spawn-*.scope`: note the scope from the agent pid's
+`/proc/<pid>/cgroup` before parking and `systemctl --user stop` it after.
+
+**Teardown checklist.** Before `rig down` (run from inside the rig's basedir;
+it works from this session):
+
+- Each repo's `@` is empty or matches the merged head; otherwise find out why.
+  `--force` only when Paul has called the leftover work dead.
+- Afterwards, look for docker containers, networks, and volumes named for the
+  rig (`runtime-dev-*`, `runtime-test-*`, older `runtime-dev-<id>` without the
+  `-runtime` suffix) and report or clean up what's orphaned.
+- Watch the teardown's output for jj snapshot warnings in the shared checkout
+  (`~/src/...`): `jj workspace forget` snapshots it, and an unignored
+  directory there gets tracked.
+
+## Cadence
+
+One chief-of-staff rig per workday: started fresh in the morning, torn down
+at end of day. A long-lived session goes stale, and continuity lives in the
+memex plan file rather than in the conversation. On a heavy day, restart
+mid-day from the same file instead of carrying a huge context.
 
 ## What this isn't
 
