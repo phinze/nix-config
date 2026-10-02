@@ -56,6 +56,8 @@ in
     ./modules/nushell.nix
     # Nightly cleanup of stale dev sessions and merged branches
     ./modules/dev-cleanup.nix
+    # rig serve on foxtrotbase, and the Mac radar's surface pointing at it
+    ./modules/rig-surfaces.nix
     # Hourly memex commit+push (gated by nodeConfig.isMemexHost)
     ./modules/memex-autocommit.nix
     # Hourly main reconciliation + input bumps (gated by nodeConfig.isNixConfigSyncHost)
