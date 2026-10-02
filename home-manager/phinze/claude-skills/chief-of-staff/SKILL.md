@@ -211,8 +211,10 @@ rigs that got all three reported back cleanly every time:
 - Limits: read-only, don't deploy, draft Linear/GitHub writes for Paul, or
   whatever applies. Say what not to do as plainly as what to do.
 - The exact report-back line:
-  `rig send <this-rig> "<one or two lines: …>"`, naming what the lines
-  should contain.
+  `rig send cos "<one or two lines: …>"`, naming what the lines should
+  contain. Use the `cos` address, never this rig's dated id: it always
+  resolves to the newest chief-of-staff rig, so an answer that arrives
+  tomorrow still lands.
 
 **Pick the verb by the rig's state.**
 
@@ -224,6 +226,11 @@ rigs that got all three reported back cleanly every time:
 
 `dispatch` refuses a rig whose agent is already running; when it does, fall
 back to `send`.
+
+Task rigs know the `cos` address from their generated instructions and may
+send unprompted; answer with `rig reply`. Discoveries a task rig relays to its
+project (`rig relay`) arrive at the project rig as messages, not in a notify
+inbox, so a project rig is the place to ask about them.
 
 **Rigs that can't take messages.** A Claude agent only accepts inbound
 cross-session messages when it was launched with
@@ -268,10 +275,21 @@ it works from this session):
 
 ## Cadence
 
-One chief-of-staff rig per workday: started fresh in the morning, torn down
-at end of day. A long-lived session goes stale, and continuity lives in the
-memex plan file rather than in the conversation. On a heavy day, restart
-mid-day from the same file instead of carrying a huge context.
+One chief-of-staff rig per workday, made with `rig cos` (it's
+`cos-YYYY-MM-DD`; running it again the same day re-enters it). Start fresh in
+the morning and tear down at end of day. A long-lived session goes stale, and
+continuity lives in the memex plan file rather than in the conversation. On a
+heavy day, restart mid-day from the same file instead of carrying a huge
+context.
+
+**Handover.** If yesterday's cos rig is still up, the kickoff names it. That
+usually means its day didn't end cleanly, so its conversation may know more
+than the plan file. Before the brief, ask it with `rig send cos-<yesterday>`
+(the dated id, since `cos` now means today) to write or refresh its EOD
+section in the plan file and reply when done. Then read the file rather than
+trusting the reply alone, so the record lands in memex either way, and tell
+Paul the old rig is ready to tear down (sweep offers it too). If it doesn't
+answer, fall back to the plan file as usual.
 
 ## What this isn't
 
