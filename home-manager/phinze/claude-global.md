@@ -104,6 +104,14 @@ Reach for these instead, roughly in order:
 it (e.g. `git log | head -5`), or as a deliberate `rg -m` style bounded
 match. The rule is about not reflexively discarding output you might need.
 
+## Background Processes
+
+Start long-running processes (dev servers, relays, watchers) with the Bash
+tool's `run_in_background` or in the rig's tmux, so they die with the
+session. Don't detach them with `systemd-run`, `nohup`, or `disown` unless I
+ask: nothing reaps them, and a detached dev server once logged 83G into a
+deleted scratchpad file after its rig was torn down.
+
 ## Artifacts
 
 Don't publish an Artifact unless I ask for one. Default to the terminal:

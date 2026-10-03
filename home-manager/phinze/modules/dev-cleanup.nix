@@ -107,6 +107,11 @@ lib.mkIf pkgs.stdenv.isLinux {
     Service = {
       Type = "oneshot";
       ExecStart = "${lib.getExe pkgs.dev-host-cleanup} --if-used-pct 80";
+      # rig comes from the user profile so pressure notices reach its inbox.
+      Environment = [
+        "TMUX_TMPDIR=%t"
+        "PATH=%h/bin:/etc/profiles/per-user/%u/bin:%h/.nix-profile/bin:/run/current-system/sw/bin:/usr/bin:/bin"
+      ];
     };
   };
 
