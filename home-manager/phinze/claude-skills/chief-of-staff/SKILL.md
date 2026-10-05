@@ -276,20 +276,27 @@ it works from this session):
 ## Cadence
 
 One chief-of-staff rig per workday, made with `rig cos` (it's
-`cos-YYYY-MM-DD`; running it again the same day re-enters it). Start fresh in
-the morning and tear down at end of day. A long-lived session goes stale, and
-continuity lives in the memex plan file rather than in the conversation. On a
-heavy day, restart mid-day from the same file instead of carrying a huge
-context.
+`cos-YYYY-MM-DD`; running it again the same day re-enters it). Start fresh each
+morning. Yesterday's rig is normally still running when you arrive, and closing
+it out is the first job of the day: the handover and the teardown together are
+how a cos day ends. A long-lived session goes stale, and continuity lives in
+the memex plan file rather than in the conversation. On a heavy day, restart
+mid-day from the same file instead of carrying a huge context.
 
-**Handover.** If yesterday's cos rig is still up, the kickoff names it. That
-usually means its day didn't end cleanly, so its conversation may know more
-than the plan file. Before the brief, ask it with `rig send cos-<yesterday>`
-(the dated id, since `cos` now means today) to write or refresh its EOD
-section in the plan file and reply when done. Then read the file rather than
-trusting the reply alone, so the record lands in memex either way, and tell
-Paul the old rig is ready to tear down (sweep offers it too). If it doesn't
-answer, fall back to the plan file as usual.
+**Handover.** The kickoff names yesterday's cos rig when it's still up, which
+is the usual case. Its conversation often knows more than its plan file, so
+before the brief, ask it with `rig send cos-<yesterday>` (the dated id, since
+`cos` now means today) to write or refresh its EOD section in the plan file and
+reply when done. Tell it the reply is its last act. Then read the file rather
+than trusting the reply alone, so the record lands in memex either way.
+
+Once the file holds the handover, tear the old rig down yourself with
+`cd ~/workspaces/cos-<yesterday> && rig down`. This is routine and needs no
+separate approval. It works from this session because `rig down` only refuses
+when it would kill the session it runs in, and a cos rig has no repos for the
+safety gate to hold on. Report it in the brief as done. If the old rig doesn't
+answer, fall back to the plan file and leave its teardown to Paul, since a
+silent rig may be mid-something.
 
 ## What this isn't
 
