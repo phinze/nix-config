@@ -64,6 +64,26 @@ in
   system.defaults.dock.wvous-tl-corner = 1;
   system.defaults.dock.wvous-tr-corner = 1;
 
+  # Leave edge-drag snapping to Rectangle: no native tiling, and no
+  # Mission Control when a window hits the top edge
+  system.defaults.WindowManager.EnableTilingByEdgeDrag = false;
+  system.defaults.WindowManager.EnableTopTilingByEdgeDrag = false;
+  system.defaults.WindowManager.EnableTilingOptionAccelerator = false;
+  # No first-class nix-darwin option for this one yet
+  system.defaults.CustomUserPreferences."com.apple.dock".enterMissionControlByTopWindowDrag = false;
+
+  system.defaults.CustomUserPreferences."com.knollsoft.Rectangle" = {
+    alternateDefaultShortcuts = true; # Rectangle's recommended set, not Spectacle's
+    allowAnyShortcut = true;
+    subsequentExecutionMode = 0;
+    hideMenubarIcon = true;
+    launchOnLogin = true;
+    SUEnableAutomaticChecks = false; # homebrew owns updates
+    # Skip first-run prompts; we disable native tiling ourselves above
+    wasWelcomeDisplayed = true;
+    internalTilingNotified = true;
+  };
+
   # Clear all persistent apps from Dock
   # TODO: empty set here doesn't actively clear; maybe add this feature upstream?
   system.defaults.dock.persistent-apps = [ ];
