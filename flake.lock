@@ -80,11 +80,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791497628,
-        "narHash": "sha256-xGTcNo/kvDtkoVLpdvmbd6hUvVFWCPyBAbjzJmarPBI=",
+        "lastModified": 1791499111,
+        "narHash": "sha256-pMe0AYkdjw8e9YIzXJD/7qb87wrnNo6l9csBqJbQTzI=",
         "owner": "phinze",
         "repo": "camlink-fix",
-        "rev": "9c743a4f2108f38aebb9948de12fb73e16d3dc96",
+        "rev": "12c376fe7609dc49d3d94a76d402a668ccb05a30",
         "type": "github"
       },
       "original": {
