@@ -87,7 +87,7 @@ Determine the PR to work on:
 - If the request names a PR number or URL, use that
 - Otherwise, auto-detect from the current branch: `gh pr view --json number,title,url,state,headRefName,baseRefName`
 
-Parse owner/repo from gh (works in both colocated jj+git repos and jj workspaces under `~/workspaces/...` that have no `.git`, since direnv exports `GH_REPO` there):
+Parse owner/repo from gh (rig workspaces are colocated, so gh finds the remote from cwd):
 ```bash
 gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"'
 ```

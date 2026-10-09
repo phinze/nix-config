@@ -78,17 +78,17 @@ you need to search the tree *at a revision* rather than on disk, reach for
 ## Inside a jj workspace
 
 When the cwd is under `~/workspaces/...`, you're in a non-default jj
-workspace. These have `.jj/` but no `.git/`, so plain `git` commands fail
-with "not a git repository". Use jj equivalents — `jj log`, `jj diff`,
-`jj show`, `jj file show`, `jj file annotate` — and don't burn cycles
-trying to coax git into working.
+workspace. Rig creates these colocated (jj 0.46+), so each has its own git
+worktree: a `.git` file pointing into the main checkout's `.git/worktrees/`.
+jj is still the tool for version control. git works for read-only questions
+jj can't answer, but its HEAD is detached at `@-`, so don't commit or switch
+branches with it.
 
-`gh` works fine because direnv's stdlib auto-exports `GH_REPO=<owner>/<repo>`
-whenever the cwd is under `~/workspaces/<host>/<owner>/<repo>/...`. So
-`gh pr view`, `gh pr diff`, `gh search`, etc. behave normally without any
-explicit setup. If `gh` complains about a missing repo context, check
-that direnv has loaded — a `.envrc` (or stub) needs to exist in the
-workspace and direnv has to have allowed it.
+`gh` finds the repo from the worktree's remote, the same as in any checkout.
+Anything that infers a *branch* from git (`gh pr create`, a bare
+`gh pr view`) sees the detached HEAD, so name the branch or PR explicitly.
+A rig created before jj 0.46 may still be non-colocated (`.jj/` with no
+`.git`); there, `jj git colocation enable` upgrades it in place.
 
 Several workspaces usually share one repo, and other sessions are
 operating in them. Bookmarks advance, workspaces come and go, and `jj git
@@ -112,7 +112,5 @@ responsible, and it's usually another session's `workspace add`/`forget`
 or a fetch. Don't attribute it to your own last command without checking —
 reporting damage that didn't happen sends us both chasing a phantom.
 
-The main checkout under `~/src/github.com/<owner>/<repo>` IS colocated
-(has both `.jj/` and `.git/`). If you genuinely need git for something
-that has no jj equivalent, run it there with `git -C <main-repo> ...`
-rather than trying to make git work in the workspace.
+The main checkout under `~/src/github.com/<owner>/<repo>` is colocated
+too, and it holds the git config every worktree shares.

@@ -341,20 +341,13 @@ in
     nix-direnv.enable = true;
     silent = true;
 
-    # Loaded before every .envrc. When the cwd is under a jj workspace,
-    # auto-export GH_REPO so gh works without git context (a non-default jj
-    # workspace has no .git). Two layouts are supported during the rig
-    # transition:
-    #   - rig (flat): ~/workspaces/<slug>/<repo>/...  → owner/repo read out of
-    #     the rig's .rig.toml [repos] table (the flat path can't encode it).
-    #   - legacy:     ~/workspaces/<host>/<owner>/<repo>/...  → parsed from path.
     # Loaded before every .envrc. All workspace-layout and manifest knowledge
     # lives in rig itself: `rig env` prints export lines for the cwd (rig
-    # identity, GH_REPO, including the legacy ~/workspaces/<host>/<owner>/
-    # <repo> path-parse) and prints nothing outside a workspace. This has to
-    # happen in the stdlib rather than rig-written .envrc files: direnv loads
-    # only the nearest .envrc (no cascade), so a repo shipping its own .envrc
-    # (nix devshells) would shadow anything the basedir exports.
+    # identity, dev-server port, iso session) and prints nothing outside a
+    # rig. This has to happen in the stdlib rather than rig-written .envrc
+    # files: direnv loads only the nearest .envrc (no cascade), so a repo
+    # shipping its own .envrc (nix devshells) would shadow anything the
+    # basedir exports.
     stdlib = ''
       _rig_env() {
         has rig && eval "$(rig env 2>/dev/null)"

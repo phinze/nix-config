@@ -51,8 +51,8 @@ meant for a human in a tmux popup; a bare `rig sweep` would sit waiting on a
 board nobody can see.
 
 When a rig needs a closer look, its repos are jj workspaces under
-`~/workspaces/<rig>/<repo>`. Use `jj st` and `jj log` there; git commands fail
-outright with "not a git repository."
+`~/workspaces/<rig>/<repo>`. Use `jj st` and `jj log` there. Git works too,
+but its HEAD is detached at `@-` and says little about the rig's work.
 
 ## Enrich each row it needs
 
