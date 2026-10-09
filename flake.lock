@@ -70,29 +70,6 @@
         "type": "github"
       }
     },
-    "camlink-fix": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs-unstable"
-        ]
-      },
-      "locked": {
-        "lastModified": 1791561109,
-        "narHash": "sha256-AfxROzL1hJE3SwnLzun/lQzOgBtucxDBlj9eBfyOYpU=",
-        "owner": "phinze",
-        "repo": "camlink-fix",
-        "rev": "2e8aacbb893d69f0b97c87d4ea75bd03417226ca",
-        "type": "github"
-      },
-      "original": {
-        "owner": "phinze",
-        "repo": "camlink-fix",
-        "type": "github"
-      }
-    },
     "claude-code-nix": {
       "inputs": {
         "nixpkgs": [
@@ -898,7 +875,6 @@
         "atuin": "atuin",
         "bankshot": "bankshot",
         "belowdeck": "belowdeck",
-        "camlink-fix": "camlink-fix",
         "claude-code-nix": "claude-code-nix",
         "claude-plugin-interface-design": "claude-plugin-interface-design",
         "claude-plugin-miren-skills": "claude-plugin-miren-skills",
@@ -925,6 +901,7 @@
         "rig": "rig",
         "sophon": "sophon",
         "systems": "systems_5",
+        "understudy": "understudy",
         "zen-browser": "zen-browser"
       }
     },
@@ -1040,6 +1017,21 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "understudy": {
+      "locked": {
+        "lastModified": 1791581121,
+        "narHash": "sha256-jAUuLoH7OkqlTTXhkv9wmjn58FNfpX4xp1Mj7gsFW6U=",
+        "owner": "phinze",
+        "repo": "understudy",
+        "rev": "ad404c3845e74a3671b2005e44f0dd68156d1997",
+        "type": "github"
+      },
+      "original": {
+        "owner": "phinze",
+        "repo": "understudy",
         "type": "github"
       }
     },

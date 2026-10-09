@@ -60,9 +60,7 @@
     sophon.inputs.nixpkgs.follows = "nixpkgs-unstable";
     sophon.inputs.flake-utils.follows = "flake-utils";
 
-    camlink-fix.url = "github:phinze/camlink-fix";
-    camlink-fix.inputs.nixpkgs.follows = "nixpkgs-unstable";
-    camlink-fix.inputs.flake-utils.follows = "flake-utils";
+    understudy.url = "github:phinze/understudy";
 
     belowdeck.url = "github:phinze/belowdeck";
     belowdeck.inputs.nixpkgs.follows = "nixpkgs-unstable";

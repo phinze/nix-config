@@ -26,7 +26,7 @@ let
     "bankshot"
     "double-agent"
     "sophon"
-    "camlink-fix"
+    "understudy"
     "belowdeck"
     "nixvim-config"
     "pim-stuff"

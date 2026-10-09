@@ -8,7 +8,7 @@
 {
   imports = [
     ../common.nix
-    inputs.camlink-fix.darwinModules.default
+    inputs.understudy.darwinModules.default
     inputs.belowdeck.darwinModules.default
   ];
 
@@ -22,16 +22,15 @@
   networking.computerName = "phinze-mrn-mbp";
   networking.localHostName = "phinze-mrn-mbp";
 
-  # Cam Link 4K auto-fix. Meeting apps use the "Cam Link (camlink-fix)"
-  # virtual camera; the agent behind it is the real Cam Link's only client and
-  # power-cycles it (uhubctl, VIA Labs hub) when its own frames stop, while the
-  # app sees a "reconnecting" card instead of a dead device. Needs
-  # CamLinkFix.app installed via camlink-fix's mac/bundle.sh --install; until
-  # then the agent just doesn't run. `camlink-kick` forces a reset.
-  services.camlink-fix = {
+  # Understudy keeps the Cam Link 4K usable. Meeting apps use the
+  # "Understudy" virtual camera; the agent behind it is the real Cam Link's
+  # only client and power-cycles it (uhubctl, VIA Labs hub) when its own
+  # frames stop, while the app sees a card instead of a dead device. Needs
+  # Understudy.app installed via understudy's mac/bundle.sh --install; until
+  # then the agent just doesn't run. `understudy kick` forces a reset.
+  services.understudy = {
     enable = true;
     notify = true;
-    virtualCamera.enable = true;
   };
 
   # Stream Deck Plus daemon
