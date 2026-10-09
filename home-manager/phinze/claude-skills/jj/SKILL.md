@@ -91,7 +91,9 @@ A rig created before jj 0.46 may still be non-colocated (`.jj/` with no
 `.git`); there, `jj git colocation enable` upgrades it in place.
 
 Several workspaces usually share one repo, and other sessions are
-operating in them. Bookmarks advance, workspaces come and go, and `jj git
+operating in them. A bare `jj log` is scoped to your own stack (`@` back
+to its fork point, plus trunk); `jj la` shows every workspace's work in
+flight when you need the wider view. Bookmarks advance, workspaces come and go, and `jj git
 fetch` lands upstream rewrites — so the working copy can be relocated
 between two of your own commands. That's the normal condition, not an
 incident.

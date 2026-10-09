@@ -39,13 +39,13 @@ merge-editor = ":builtin"
 diff-formatter = ":git"
 
 [revsets]
-# Default log shows a bit more ancestry than jj's built-in. 0.44 exposes the
-# built-in default as `builtin_log()`, so this says "the built-in, but reaching
-# further back, plus divergent" instead of restating the whole thing and then
-# drifting the next time upstream changes it. The deeper `ancestors(.., 4)`
-# subsumes the `.., 2)` inside builtin_log(); the resulting set is identical to
-# what the hand-copied version produced.
-log = "builtin_log() | ancestors(immutable_heads().., 4) | divergent()"
+# Default log is scoped to this workspace's own stack: @, its ancestors back
+# to the fork point, and trunk. Every rig workspace on a repo shares one
+# commit graph, so jj's built-in (which shows every mutable commit) put a dozen
+# other rigs' WIP in front of the one stack you're standing in — 111 commits in
+# a busy cloud workspace where this shows 5. `jj la` (and board() in jjui)
+# still shows everyone.
+log = "@ | ancestors(trunk()..@, 2) | trunk()"
 # `jj bookmark advance` targets the parent of the working copy by default, not
 # @ itself. @ is usually the empty WIP commit you don't want a branch pointing
 # at. This makes `jj bookmark a` a near drop-in for the `tug` alias below.
@@ -58,8 +58,15 @@ bookmark-advance-to = "@-"
 "immutable_heads()" = "builtin_immutable_heads() | (trunk().. & ~mine())"
 "fork(x)" = "fork_point(trunk() | x)"
 "fork()" = "fork_point(trunk() | @)"
+# The whole repo's in-flight work, across every workspace: the built-in log
+# reaching further back, plus divergent. This was the default log until rigs
+# made one repo host many workspaces at once.
+"board()" = "builtin_log() | ancestors(immutable_heads().., 4) | divergent()"
 
 [aliases]
+# Log everything in flight, not just this workspace's stack.
+la = ["log", "-r", "board()"]
+
 # Move the closest ancestor bookmark to @-. Prefers non-trunk bookmarks so
 # merging trunk doesn't drag the trunk bookmark forward; falls back to
 # including trunk only if it's the sole ancestor bookmark.
