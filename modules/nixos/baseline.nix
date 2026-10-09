@@ -29,6 +29,12 @@
       flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
     in
     {
+      # Stable nix links libgit2 1.9.3, which refuses repos carrying
+      # extensions.relativeWorktrees. jj's colocated workspaces set that flag
+      # (it hardcodes worktree.useRelativePaths=true), breaking every flake
+      # eval in the repo. libgit2 learned the extension in 1.9.4; drop this
+      # once stable nixpkgs catches up.
+      package = pkgs.unstable.nix;
       settings = {
         experimental-features = "nix-command flakes";
         flake-registry = "";
