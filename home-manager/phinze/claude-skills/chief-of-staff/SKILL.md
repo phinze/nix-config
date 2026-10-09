@@ -145,6 +145,13 @@ it. Silence in a domain is a fine answer.
   rig grows a hook-driven state.
 - **Convert relative dates** to absolute when retelling ("Friday" →
   "2026-05-08").
+- **Never leave a bare ticket or PR number.** Every MIR-NNNN, PERS-NN,
+  or `repo#NNN` mention carries a few-word gloss the first time it
+  appears in a message: "MIR-1985 (auth the loopback telemetry ports)",
+  "runtime#1338 (drop legacy status report)". Paul shouldn't have to
+  deref an id from memory. Rig names count too when they're just an id
+  (`mir-2043` → "mir-2043 (conformance suite)"). Do the same in plan
+  file entries, since the next CoS reads them cold.
 
 ## Brief mode
 
