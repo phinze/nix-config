@@ -268,8 +268,8 @@ surface those instead. Until PERS-25 lands, `rig park` leaves the agent
 running in its `tmux-spawn-*.scope`: note the scope from the agent pid's
 `/proc/<pid>/cgroup` before parking and `systemctl --user stop` it after.
 
-**Teardown checklist.** Before `rig down` (run from inside the rig's basedir;
-it works from this session):
+**Teardown checklist.** Before `rig down <id>` (the exact id; it works from
+this session):
 
 - Each repo's `@` is empty or matches the merged head; otherwise find out why.
   `--force` only when Paul has called the leftover work dead.
@@ -298,7 +298,7 @@ reply when done. Tell it the reply is its last act. Then read the file rather
 than trusting the reply alone, so the record lands in memex either way.
 
 Once the file holds the handover, tear the old rig down yourself with
-`cd ~/workspaces/cos-<yesterday> && rig down`. This is routine and needs no
+`rig down cos-<yesterday>`. This is routine and needs no
 separate approval. It works from this session because `rig down` only refuses
 when it would kill the session it runs in, and a cos rig has no repos for the
 safety gate to hold on. Report it in the brief as done. If the old rig doesn't

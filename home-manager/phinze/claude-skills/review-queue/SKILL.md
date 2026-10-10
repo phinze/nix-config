@@ -109,12 +109,11 @@ left to wait for.
 For review rigs, what the user posted decides it. An approval finishes the
 rig, so it's ready to tear down. A changes request means waiting on the
 author's push, so it stays parked for the re-review. Tear rigs down only when
-the user asks. `rig down` tears down whichever rig contains the cwd, so run it
-from inside the target's basedir:
+the user asks. Name the target, which must be its exact id or directory name:
 
-    cd ~/workspaces/<review-rig-basedir> && rig down < /dev/null
+    rig down <review-rig-id> < /dev/null
 
-Never run it from the coordinator's own basedir.
+Never name the coordinator's own rig.
 
 The coordinator follows the same rule. Once every PR in the queue has a posted
 review from the user, it's done: say it's ready to tear down, and stop.
