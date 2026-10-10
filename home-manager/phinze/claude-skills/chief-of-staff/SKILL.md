@@ -51,8 +51,31 @@ meant for a human in a tmux popup; a bare `rig sweep` would sit waiting on a
 board nobody can see.
 
 When a rig needs a closer look, its repos are jj workspaces under
-`~/workspaces/<rig>/<repo>`. Use `jj st` and `jj log` there. Git works too,
-but its HEAD is detached at `@-` and says little about the rig's work.
+`~/workspaces/<rig>/<repo>` on the host it lives on. Use `jj st` and `jj log`
+there. Git works too, but its HEAD is detached at `@-` and says little about
+the rig's work.
+
+## Every host is one board
+
+Rigs live on the laptop (phinze-mrn-mbp, in Rex) and on foxtrotbase, and the
+board covers both from either side. Each host runs `rig serve`, and every
+board verb asks the other host for its own answer: `rig ls --format=json`
+rows carry `location` (`local` or the host's name), and its `hosts` field
+says which hosts answered. A host marked unreachable there means its rigs
+weren't looked at, not that they're gone; say so in the brief. `waiting`,
+`history`, and `sweep -n` append each other host's answer under its name.
+
+A rig on another host is addressed `<id>@<host>` (`mir-2043@foxtrotbase`),
+and that's how the table prints it. A bare id works when only one host has
+it; when both do, the local one wins and `@host` reaches the other. Every rig
+verb takes these handles: `send`, `messages`, `dispatch`, `wake`, `resume`,
+`park <id>`, `down <id>`, `resurrect`. The far host runs the verb, so its
+refusals and probe failures read exactly as they would locally.
+
+What rig can't do for you across hosts is look inside: jj state, an agent
+pane's screen, docker leftovers, and agent processes are on the rig's own
+host. For a foxtrotbase rig, read them with `ssh foxtrotbase '<command>'`,
+read-only, the same commands you'd run locally.
 
 ## Enrich each row it needs
 
@@ -141,7 +164,7 @@ it. Silence in a domain is a fine answer.
   transcript-mtime guess (see PERS-25): it reads stale "working" after a park
   and can't tell done from blocked on input. For an idle rig whose next step
   matters, read the latest recap with a read-only `tmux capture-pane -p` of its
-  agent pane. That recap is the only reliable "waiting on you" signal until
+  agent pane (on its host: over ssh for a foxtrotbase rig). That recap is the only reliable "waiting on you" signal until
   rig grows a hook-driven state.
 - **Convert relative dates** to absolute when retelling ("Friday" →
   "2026-05-08").
@@ -193,7 +216,8 @@ The acting pass. Five steps, in order.
    diff is real; end the day with an EOD section listing what's open.
 4. **Propose sends.** Where a rig needs to be steered, draft the message and
    show it before sending. `rig send <rig> <text>` delivers to that rig's
-   agent through whichever transport its agent type dictates; `rig reply`
+   agent through whichever transport its agent type dictates, on whichever
+   host it lives; `rig reply`
    answers the latest inbound from inside a rig; `rig messages <rig>` reads
    the thread. A send fails loudly when the target is unreachable, so a
    refusal is information, not a silent no-op. Messages are instructions with
@@ -220,8 +244,10 @@ rigs that got all three reported back cleanly every time:
 - The exact report-back line:
   `rig send cos "<one or two lines: …>"`, naming what the lines should
   contain. Use the `cos` address, never this rig's dated id: it always
-  resolves to the newest chief-of-staff rig, so an answer that arrives
-  tomorrow still lands.
+  resolves to the newest chief-of-staff rig on any host, so an answer that
+  arrives tomorrow still lands, and a foxtrotbase rig reaches a cos running
+  on the laptop. A rig on another host sees this rig as
+  `rig:cos-YYYY-MM-DD@<this host>`, and its `rig reply` comes back here.
 
 **Pick the verb by the rig's state.**
 
@@ -243,7 +269,8 @@ inbox, so a project rig is the place to ask about them.
 cross-session messages when it was launched with
 `--settings <rig>/.rig/claude-settings.json` (`crossSessionInbound: accept`)
 and `--name <rig>`. Long-lived rigs started before rig send shipped lack both,
-socket or not. Check `pgrep -af -- '--name <rig>'` before relying on a send.
+socket or not. Check `pgrep -af -- '--name <rig>'` on the rig's host before
+relying on a send.
 To bring one into the fold: have it write `HANDOFF.md`, exit it, then launch a
 fresh `claude --settings <rig>/.rig/claude-settings.json --name <rig>` in its
 agent pane with a prompt to read the handoff and report back. `rig resume`
@@ -273,8 +300,8 @@ this session):
 
 - Each repo's `@` is empty or matches the merged head; otherwise find out why.
   `--force` only when Paul has called the leftover work dead.
-- Afterwards, look for docker containers, networks, and volumes named for the
-  rig (`runtime-dev-*`, `runtime-test-*`, older `runtime-dev-<id>` without the
+- Afterwards, on the rig's host, look for docker containers, networks, and
+  volumes named for the rig (`runtime-dev-*`, `runtime-test-*`, older `runtime-dev-<id>` without the
   `-runtime` suffix) and report or clean up what's orphaned.
 - Watch the teardown's output for jj snapshot warnings in the shared checkout
   (`~/src/...`): `jj workspace forget` snapshots it, and an unignored
@@ -283,7 +310,8 @@ this session):
 ## Cadence
 
 One chief-of-staff rig per workday, made with `rig cos` (it's
-`cos-YYYY-MM-DD`; running it again the same day re-enters it). Start fresh each
+`cos-YYYY-MM-DD`; running it again the same day re-enters it, on whichever
+host it's already up, so there's never a second one). Start fresh each
 morning. Yesterday's rig is normally still running when you arrive, and closing
 it out is the first job of the day: the handover and the teardown together are
 how a cos day ends. A long-lived session goes stale, and continuity lives in
@@ -293,12 +321,13 @@ mid-day from the same file instead of carrying a huge context.
 **Handover.** The kickoff names yesterday's cos rig when it's still up, which
 is the usual case. Its conversation often knows more than its plan file, so
 before the brief, ask it with `rig send cos-<yesterday>` (the dated id, since
-`cos` now means today) to write or refresh its EOD section in the plan file and
+`cos` now means today; the kickoff spells it `cos-<yesterday>@<host>` when it's
+on the other host) to write or refresh its EOD section in the plan file and
 reply when done. Tell it the reply is its last act. Then read the file rather
 than trusting the reply alone, so the record lands in memex either way.
 
 Once the file holds the handover, tear the old rig down yourself with
-`rig down cos-<yesterday>`. This is routine and needs no
+`rig down cos-<yesterday>` (with `@<host>` if the kickoff named one). This is routine and needs no
 separate approval. It works from this session because `rig down` only refuses
 when it would kill the session it runs in, and a cos rig has no repos for the
 safety gate to hold on. Report it in the brief as done. If the old rig doesn't
