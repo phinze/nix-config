@@ -65,7 +65,7 @@ let
     '';
   };
 in
-if stdenv.isLinux then
+if stdenv.hostPlatform.isLinux then
   # On Linux, wrap the unpatched binary in an FHS environment
   buildFHSEnv {
     name = "coderabbit";

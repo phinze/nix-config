@@ -140,7 +140,7 @@ let
     postBuild = ''
       wrapProgram $out/bin/agent-browser \
         --prefix PATH : ${lib.makeBinPath [ pkgs.ffmpeg-headless ]} \
-        ${lib.optionalString pkgs.stdenv.isLinux "--set-default AGENT_BROWSER_EXECUTABLE_PATH ${lib.getExe pkgs.chromium}"}
+        ${lib.optionalString pkgs.stdenv.hostPlatform.isLinux "--set-default AGENT_BROWSER_EXECUTABLE_PATH ${lib.getExe pkgs.chromium}"}
     '';
   };
 in
@@ -335,14 +335,14 @@ in
   };
 
   # swift-lsp only useful on macOS (sourcekit-lsp comes from Xcode).
-  home.file.".claude/skills/swift-lsp/.claude-plugin/plugin.json" = lib.mkIf pkgs.stdenv.isDarwin {
+  home.file.".claude/skills/swift-lsp/.claude-plugin/plugin.json" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     text = builtins.toJSON {
       name = "swift-lsp";
       version = "1.0.0";
       description = "Swift language server (SourceKit-LSP) for code intelligence";
     };
   };
-  home.file.".claude/skills/swift-lsp/.lsp.json" = lib.mkIf pkgs.stdenv.isDarwin {
+  home.file.".claude/skills/swift-lsp/.lsp.json" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     text = builtins.toJSON {
       "sourcekit-lsp" = {
         command = "sourcekit-lsp";
@@ -377,7 +377,7 @@ in
   # describes, so only they pay for the context. Predicate mirrors
   # usesForwardedAgent in home.nix, which gates the matching ssh identities.
   home.file.".claude/rules/ssh-agent.md" =
-    lib.mkIf (pkgs.stdenv.isLinux && !(nodeConfig.isGraphical or false))
+    lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && !(nodeConfig.isGraphical or false))
       {
         source = ./claude-rules/ssh-agent.md;
       };

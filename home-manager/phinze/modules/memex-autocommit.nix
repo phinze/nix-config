@@ -85,7 +85,7 @@ lib.mkIf (nodeConfig.isMemexHost or false) (
   lib.mkMerge [
     { home.packages = [ memex-autocommit ]; }
 
-    (lib.mkIf pkgs.stdenv.isLinux {
+    (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user.services.memex-autocommit = {
         Unit.Description = "Commit and push memex changes";
         Service = {
@@ -104,7 +104,7 @@ lib.mkIf (nodeConfig.isMemexHost or false) (
       };
     })
 
-    (lib.mkIf pkgs.stdenv.isDarwin {
+    (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       launchd.agents.memex-autocommit = {
         enable = true;
         config = {

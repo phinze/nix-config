@@ -43,7 +43,7 @@
     enable = true;
     settings = {
       font-family = "Hack";
-      macos-option-as-alt = lib.mkIf pkgs.stdenv.isDarwin true;
+      macos-option-as-alt = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin true;
 
       # Catppuccin Mocha Theme
       background = "1E1E2E";

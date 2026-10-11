@@ -40,7 +40,7 @@ let
   # Build the git-ssh-sign wrapper package
   gitSshSign = pkgs.callPackage ../../../pkgs/git-ssh-sign.nix {
     signingKeys = cfg.keys;
-    sshAuthSock = if pkgs.stdenv.isDarwin then opAgentSock else null;
+    sshAuthSock = if pkgs.stdenv.hostPlatform.isDarwin then opAgentSock else null;
   };
 in
 {

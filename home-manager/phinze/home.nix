@@ -18,7 +18,7 @@ let
   # the attached session forwards in. Equivalently: the nodes where the
   # IdentityAgent settings below do not apply, so SSH_AUTH_SOCK points at
   # double-agent rather than at a local 1Password.
-  usesForwardedAgent = pkgs.stdenv.isLinux && !(nodeConfig.isGraphical or false);
+  usesForwardedAgent = pkgs.stdenv.hostPlatform.isLinux && !(nodeConfig.isGraphical or false);
 in
 {
   # You can import other home-manager modules here
@@ -137,7 +137,7 @@ in
 
   home = {
     username = "phinze";
-    homeDirectory = if pkgs.stdenv.isDarwin then "/Users/phinze" else "/home/phinze";
+    homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/phinze" else "/home/phinze";
   };
 
   home.shellAliases = {
@@ -194,7 +194,7 @@ in
     BELOWDECK_CONFIG =
       osConfig.launchd.user.agents.belowdeck.serviceConfig.EnvironmentVariables.BELOWDECK_CONFIG;
   }
-  // lib.optionalAttrs pkgs.stdenv.isDarwin {
+  // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     # nh calls its elevation program as
     #   env PATH=... HOME= USER=phinze nix build --profile ...
     # and that empty HOME is a bug with teeth. Determinate Nix builds its
@@ -259,12 +259,12 @@ in
       # two-month-old build 403'd on every video).
       small.yt-dlp
     ]
-    ++ lib.optionals pkgs.stdenv.isDarwin [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
       # Docker CLI tools for macOS with Colima
       docker-client
       docker-compose
     ]
-    ++ lib.optionals pkgs.stdenv.isLinux [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       osc-copy # Provides pbcopy/xclip/xsel via OSC 52 for clipboard access through SSH/tmux
       miren # Latest Miren release as `miren` and `m`; the Mac gets it from the brew cask
     ]
@@ -676,7 +676,7 @@ in
       "set -g pure_truncate_window_title_current_directory_keeps 2"
     ];
   }
-  // lib.optionalAttrs (pkgs.stdenv.isDarwin) {
+  // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isDarwin) {
     loginShellInit =
       let
         # This naive quoting is good enough in this case. There shouldn't be any
@@ -813,20 +813,20 @@ in
   #
   # Note: darwin's launchd agent appends clean.extraArgs as a single argv
   # element, so use clap's --flag=value form (--keep=3, not "--keep 3").
-  programs.nh = lib.mkIf pkgs.stdenv.isDarwin {
+  programs.nh = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     enable = true;
     clean.enable = true;
     clean.extraArgs = "--keep=3";
   };
 
   # Finicky configuration for URL routing (macOS only)
-  home.file.".finicky.ts" = lib.mkIf pkgs.stdenv.isDarwin {
+  home.file.".finicky.ts" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     source = ./finicky.ts;
   };
 
   # Bounds what a forwarded agent can sign with; 1Password exposes every key
   # we own otherwise.
-  xdg.configFile."1Password/ssh/agent.toml" = lib.mkIf pkgs.stdenv.isDarwin {
+  xdg.configFile."1Password/ssh/agent.toml" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     text = lib.concatMapStrings (k: ''
       [[ssh-keys]]
       item = "${k.item}"
@@ -840,7 +840,7 @@ in
   #
   # A real file, not a home.file symlink: StrictModes walks the resolved path
   # and /nix/store is group-writable, so sshd rejects anything living there.
-  home.activation.authorizedKeys = lib.mkIf pkgs.stdenv.isDarwin (
+  home.activation.authorizedKeys = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
     lib.hm.dag.entryAfter [ "writeBoundary" ] (
       let
         keys = pkgs.writeText "authorized_keys" (
@@ -934,17 +934,17 @@ in
           [ "~/.ssh/pub/phinze-mrn-mbp.pub" ] ++ lib.optional usesForwardedAgent "~/.ssh/pub/delevingne.pub"
         );
       }
-      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
       }
-      // lib.optionalAttrs (pkgs.stdenv.isLinux && (nodeConfig.isGraphical or false)) {
+      // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && (nodeConfig.isGraphical or false)) {
         IdentityAgent = "\"~/.1password/agent.sock\"";
       };
 
       "foxtrotbase" = {
         ForwardAgent = true;
       }
-      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         RemoteForward = [
           {
             # A loopback TCP listener disappears cleanly with its SSH
@@ -967,7 +967,7 @@ in
         IdentityFile = "~/.ssh/pub/miren.pub";
       };
     }
-    // lib.optionalAttrs pkgs.stdenv.isDarwin {
+    // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
       # Only set up RemoteCommand for interactive sessions (no CLI command).
       # The `command ""` predicate means `ssh foxtrotbase 'cmd'` still works
       # normally. The attribute name is used verbatim as the block header
@@ -983,7 +983,7 @@ in
     };
   };
 
-  services.gpg-agent = lib.mkIf pkgs.stdenv.isLinux {
+  services.gpg-agent = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     enable = true;
     pinentry.package = pkgs.pinentry-tty;
 
@@ -992,7 +992,7 @@ in
     maxCacheTtl = 31536000;
   };
 
-  xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.isDarwin {
+  xdg.configFile."aerospace/config" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     source = ./aerospace.toml;
   };
 
@@ -1024,7 +1024,7 @@ in
 
     # The Mac daemon keeps its private Unix socket. Linux reaches it through
     # the race-safe loopback TCP endpoint forwarded by SSH above.
-    settings = lib.optionalAttrs pkgs.stdenv.isLinux {
+    settings = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
       network = "tcp";
       address = "127.0.0.1:${toString bankshotBridgePort}";
     };
@@ -1035,7 +1035,7 @@ in
     # eBPF capabilities it needs, so home-manager should not stand up a
     # second, user-scoped one here.
     daemon = {
-      enable = pkgs.stdenv.isDarwin;
+      enable = pkgs.stdenv.hostPlatform.isDarwin;
       autoStart = true;
       logLevel = "info";
     };
@@ -1078,7 +1078,7 @@ in
   };
 
   # Nicely reload system units when changing configs
-  systemd.user.startServices = lib.mkIf pkgs.stdenv.isLinux "sd-switch";
+  systemd.user.startServices = lib.mkIf pkgs.stdenv.hostPlatform.isLinux "sd-switch";
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   home.stateVersion = "24.05";

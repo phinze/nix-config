@@ -15,7 +15,7 @@
   config,
   ...
 }:
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   xdg.configFile."rex/init.lua".text = ''
     -- tmux muscle memory, rebuilt for rigs that live in Rex rather than tmux
     -- (see tmux.nix for the originals). The prefix is a one-shot mode, which

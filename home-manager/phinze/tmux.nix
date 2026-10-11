@@ -24,7 +24,7 @@ in
     plugins =
       let
         loadCommand =
-          if pkgs.stdenv.isDarwin then
+          if pkgs.stdenv.hostPlatform.isDarwin then
             "sysctl -n vm.loadavg | awk '{print $2}'"
           else
             "awk '{print $1}' /proc/loadavg";

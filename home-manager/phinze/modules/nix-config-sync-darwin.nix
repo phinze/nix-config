@@ -40,7 +40,7 @@ let
     '';
   };
 in
-lib.mkIf (pkgs.stdenv.isDarwin && (nodeConfig.isNixConfigDeployHost or false)) {
+lib.mkIf (pkgs.stdenv.hostPlatform.isDarwin && (nodeConfig.isNixConfigDeployHost or false)) {
   home.packages = [ sync ];
   home.activation.nixConfigSyncSetup =
     lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "writeBoundary" ]

@@ -3,7 +3,7 @@
   lib,
   ...
 }:
-lib.mkIf pkgs.stdenv.isLinux {
+lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
   home.packages = [
     pkgs.dev-host-cleanup
     pkgs.dev-session-cleanup

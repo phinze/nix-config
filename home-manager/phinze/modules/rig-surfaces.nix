@@ -25,12 +25,12 @@
 # name: Font Awesome's laptop (U+F109) and server (U+F233), the same family as
 # the radar's other glyphs.
 let
-  isFoxtrotbase = pkgs.stdenv.isLinux && osConfig.networking.hostName == "foxtrotbase";
+  isFoxtrotbase = pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase";
   laptopIcon = "";
   serverIcon = "";
 in
 lib.mkMerge [
-  (lib.mkIf pkgs.stdenv.isDarwin {
+  (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     xdg.configFile."rig/surfaces.toml".text = ''
       [surfaces]
       foxtrotbase = "rig+http://foxtrotbase"

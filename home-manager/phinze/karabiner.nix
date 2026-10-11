@@ -106,7 +106,7 @@ let
 
   karabinerJson = pkgs.writeText "karabiner.json" (builtins.toJSON karabinerConfig);
 in
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   # Karabiner rewrites its own config on UI changes, which conflicts with
   # home-manager's symlink mechanism (atomic-rename clobbers the symlink and
   # the next switch fails the .nix-backup check). Copy on activation instead

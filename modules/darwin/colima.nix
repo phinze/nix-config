@@ -73,7 +73,7 @@ in
         "x86_64"
         "aarch64"
       ];
-      default = if pkgs.stdenv.isDarwin && pkgs.stdenv.isAarch64 then "aarch64" else "x86_64";
+      default = if pkgs.stdenv.hostPlatform.isDarwin && pkgs.stdenv.hostPlatform.isAarch64 then "aarch64" else "x86_64";
       description = "Architecture for the VM.";
     };
   };

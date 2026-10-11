@@ -15,7 +15,7 @@
     # Apply Wayland fixes from https://github.com/NixOS/nixpkgs/pull/422792
     # Only on Linux since macOS uses homebrew cask for 1Password
     _1password-gui =
-      if prev.stdenv.isLinux then
+      if prev.stdenv.hostPlatform.isLinux then
         prev._1password-gui.overrideAttrs (oldAttrs: {
           installPhase = oldAttrs.installPhase + ''
             # Add Wayland support flags to the desktop file

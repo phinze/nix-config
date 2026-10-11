@@ -15,7 +15,7 @@
 # so the whole module is wrapped in mkIf isDarwin: a no-op on NixOS hosts,
 # where graphical.nix owns programs.ghostty instead.
 { lib, pkgs, ... }:
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   programs.ghostty = {
     enable = true;
     package = null;

@@ -672,7 +672,7 @@ lib.mkIf (nodeConfig.isNixConfigSyncHost or false) (
   lib.mkMerge [
     { home.packages = [ nix-config-sync ]; }
 
-    (lib.mkIf pkgs.stdenv.isLinux {
+    (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user.services.nix-config-sync = {
         Unit = {
           Description = "Reconcile nix-config main and fast-moving inputs";
