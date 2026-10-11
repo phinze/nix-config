@@ -204,6 +204,7 @@ in
     "ableton-live-lite"
     "balenaetcher"
     "bambu-studio"
+    "bitwarden" # Desktop app; also serves the SSH agent at ~/.bitwarden-ssh-agent.sock
     "blackhole-2ch"
     "chatgpt"
     "claude"
