@@ -64,7 +64,12 @@ lib.mkMerge [
         ];
         StandardOutPath = "${config.home.homeDirectory}/Library/Logs/rig-serve.log";
         StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/rig-serve.log";
-        ProcessType = "Background";
+        # Standard, not Background. Serve answers a person at another
+        # keyboard, and every rex call it makes is a child process that
+        # inherits the throttling: under load, Background made each call take
+        # 0.65-2s instead of 20ms, so a board (~40 calls) blew past the
+        # radar's 3s timeout and foxtrotbase saw the laptop as unreachable.
+        ProcessType = "Standard";
       };
     };
   })
