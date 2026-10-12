@@ -87,12 +87,11 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     -- the key goes to nvim, which moves between its own splits and calls
     -- `rex do pane.focus.*` at its edges (nixvim-config does that half).
     --
-    -- Two traps found the hard way. Queue pane.focus with a direction: the
-    -- argless pane.focus.down queues without error and never takes effect.
-    -- And don't reach for session.focus_direction, which moves the server's
-    -- focus rather than the client-local focus on screen. The keys are bound
-    -- physically ([KeyJ]) because that's what was in place when this first
-    -- worked; the logical form may be fine, but it hasn't been retested.
+    -- One trap found the hard way: don't reach for session.focus_direction,
+    -- which moves the server's focus rather than the client-local focus on
+    -- screen. The keys are bound physically ([KeyJ]) because that's what was
+    -- in place when this first worked; the logical form may be fine, but it
+    -- hasn't been retested.
     local ctrl_byte = { h = "\8", j = "\10", k = "\11", l = "\12" }
     for key, dir in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
       rex.action({
