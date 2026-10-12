@@ -17,7 +17,7 @@ let
   # True on nodes that hold no keys of their own and sign with whatever agent
   # the attached session forwards in. Equivalently: the nodes where the
   # IdentityAgent settings below do not apply, so SSH_AUTH_SOCK points at
-  # double-agent rather than at a local 1Password.
+  # double-agent rather than at a local Bitwarden.
   usesForwardedAgent = pkgs.stdenv.hostPlatform.isLinux && !(nodeConfig.isGraphical or false);
 in
 {
@@ -824,17 +824,6 @@ in
     source = ./finicky.ts;
   };
 
-  # Bounds what a forwarded agent can sign with; 1Password exposes every key
-  # we own otherwise.
-  xdg.configFile."1Password/ssh/agent.toml" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-    text = lib.concatMapStrings (k: ''
-      [[ssh-keys]]
-      item = "${k.item}"
-      vault = "${k.vault}"
-
-    '') inputs.nix-private.data.onePasswordSshItems;
-  };
-
   # macOS sshd reads .ssh/authorized_keys and has no authorized_keys.d, so this
   # is home-manager's job here rather than services.openssh's.
   #
@@ -934,11 +923,12 @@ in
           [ "~/.ssh/pub/phinze-mrn-mbp.pub" ] ++ lib.optional usesForwardedAgent "~/.ssh/pub/delevingne.pub"
         );
       }
-      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-        IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
-      }
-      // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && (nodeConfig.isGraphical or false)) {
-        IdentityAgent = "\"~/.1password/agent.sock\"";
+      # The Bitwarden desktop app serves the agent at the same path on macOS
+      # (Homebrew cask build, not the sandboxed App Store one) and on Linux.
+      # It has no equivalent of 1Password's agent.toml allowlist: it serves
+      # every SSH key item in the vault, so keep only keys in active use there.
+      // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isDarwin || (nodeConfig.isGraphical or false)) {
+        IdentityAgent = "~/.bitwarden-ssh-agent.sock";
       };
 
       "foxtrotbase" = {

@@ -80,6 +80,7 @@
     discord
     zoom-us
     google-chrome
+    unstable.bitwarden-desktop # Serves the SSH agent at ~/.bitwarden-ssh-agent.sock
   ];
 
   # Enable 1Password
