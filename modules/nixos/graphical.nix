@@ -81,6 +81,7 @@
     zoom-us
     google-chrome
     unstable.bitwarden-desktop # Serves the SSH agent at ~/.bitwarden-ssh-agent.sock
+    unstable.proton-pass # Desktop app, on trial against Bitwarden (PERS-44)
   ];
 
   # Enable 1Password

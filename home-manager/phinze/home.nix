@@ -250,6 +250,7 @@ in
       pim # Personal-information CLI (mail, calendar, drive, docs) — see PIM_DATA_DIR below
       opencode # AI coding agent for the terminal, multi-provider
       unstable.bitwarden-cli # `bw`, from unstable because the stable pin trails the desktop app by months
+      unstable.proton-pass-cli # `pass-cli`, on trial against Bitwarden (PERS-44); stable pins 2.0.2, unstable 2.3.x
       unstable.fabric-ai # AI framework for augmenting humans
       unstable.deno # JS runtime required by yt-dlp for YouTube signature solving
       unstable.mpv # Media player for YouTube DJ sets and streams

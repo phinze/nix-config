@@ -229,6 +229,7 @@ in
     "obs"
     "obsidian"
     "orcaslicer"
+    "proton-pass" # Desktop app, on trial against Bitwarden (PERS-44)
     "raycast"
     "rectangle"
     "rocket"
