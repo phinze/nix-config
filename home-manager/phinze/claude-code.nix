@@ -497,4 +497,9 @@ in
   # need them.
   home.file.".claude/skills/chief-of-staff".source = ./claude-skills/chief-of-staff;
   home.file.".claude/skills/personal-tasks".source = ./claude-skills/personal-tasks;
+
+  # nix-config skill: a map of where config lives and how a change reaches a
+  # host. Agents kept hand-switching and hand-bumping sync-managed inputs,
+  # partly because downstream repo docs still told them to.
+  home.file.".claude/skills/nix-config".source = ./claude-skills/nix-config;
 }

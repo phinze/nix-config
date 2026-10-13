@@ -54,7 +54,10 @@ nix build .#nixosConfigurations.foxtrotbase.config.system.build.toplevel --no-li
 nix build .#darwinConfigurations.phinze-mrn-mbp.system --no-link
 ```
 
-**Build and switch** (actually apply the configuration):
+**Build and switch** (by hand, only when Paul asks or on a host without a sync):
+foxtrotbase and phinze-mrn-mbp get changes by pushing to `main` and running
+`nix-config-sync kick` (see the Workspace-Centric Config Workflow below and the
+`nix-config` skill), not by switching.
 ```bash
 # NixOS
 sudo nixos-rebuild switch --flake .
@@ -67,12 +70,14 @@ Substitute the appropriate hostname for other hosts (NixOS: foxtrotbase, xiezhi,
 
 ### Maintenance Commands
 
-```bash
-# Update flake inputs
-nix flake update
+Inputs listed in `syncInputs`/`releaseInputs` (see "How the Sync Bumps
+Inputs") are bumped by the foxtrotbase sync, so don't update them by hand
+unless a nix-config change needs the new version to evaluate. Everything else
+moves when Paul decides.
 
-# Update specific input
-nix flake lock --update-input nixvim-config
+```bash
+# Update a manual input (e.g. nixpkgs)
+nix flake update nixpkgs
 
 # Format nix files
 nix fmt
