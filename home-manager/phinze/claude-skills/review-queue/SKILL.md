@@ -32,7 +32,8 @@ working is in progress, not new work.
 
 ## 2. Triage
 
-Show one table, smallest to largest, with an attention level per PR:
+Show one table, longest-waiting first. Give each PR its wait (time since the
+latest review request or re-push), its size, and an attention level:
 
 - **quick**: a handful of lines, one or two files. Read the diff right here.
 - **light**: small and self-contained, or UI that mostly needs a look.
@@ -46,9 +47,9 @@ whose area it touches, a Linear ticket that already covers a concern the diff
 raises. Linear search is cheap; when a diff makes you think "we should have a
 ticket for this," look before proposing one.
 
-Then propose an order. The default is quick wins first to clear the queue,
-then the heaviest while the user is fresh, then the rest. Treat that as a
-suggestion, not a rule.
+Then propose an order. The default is wait order. Quick ones can jump the
+line, since they cost minutes, but nothing else does without a reason you say
+out loud. Size decides how long a review takes, not when it starts.
 
 ## 3. Handle the quick ones inline
 
@@ -65,6 +66,12 @@ what the user is approving, so name it in the draft.
 ## 4. Pitch the rigs
 
     rig review <pr-url> < /dev/null
+
+Pitch a rig for every non-draft PR that isn't quick, all at once. Rigs are
+cheap, and a first pass already waiting in the pane is what lets a big review
+fit into a gap. Don't hold a heavy PR for "when the user has a block." On
+2026-10-13, cloud#316 sat four days that way, green and re-requested, because
+every pass found something smaller to do first.
 
 Outside a terminal, `rig review` prepares the tmux session and prints
 `session ready ... attach manually` without switching the user's client. So

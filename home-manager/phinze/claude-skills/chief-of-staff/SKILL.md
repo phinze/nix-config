@@ -144,6 +144,11 @@ it. Silence in a domain is a fine answer.
 - **Flag stale items.** Rig age does most of this: a rig parked 19 days, or a
   Linear ticket In Progress for weeks with no rig, deserves a drop-or-finish
   call.
+- **Don't hand a deferral forward.** "Pitch a review rig when Paul has a
+  block" in a handover reads like a decision to the next cos, so it gets
+  carried, not acted on. If a review can wait, start its rig anyway and let
+  only Paul's attention wait. When an item has ridden through earlier
+  handovers, say how many.
 - **Treat red CI as a question, not an answer.** The board's `failingChecks`
   names the red jobs; say which job failed and, when it's cheap, why (`gh pr
   checks` / `gh run view --log`). "Pop failing" plus a line of log beats "CI
