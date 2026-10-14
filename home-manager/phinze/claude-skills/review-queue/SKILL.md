@@ -69,9 +69,8 @@ what the user is approving, so name it in the draft.
 
 Pitch a rig for every non-draft PR that isn't quick, all at once. Rigs are
 cheap, and a first pass already waiting in the pane is what lets a big review
-fit into a gap. Don't hold a heavy PR for "when the user has a block." On
-2026-10-13, cloud#316 sat four days that way, green and re-requested, because
-every pass found something smaller to do first.
+fit into a gap. Don't hold a heavy PR for "when the user has a block." Every
+pass finds something smaller to do first, so a held PR can sit for days.
 
 Outside a terminal, `rig review` prepares the tmux session and prints
 `session ready ... attach manually` without switching the user's client. So

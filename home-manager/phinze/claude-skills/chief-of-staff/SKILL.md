@@ -144,23 +144,25 @@ it. Silence in a domain is a fine answer.
 - **Flag stale items.** Rig age does most of this: a rig parked 19 days, or a
   Linear ticket In Progress for weeks with no rig, deserves a drop-or-finish
   call.
-- **Don't hand a deferral forward.** "Pitch a review rig when Paul has a
-  block" in a handover reads like a decision to the next cos, so it gets
-  carried, not acted on. If a review can wait, start its rig anyway and let
-  only Paul's attention wait. When an item has ridden through earlier
-  handovers, say how many.
+- **Don't hand a deferral forward.** "Later," "when Paul has a block,"
+  "after the release": a deferral written into a handover reads like a
+  decision to the next cos, so it gets carried, not acted on. Before passing
+  one on, split it. Whatever an agent can do now (pitch the rig, draft the
+  reply, pull the logs) starts now, and only the part that needs Paul waits.
+  Give that part a concrete trigger or a date, not a mood. When an item has
+  ridden through earlier handovers, say how many.
 - **Treat red CI as a question, not an answer.** The board's `failingChecks`
   names the red jobs; say which job failed and, when it's cheap, why (`gh pr
-  checks` / `gh run view --log`). "Pop failing" plus a line of log beats "CI
-  failing" every time: the runtime#1283 red was merge order, not the PR, and
-  only the job name plus log said so.
+  checks` / `gh run view --log`). The job name plus a line of log beats "CI
+  failing" every time, since a red run is sometimes merge order or a flake
+  rather than the PR, and only the log says which.
 - **Check the task before interpreting a parked rig.** It may have a real
   dependency or a useful handoff. Parking or tearing down a rig does not
   complete its task, and an idle agent does not imply human review is needed.
 - **Check the author before saying whose move it is.** `REVIEW_REQUIRED` on a
   PR Paul wrote means it waits on the team, not on him; it's only on Paul when
-  he's the requested reviewer. Getting this backwards spreads: on 2026-10-01 a
-  project rig repeated the same misread an hour after this skill made it.
+  he's the requested reviewer. Getting this backwards spreads, because other
+  rigs repeat what the cos tells them.
 - **Read the PR before calling Linear drift.** A PR that says "Part of"
   rather than closing keeps its issue In Progress on purpose, and Linear's
   GitHub sync holds it there while a related draft stays open. Look for a
