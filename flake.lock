@@ -1022,11 +1022,11 @@
     },
     "understudy": {
       "locked": {
-        "lastModified": 1791589690,
-        "narHash": "sha256-RHFBLN48ls1SrqmSDzVCF1Xr+FJgDfgCuYBHibzlhOE=",
+        "lastModified": 1792006458,
+        "narHash": "sha256-Cmir1XBjmNW5Ir6w2ZDfVu/NXZWR9IRd5rV0OXjmg+Y=",
         "owner": "phinze",
         "repo": "understudy",
-        "rev": "34216a659d5090a70c2b52ec4f9a42c1f791c441",
+        "rev": "cd6946568ad65a124b88f21c7f077450a0de5da5",
         "type": "github"
       },
       "original": {
