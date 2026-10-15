@@ -238,7 +238,7 @@ in
     "steam"
     "tailscale-app"
     "teamviewer"
-    "tuple" # Pairing, on team trial; self-updates, so brew only installs it
+    "tuple"
     "windows-app"
     "zed"
     "zen"
