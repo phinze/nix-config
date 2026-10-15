@@ -191,6 +191,10 @@ in
       name = "mirendev/tap";
       clone_target = "https://github.com/mirendev/homebrew-tap";
     }
+    {
+      name = "phinze/tap";
+      clone_target = "https://github.com/phinze/homebrew-tap";
+    }
   ];
 
   homebrew.brews = [
@@ -229,6 +233,7 @@ in
     "obs"
     "obsidian"
     "orcaslicer"
+    "phinze/tap/petal" # Bridge until it lands in homebrew-cask
     "proton-pass" # Desktop app, on trial against Bitwarden (PERS-44)
     "raycast"
     "rectangle"
