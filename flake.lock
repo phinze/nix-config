@@ -402,11 +402,11 @@
         "quake": "quake"
       },
       "locked": {
-        "lastModified": 1790879530,
-        "narHash": "sha256-m6ZNz11DrOq4rt7Lqt+pgDIV1QLblGdB0bAD31ExzLI=",
+        "lastModified": 1792069713,
+        "narHash": "sha256-r17IXV35z+zLe3PFuu+nd4z/LYm6/QesFCpI4U2Zbes=",
         "ref": "refs/heads/main",
-        "rev": "3cce7e8dc23cec9495295149464b02f505ed2522",
-        "revCount": 81,
+        "rev": "1cc540c7002a335d532ee879ba4c2ab6f87c3797",
+        "revCount": 83,
         "type": "git",
         "url": "https://github.com/mirendev/iso.git"
       },
@@ -620,11 +620,11 @@
     },
     "nixpkgs-small": {
       "locked": {
-        "lastModified": 1792034174,
-        "narHash": "sha256-Wqty06OaHk9quzfq4m60/+aYeFIHuOvMXSlT6cqmk54=",
+        "lastModified": 1792064607,
+        "narHash": "sha256-bQeJ4BhfqNsr6apTUoKCS0bM3ZxS/BQBxrsS61qmb60=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "2ebb5e07650b0d0cc7bcbe22f4fc4b561572b87f",
+        "rev": "3536189026afa7f45a6b5e111d91aafca0984595",
         "type": "github"
       },
       "original": {
@@ -1022,11 +1022,11 @@
     },
     "understudy": {
       "locked": {
-        "lastModified": 1792006458,
-        "narHash": "sha256-Cmir1XBjmNW5Ir6w2ZDfVu/NXZWR9IRd5rV0OXjmg+Y=",
+        "lastModified": 1792077078,
+        "narHash": "sha256-FiXcfQ/15A+3JstuzDlRNoAxFO1o3xAo+o6XEaDexdQ=",
         "owner": "phinze",
         "repo": "understudy",
-        "rev": "cd6946568ad65a124b88f21c7f077450a0de5da5",
+        "rev": "5a715601a84ab6334f11476e4feba8de994c190e",
         "type": "github"
       },
       "original": {
