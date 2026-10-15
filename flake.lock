@@ -464,14 +464,14 @@
     "miren-cli": {
       "flake": false,
       "locked": {
-        "lastModified": 1790703662,
-        "narHash": "sha256-I9OgYUplBHP1bxpDajYsSo3dI2WpLFOHMxafzMfQJpw=",
+        "lastModified": 1792079917,
+        "narHash": "sha256-Z1mqPtWJ1VqcWbFg6h7TJzBEDhnij4eflNc0fyaCW6s=",
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.17.0/miren-linux-amd64.zip"
       },
       "original": {
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.17.0/miren-linux-amd64.zip"
       }
     },
     "multipass": {
@@ -1022,11 +1022,11 @@
     },
     "understudy": {
       "locked": {
-        "lastModified": 1792077078,
-        "narHash": "sha256-FiXcfQ/15A+3JstuzDlRNoAxFO1o3xAo+o6XEaDexdQ=",
+        "lastModified": 1792081641,
+        "narHash": "sha256-HP2Ic3oo08zN6QxvAl1HxYsfeV7h20ayrw66Qv5+EZQ=",
         "owner": "phinze",
         "repo": "understudy",
-        "rev": "5a715601a84ab6334f11476e4feba8de994c190e",
+        "rev": "09f021c79fbf8cd56440311ce9ae9c77bb8315a9",
         "type": "github"
       },
       "original": {

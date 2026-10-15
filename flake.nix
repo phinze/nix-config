@@ -140,7 +140,7 @@
     # api.miren.cloud and rewrites the vX.Y.Z segment below, so keep the url on
     # one line in this exact shape. x86_64-linux only, which is every NixOS
     # host that runs home-manager.
-    miren-cli.url = "https://api.miren.cloud/assets/release/miren/v0.16.2/miren-linux-amd64.zip";
+    miren-cli.url = "https://api.miren.cloud/assets/release/miren/v0.17.0/miren-linux-amd64.zip";
     miren-cli.flake = false;
 
     iso.url = "git+https://github.com/mirendev/iso.git";
