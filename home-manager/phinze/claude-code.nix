@@ -206,13 +206,26 @@ in
             type = "command";
             command = config.phinze.agentHooks.sophonCommand;
           };
-          sophonOnly = [ { hooks = [ sophonHook ]; } ];
+          # Tells a session started inside Rex which session and pane it's
+          # in (see rex.nix); prints nothing outside Rex.
+          rexHook = {
+            type = "command";
+            command = "/bin/sh -c '${config.home.profileDirectory}/bin/rex __internal session-start --agent claude 2>/dev/null || true'";
+            timeout = 5;
+          };
         in
         builtins.listToAttrs (
           map
             (event: {
               name = event;
-              value = sophonOnly;
+              value = [
+                {
+                  hooks = [
+                    sophonHook
+                  ]
+                  ++ lib.optional (event == "SessionStart" && pkgs.stdenv.hostPlatform.isDarwin) rexHook;
+                }
+              ];
             })
             [
               "SessionStart"
@@ -448,6 +461,24 @@ in
       figma = {
         type = "http";
         url = "https://mcp.figma.com/mcp";
+      };
+    };
+  };
+
+  # Superlogical's community MCP: Rex docs plus the Discord feedback threads,
+  # including triaged and closed ones, which is where the reasoning behind a
+  # "not now" lives. OAuth through Discord membership in their server. Named
+  # superlogical rather than rex upstream, to stay clear of `rex skill setup`.
+  home.file.".claude/skills/superlogical-mcp/.claude-plugin/plugin.json".text = builtins.toJSON {
+    name = "superlogical-mcp";
+    version = "1.0.0";
+    description = "Superlogical community MCP: Rex docs and feedback threads";
+  };
+  home.file.".claude/skills/superlogical-mcp/.mcp.json".text = builtins.toJSON {
+    mcpServers = {
+      superlogical = {
+        type = "http";
+        url = "https://www.superlogical.com/rex/community-mcp";
       };
     };
   };

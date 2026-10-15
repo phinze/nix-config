@@ -15,7 +15,40 @@
   config,
   ...
 }:
+let
+  # The CLI ships inside the app bundle and Rex puts nothing on PATH, so this
+  # is the `rex` that agents, the skill, and the hooks below all run.
+  rexCli = pkgs.writeShellScriptBin "rex" ''
+    exec "/Applications/Rex.app/Contents/Helpers/Rex Server.app/Contents/MacOS/rex" "$@"
+  '';
+
+  # What `rex skill setup` installs, declared here because setup edits
+  # ~/.claude/settings.json and ~/.codex/hooks.json in place, and both are
+  # ours. The stub defers to `rex __internal skill`, so the guide follows
+  # whatever Rex is installed without a rebuild. The SessionStart hooks that
+  # go with it live in claude-code.nix and codex.nix, beside the others.
+  rexSkill = pkgs.writeText "rex-SKILL.md" ''
+    ---
+    name: rex
+    description: Use the rex CLI to manage Rex sessions, open tabs, arrange panes, run commands, inspect terminal output, and control connected Rex apps.
+    metadata:
+      rex-stub: "2"
+    ---
+
+    Run `rex __internal skill` and follow the guide it prints. The guide comes from
+    the installed Rex CLI, so it describes the commands available in that version.
+
+    If the command fails, the installed Rex version predates the guide. Start with
+    `rex whoami --json`, then use `rex --help` and `rex COMMAND --help`.
+  '';
+in
 lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+  home.packages = [ rexCli ];
+
+  # Pi reads ~/.claude/skills too, so these two cover every agent we run.
+  home.file.".claude/skills/rex/SKILL.md".source = rexSkill;
+  home.file.".codex/skills/rex/SKILL.md".source = rexSkill;
+
   xdg.configFile."rex/init.lua".text = ''
     -- tmux muscle memory, rebuilt for rigs that live in Rex rather than tmux
     -- (see tmux.nix for the originals). The prefix is a one-shot mode, which
@@ -153,7 +186,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
         local view, err = rex.call("session.view", { session_id = ctx.session_id })
         if err ~= nil then error(err, 0) end
         for _, w in ipairs(view.windows) do
-          if w.active then
+          if w.window_id == view.active_window_id then
             for i = #w.layers, 1, -1 do
               local layer = w.layers[i]
               if layer.kind ~= "tiled" then

@@ -75,6 +75,12 @@ let
     type = "command";
     command = "${config.home.profileDirectory}/bin/codex-thread-title";
   };
+  # Rex's session context (see rex.nix); prints nothing outside Rex.
+  rexHook = {
+    type = "command";
+    command = "/bin/sh -c '${config.home.profileDirectory}/bin/rex __internal session-start --agent codex 2>/dev/null || true'";
+    timeout = 5;
+  };
   codexHooksFile = pkgs.writeText "codex-hooks.json" (
     builtins.toJSON {
       hooks = builtins.listToAttrs (
@@ -89,7 +95,8 @@ let
                 ++ lib.optional (builtins.elem event [
                   "SessionStart"
                   "Stop"
-                ]) threadTitleHook;
+                ]) threadTitleHook
+                ++ lib.optional (event == "SessionStart" && pkgs.stdenv.hostPlatform.isDarwin) rexHook;
               }
             ];
           })
