@@ -57,11 +57,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791552540,
-        "narHash": "sha256-Bmc/by4bcW8ULjp2wDTvyPuzk7nhNYL0X3kQup1fFsg=",
+        "lastModified": 1792091398,
+        "narHash": "sha256-DMlV2qrnSyOsZzjnugspg7SC1A4jKbGYE8GdGQZ/BT8=",
         "owner": "phinze",
         "repo": "belowdeck",
-        "rev": "732b5d2ae1ab8ec871c8888c59820e7d6d19c235",
+        "rev": "1ed803f48815b00a162458816e4eae25b5f9b7bf",
         "type": "github"
       },
       "original": {
@@ -142,11 +142,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1792050013,
-        "narHash": "sha256-0S4WGqKsPWEDmalLmBgKNR30nq4vVZjocb8BN9VYJyk=",
+        "lastModified": 1792099940,
+        "narHash": "sha256-f95B4ITmxYJ13HTMHZz78jPK1i9NyInql2XVWUqMjnE=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "8f814f49002ff824e8a9ba43cf96112dc7f5948d",
+        "rev": "59bb3e8b43a3dbab62933ae404a059bb1258c0ea",
         "type": "github"
       },
       "original": {
