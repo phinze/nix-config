@@ -27,7 +27,7 @@ writeShellScriptBin "git-ssh-sign" ''
       ]
     }:$PATH"
   ${lib.optionalString (sshAuthSock != null) ''
-    # Override SSH agent socket (e.g. to use the Bitwarden agent on macOS)
+    # Override SSH agent socket (e.g. to use 1Password agent on macOS)
     export SSH_AUTH_SOCK="${sshAuthSock}"
   ''}
 

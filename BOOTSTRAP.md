@@ -2,7 +2,7 @@
 
 The order is load-bearing. GitHub auth has to come before the first switch,
 because private flake inputs are fetched at evaluation time and evaluation
-fails without it. Homebrew and Bitwarden have to be installed by hand, because
+fails without it. Homebrew and 1Password have to be installed by hand, because
 they are prerequisites of the switch that would otherwise install them.
 
 ## What the switch already sets
@@ -96,7 +96,7 @@ joins and you get `phinze-mrn-mbp-2` permanently.
 
 The account's short name must be `phinze`; paths throughout the config are
 built from it. Until the switch installs the declared browsers, Safari handles
-every web sign-in below (GitHub, Tailscale, Bitwarden).
+every web sign-in below (GitHub, Tailscale, 1Password).
 
 ## 2. Homebrew
 
@@ -114,34 +114,31 @@ Homebrew. Without it, activation prints `error: Homebrew is not installed,
 skipping...` and carries on, so the switch reports success and you are left
 with none of the casks. It does not fail, which makes it easy to miss.
 
-## 3. Bitwarden, and its SSH agent
+## 3. 1Password, and its SSH agent
 
 ```bash
-brew install --cask bitwarden
+brew install --cask 1password
 ```
 
-Use the Homebrew cask, not the Mac App Store build: the App Store one is
-sandboxed and puts its agent socket somewhere else. Log in (US region), then
-open Settings and turn on **Enable SSH agent**. Verify the socket serves keys:
+Sign in, then open Settings → Developer and turn on both **Use the SSH agent**
+and **Integrate with 1Password CLI**. `op` itself arrives with the switch but
+has no accounts until the second toggle is on. Verify the socket:
 
 ```bash
-SSH_AUTH_SOCK=~/.bitwarden-ssh-agent.sock ssh-add -l
+ls ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
 ```
 
 Nothing can declare this for you. `programs.ssh` points `IdentityAgent` at that
 socket and all commit signing goes through it (`modules/git-signing.nix`), so
 Nix can write the config that references the socket but cannot create it.
-The agent serves every SSH key item in the vault, so keep only the keys in
-active use there.
 
 Install it by hand rather than waiting for the declared cask, because you need
-a password manager to log into GitHub at step 5. 1Password is still declared
-as a fallback while the move off it settles; it no longer serves SSH.
+a password manager to log into GitHub at step 5.
 
 ## Optional: work from another machine
 
 The build and switch are long, and following along from a real keyboard beats
-reading instructions off a phone. With Homebrew and the Bitwarden agent in
+reading instructions off a phone. With Homebrew and the 1Password agent in
 place, Tailscale can come up now instead of at step 9. It is the same cask the
 config declares, so the switch treats it as already installed.
 
@@ -156,11 +153,11 @@ open -a Tailscale
 ```
 
 Approve the VPN and system extension prompts, then log in from the menu bar.
-There is no `~/.ssh/config` until the switch, so point ssh at the Bitwarden
+There is no `~/.ssh/config` until the switch, so point ssh at the 1Password
 agent and forward it explicitly:
 
 ```bash
-export SSH_AUTH_SOCK=~/.bitwarden-ssh-agent.sock
+export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
 ssh -A phinze@foxtrotbase
 ```
 
@@ -320,7 +317,7 @@ None of this is declarable:
   2026-08-14 recovery got them. Failing that, the Home Assistant value is a
   long-lived access token minted from the Home Assistant profile page, and the
   OpenWeatherMap key comes off the account page for the `Openweathermap` login
-  in Bitwarden. Validate before storing: `GET /api/` with the token as a bearer
+  in 1Password. Validate before storing: `GET /api/` with the token as a bearer
   should answer `{"message":"API running."}`, and a `data/3.0/onecall` request
   with the key should return 200. `belowdeck status` verifies the result, though
   it always reports the Stream Deck as not detected while the daemon holds the

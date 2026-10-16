@@ -34,13 +34,13 @@ let
     )
     + "\n";
 
-  # Bitwarden agent socket path on macOS (use $HOME since ~ won't expand in the script)
-  bwAgentSock = "$HOME/.bitwarden-ssh-agent.sock";
+  # 1Password agent socket path on macOS (use $HOME since ~ won't expand in the script)
+  opAgentSock = "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
 
   # Build the git-ssh-sign wrapper package
   gitSshSign = pkgs.callPackage ../../../pkgs/git-ssh-sign.nix {
     signingKeys = cfg.keys;
-    sshAuthSock = if pkgs.stdenv.hostPlatform.isDarwin then bwAgentSock else null;
+    sshAuthSock = if pkgs.stdenv.hostPlatform.isDarwin then opAgentSock else null;
   };
 in
 {
