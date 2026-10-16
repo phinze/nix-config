@@ -44,6 +44,12 @@
           "@wheel"
         ];
         download-buffer-size = 1073741824; # 1GB (default is 64MB)
+        # atuin's own CI pushes its flake builds here. Only hits while the
+        # atuin input doesn't override nixpkgs (see the note in flake.nix).
+        extra-substituters = [ "https://atuin.cachix.org" ];
+        extra-trusted-public-keys = [
+          "atuin.cachix.org-1:aNJ8IU+udXIYNtrF+LHH8yIzXqgmva4hVnuHq2REgK0="
+        ];
       };
       channel.enable = false;
       registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;

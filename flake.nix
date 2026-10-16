@@ -77,28 +77,27 @@
     # Keys, hostnames and coordinates kept out of this public repo.
     nix-private.url = "git+https://github.com/phinze/nix-private.git";
 
-    # Pinned by hand, deliberately. This was release-tracked for a while on the
-    # theory that tags would be safe where main wasn't, but that theory died:
-    # v18.19.0 fails exactly the way main did, with an unresolved libssl.so.3.
+    # Upstream's flake, not nixpkgs'. We sat on v18.18.1 for a while because
+    # v18.19.0's move to native-tls (atuinsh/atuin#3807) left the installed
+    # binary with no RPATH for libssl.so.3, so it died the moment home-manager
+    # ran `atuin init fish`. v18.24.0 patchelfs the RPATH in (atuinsh/atuin#3852),
+    # builds without the implicit arboard feature (#610), and is the first tag
+    # with threads (`atuin resume`), which is what we came for.
     #
-    # The cause isn't instability, it's packaging. v18.19.0 migrated TLS from
-    # rustls to native-tls (atuinsh/atuin#3807), which links OpenSSL
-    # dynamically, and their atuin.nix leaves the installed binary with no
-    # RPATH for it. Their build doesn't notice because it exports
-    # LD_LIBRARY_PATH for a proc-macro and never drops it, so postInstall runs
-    # the binary happily and CI only ever runs `nix build`. Ours dies the
-    # moment home-manager calls `atuin init fish`.
+    # Two things worth knowing before you touch this. Their CI only runs
+    # `nix build`, so a broken binary can still build cleanly; after a bump,
+    # run `atuin init fish` and `atuin doctor`, not just the build. And don't
+    # "simplify" this to nixpkgs' atuin: atuin runs sqlx migrations with
+    # validation on, so a binary older than the history DB refuses to open it,
+    # and nixpkgs trails upstream by several releases.
     #
-    # So: stay on v18.18.1, which predates the migration and links no OpenSSL
-    # at all. Unpin once upstream ships the RPATH fix.
-    #
-    # Don't "simplify" this to nixpkgs' atuin. The local history DB has
-    # migrations (20260709214605_shell and the 20260723* indexes) that nixpkgs'
-    # 18.15.2/18.16.1 have never heard of, and atuin runs sqlx migrations with
-    # validation on, so an older binary refuses to open the DB at all. v18.18.1
-    # is the oldest stable release that carries all of them.
-    atuin.url = "github:atuinsh/atuin/v18.18.1";
-    atuin.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    # No `inputs.nixpkgs.follows` on purpose. Upstream builds with crane, one
+    # derivation per crate, which saturates foxtrotbase for a long while.
+    # Building against their own nixpkgs pin keeps our derivation identical to
+    # the one their CI pushes to atuin.cachix.org (see modules/nixos/baseline.nix),
+    # so Linux substitutes instead of compiling. They don't cache Darwin, so the
+    # Mac compiles regardless.
+    atuin.url = "github:atuinsh/atuin/v18.24.0";
 
     claude-code-nix.url = "github:sadjow/claude-code-nix";
     claude-code-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
