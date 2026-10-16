@@ -267,6 +267,19 @@ rigs that got all three reported back cleanly every time:
 `dispatch` refuses a rig whose agent is already running; when it does, fall
 back to `send`.
 
+**Starting a rig with no ticket.** `rig new` names the rig by slugging its
+positional kickoff, so keep that to a short title of a few words, and pipe the
+full brief (provenance, limits, report-back line) on stdin. Rig saves the pipe
+to `KICKOFF.md` and points the agent at it:
+
+    printf '%s' "$BRIEF" | rig new 'adopt atuin threads' --repo phinze/nix-config
+
+Putting the whole brief in the positional argument names the rig after its
+opening words, which is how a cos rig ends up called
+`chief-staff-rig-paul-adopt-atuin-v18-24-resume-verified-not`. Ticketed rigs
+don't have this problem: `rig up` names them from the tracker, and `--context`
+carries the brief.
+
 Task rigs know the `cos` address from their generated instructions and may
 send unprompted; answer with `rig reply`. Discoveries a task rig relays to its
 project (`rig relay`) arrive at the project rig as messages, not in a notify
