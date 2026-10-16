@@ -285,6 +285,11 @@ in
   programs.atuin = {
     enable = true;
     package = inputs.atuin.packages.${pkgs.stdenv.hostPlatform.system}.atuin;
+    # Threads need the daemon. home-manager runs it as a socket-activated
+    # systemd user service on NixOS and a launchd agent on the Mac. It also
+    # becomes the history writer; atuin falls back to writing locally if it's
+    # down.
+    daemon.enable = true;
     settings = {
       # Nix will handle updates tyvm
       update_check = false;
@@ -313,6 +318,40 @@ in
       sync = {
         records = true;
       };
+
+      # Capture Claude Code, Codex, opencode and pi sessions as threads, synced
+      # (E2E-encrypted) through the hosted record store like history, so
+      # `atuin resume` can pick a session up on the other machine. Full
+      # capture, tool calls and edit diffs included, was a deliberate choice:
+      # resume is much less useful without them. The daemon does the capturing
+      # by watching the agents' transcript dirs; no agent hooks are needed.
+      threads.capture = true;
+
+      # Threads carry tool output, so anything an agent reads or cats ends up
+      # in the record store unless atuin knows it's a credential. The built-in
+      # list covers the usual suspects (.env, ssh keys, gh/aws/gcloud/kube,
+      # Claude's and Codex's auth.json, *.key, atuin's key). These are ours.
+      security.sensitive_files = [
+        "~/.local/share/pim/**"
+        "~/.config/veans/credentials.yml"
+        "~/.config/vikunja/initial-password"
+        "~/.config/miren/clientconfig.yaml*"
+        "~/.config/multipass/**"
+        "~/.codex/.credentials.json"
+        "~/.config/fabric/.claude_oauth"
+        "~/.config/lithosai/token"
+        "~/.config/pi/mcp-oauth-key"
+        "~/.config/instaloader/session-*"
+        "~/.local/share/atuin/session"
+        "~/.atuin/data/session"
+      ];
+
+      # Commands whose output is never stored, for an agent's calls as well as
+      # ours. atuin already drops `op read`, `gh auth token` and friends; these
+      # are the 1Password verbs it doesn't know print secrets.
+      output.command_filter = [
+        "^op (item get|inject)"
+      ];
 
       # Suggestions from default config to make stats more interesting
       stats = {
