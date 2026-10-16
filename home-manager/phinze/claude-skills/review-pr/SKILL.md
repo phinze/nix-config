@@ -332,10 +332,13 @@ omit `event` to create a pending review.
 
 After posting, confirm each returned or listed comment has the intended body,
 commit id, path, and a non-null position. A force-push between assembly and
-send can strand an anchor. Only after GitHub reflects the complete artifact
-should you offer to clear the corresponding local drafts from Recto. Delete
-them after the user agrees. If posting or verification fails, leave the drafts
-intact.
+send can strand an anchor. If posting or verification fails, the drafts are
+what lets you retry.
+
+Leave the local Recto drafts alone after a successful post, and don't offer to
+clear them. Rig teardown runs `recto state forget`, which ends them with the
+workspace. Outside a rig they're inert, since Recto only restores a draft for
+the same PR and head.
 
 ## Input channels
 
