@@ -1,6 +1,6 @@
 ---
 name: session-history
-description: Search and summarize Claude Code session history. Use when the user wants to look at past conversations, find sessions about a topic, or reconstruct a debugging narrative.
+description: Search and summarize Claude Code session history, on this host or across machines and agents through atuin threads. Use when the user wants to look at past conversations, find sessions about a topic, find what a rig did (even after teardown or on the other machine), or reconstruct a debugging narrative.
 user_invocable: true
 ---
 
@@ -53,6 +53,41 @@ Each JSONL entry is a single line that can be megabytes long — tool
 results, file reads, and attachments are inlined. Filename-only searches
 (`search`) and field-extracting `jq` queries are cheap; matching or
 extracting whole lines is not.
+
+## Atuin threads: the other machine, and other agents
+
+The JSONL files only cover sessions that ran on *this* host. Since atuin
+v18.24, the atuin daemon on foxtrotbase and the Mac also captures every
+Claude Code, Codex, opencode and pi session as a **thread** and syncs it
+through the record store. Reach for threads when the session might have run
+on the other machine, in another agent, or in a rig that has since been torn
+down:
+
+```
+atuin threads search "<words>" [--harness claude-code] [--limit N] --style json
+atuin threads list --style json            # newest first
+atuin threads show <id|harness-id|latest> --style plain
+```
+
+`search` matches whole words, across titles, message text and tool-call
+*input*. It doesn't search tool output. A rig session's title is the rig
+name, so `atuin threads search mir-2102` finds a rig's conversation. Every
+thread has one atuin id on every machine. `list` and `search` show its last
+8 hex digits, and `show` also accepts Claude's own session id.
+
+What threads don't have: images, reasoning (only a marker that it
+happened), and anything past 64 KiB in a single tool call's input or output
+(the start and end are kept). Credentials atuin recognizes are `****`. They
+also only reach back to when capture was turned on (2026-10-16), unless
+someone ran `atuin threads import`. So keep using the JSONL path and
+`claude-sessions.sh` for forensics on this host: `tools-audit`,
+`permissionMode`, full tool output, and anything older.
+
+To *continue* a session elsewhere, rather than read it, the user runs
+`atuin resume <id>`. It writes the transcript back out from sync and
+resumes it, falling back to a same-named repo checkout when the original
+directory doesn't exist on this machine. That's the user's move: don't
+resume sessions on their behalf.
 
 ## Process
 
