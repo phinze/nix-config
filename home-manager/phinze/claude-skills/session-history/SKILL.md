@@ -6,16 +6,72 @@ user_invocable: true
 
 # Session History
 
-Search and summarize conversations from Claude Code sessions.
+Search and summarize conversations from coding-agent sessions: Claude Code,
+Codex and pi, on foxtrotbase and the Mac.
 
 If invoked with an argument, treat it as the search term, topic, or date to
 find across sessions.
 
-## Helper script
+There are two sources. **Atuin threads are the default**: every agent
+session on both machines, synced, searchable, with one id everywhere. The
+**raw Claude JSONL** on this host is the forensic fallback, for the few
+things threads don't keep.
 
-This skill includes `claude-sessions.sh` for common operations. Use it
-instead of writing ad hoc jq/rg pipelines. Run it without arguments for
-usage.
+## Atuin threads (start here)
+
+The atuin daemon on foxtrotbase and the Mac captures every Claude Code,
+Codex, opencode and pi session as a **thread** and syncs it through atuin's
+encrypted record store. Both machines' full history was imported on
+2026-10-16, so threads reach back as far as the transcripts on disk did.
+That includes sessions from the other machine, other agents, and rigs that
+have since been torn down.
+
+```
+atuin threads search "<words>" [--harness claude-code|codex|pi] [--limit N] --style json
+atuin threads list --style json            # newest first; message_count, tokens, cwd, branch, model
+atuin threads show <id|harness-id|latest> --style json
+```
+
+`search` matches whole words across titles, message text and tool-call
+*input*. It doesn't search tool output. A Claude rig session is titled with
+the rig name, so `atuin threads search mir-2102` finds that rig's
+conversation; for other agents, match on `cwd` (`~/workspaces/<rig>/...`). Every
+thread has one atuin id on every machine. `list` and `search` show its last
+8 hex digits, and `show` also accepts the agent's own session id.
+
+`show --style json` returns `session` (cwd, branch, model, timestamps,
+tokens, message_count) and `messages[]`. Each message has `role`,
+`timestamp`, `cwd`, `git_branch` and `content[]` blocks: `text`, `tool_use`
+(`name`, `input`) and `tool_result` (`content`, `is_error`). Filter that with
+`jq` instead of reading a whole thread, which can run to thousands of
+messages.
+
+What threads don't keep: images, reasoning (only a marker that it
+happened), `permissionMode`, and anything past 64 KiB in one tool call's
+input or output (the start and end are kept; in practice that's almost only
+image reads). Credentials atuin recognizes are `****`.
+
+To *continue* a session elsewhere, rather than read it, the user runs
+`atuin resume <id>`. It writes the transcript back out from sync and
+resumes it, falling back to a same-named repo checkout when the original
+directory doesn't exist on this machine. That's the user's move: don't
+resume sessions on their behalf.
+
+## Raw Claude JSONL (forensics on this host)
+
+Drop to the transcripts on disk when you need what threads leave out:
+
+- **Tool-call audits.** `tools-audit` tells a user denial from a rule
+  block from a tool error using `permissionMode`; threads only have
+  `is_error`.
+- **Searching tool output** across many sessions (`claude-sessions.sh
+  search`). With threads, that means dumping and grepping JSON per thread.
+- **Exact user-vs-tool-result counts** (`summary`'s `U`/`T` columns).
+
+### Helper script
+
+`claude-sessions.sh` covers the common operations. Use it instead of writing
+ad hoc jq/rg pipelines. Run it without arguments for usage.
 
 ```
 claude-sessions.sh dir [path]                              # session dir for a project
@@ -38,7 +94,7 @@ The script lives next to this skill file. Run it with its full path:
 
     ~/.claude/skills/session-history/claude-sessions.sh
 
-## Session file locations
+### Session file locations
 
 Claude Code sessions are JSONL files stored per-project:
 
@@ -54,58 +110,24 @@ results, file reads, and attachments are inlined. Filename-only searches
 (`search`) and field-extracting `jq` queries are cheap; matching or
 extracting whole lines is not.
 
-## Atuin threads: the other machine, and other agents
-
-The JSONL files only cover sessions that ran on *this* host. Since atuin
-v18.24, the atuin daemon on foxtrotbase and the Mac also captures every
-Claude Code, Codex, opencode and pi session as a **thread** and syncs it
-through the record store. Reach for threads when the session might have run
-on the other machine, in another agent, or in a rig that has since been torn
-down:
-
-```
-atuin threads search "<words>" [--harness claude-code] [--limit N] --style json
-atuin threads list --style json            # newest first
-atuin threads show <id|harness-id|latest> --style plain
-```
-
-`search` matches whole words, across titles, message text and tool-call
-*input*. It doesn't search tool output. A rig session's title is the rig
-name, so `atuin threads search mir-2102` finds a rig's conversation. Every
-thread has one atuin id on every machine. `list` and `search` show its last
-8 hex digits, and `show` also accepts Claude's own session id.
-
-What threads don't have: images, reasoning (only a marker that it
-happened), and anything past 64 KiB in a single tool call's input or output
-(the start and end are kept). Credentials atuin recognizes are `****`. They
-also only reach back to when capture was turned on (2026-10-16), unless
-someone ran `atuin threads import`. So keep using the JSONL path and
-`claude-sessions.sh` for forensics on this host: `tools-audit`,
-`permissionMode`, full tool output, and anything older.
-
-To *continue* a session elsewhere, rather than read it, the user runs
-`atuin resume <id>`. It writes the transcript back out from sync and
-resumes it, falling back to a same-named repo checkout when the original
-directory doesn't exist on this machine. That's the user's move: don't
-resume sessions on their behalf.
-
 ## Process
 
-1. **Use the helper script.** Only fall back to raw jq for unusual
-   extraction needs.
+1. **Start with threads.** `atuin threads search` to find candidates, then
+   `show --style json` filtered with jq. Go to the JSONL only for the
+   forensic cases above, and remember it only covers this host.
 
-2. **Triage efficiently.** Use `search` to narrow down candidates before
-   extracting full content.
+2. **Triage efficiently.** Narrow down candidates before extracting full
+   content.
 
-3. **Summarize selectively.** Extract only user messages first to
-   understand the arc. Only extract assistant messages for the specific
+3. **Summarize selectively.** Read user messages first to understand the
+   arc. Only pull assistant messages and tool calls for the specific
    sessions the user cares about.
 
-   For counting questions ("how many user messages today?", "how active
-   was I in this repo?"), `summary` already emits `(U N, T M)` per
-   session — sum those columns rather than writing ad hoc jq. The `U`
-   count excludes tool-result messages; naive `type == "user"` filters
-   conflate the two.
+   For counting questions ("how active was I in this repo?"), `threads list
+   --style json` has `message_count` and tokens per thread. For exact user
+   message counts on this host, `summary` emits `(U N, T M)` per session —
+   sum those columns rather than writing ad hoc jq. The `U` count excludes
+   tool-result messages; naive `type == "user"` filters conflate the two.
 
 4. **For multi-session narratives**, establish chronological order using
    file timestamps, then read sessions in order to build the story.

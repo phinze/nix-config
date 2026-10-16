@@ -122,12 +122,15 @@ it. Silence in a domain is a fine answer.
 
 **Sessions** (unfinished work, working theses, debugging context):
 
-- Delegate to the `session-history` skill. `claude-sessions.sh summary --all
-  --days 3` gives one line per session; `recap <session>` digs in. This only
-  covers Claude sessions, so a rig launched with cdx, agy, or pi leaves
-  nothing here: lean on the daily notes and the rig's own kickoff for those.
-  For the personal read, filter out sessions under `~/workspaces/mir-*`,
-  `~/workspaces/pr-*`, and the legacy `worktrees/github.com/mirendev` layout.
+- Delegate to the `session-history` skill. `atuin threads list --style json`
+  gives every recent session from both machines and every agent (Claude,
+  Codex, pi), each with its title, cwd, `updated_at` and `message_count`. A
+  Claude rig session is titled with the rig name; for others, match on cwd. Filter by `updated_at` for
+  the window you want, then `atuin threads show <id> --style json` to dig
+  into one. Antigravity (agy) isn't captured, so lean on the daily notes and
+  the rig's own kickoff for those rigs. For the personal read, filter out
+  threads whose cwd is under `~/workspaces/mir-*`, `~/workspaces/pr-*`, or
+  the legacy `worktrees/github.com/mirendev` layout.
 
 ## Synthesis posture (both modes)
 
