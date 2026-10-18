@@ -67,15 +67,17 @@ lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     -- opens the board over the session you are actually looking at, and rig
     -- stays the only place that knows how to size, paint, and place the layer.
     --
-    -- Backgrounded so the server is not waiting on us; rig returns as soon
-    -- as the layer exists.
+    -- rex.exec waits, but rig returns as soon as the layer exists, and the
+    -- server keeps handling keys while a config action waits. preview.15
+    -- took os.execute away in favour of it.
     rex.action({
       name = "rig_radar",
       title = "Rig Radar",
       category = "Rig",
       keywords = "rig radar switch session hop",
       run = function(ctx)
-        os.execute("REX_SESSION=" .. ctx.session_id .. " " .. rig .. " radar --popup >/dev/null 2>&1 &")
+        rex.exec({ rig, "radar", "--popup" },
+          { env = { REX_SESSION = ctx.session_id }, stdout = false, stderr = false })
       end,
     })
 
