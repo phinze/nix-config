@@ -16,12 +16,6 @@
   ...
 }:
 let
-  # The CLI ships inside the app bundle and Rex puts nothing on PATH, so this
-  # is the `rex` that agents, the skill, and the hooks below all run.
-  rexCli = pkgs.writeShellScriptBin "rex" ''
-    exec "/Applications/Rex.app/Contents/Helpers/Rex Server.app/Contents/MacOS/rex" "$@"
-  '';
-
   # What `rex skill setup` installs, declared here because setup edits
   # ~/.claude/settings.json and ~/.codex/hooks.json in place, and both are
   # ours. The stub defers to `rex __internal skill`, so the guide follows
@@ -43,7 +37,17 @@ let
   '';
 in
 lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-  home.packages = [ rexCli ];
+  # Rex prepends its CLI's directory to every terminal's PATH and also exports
+  # it as REX_BIN_DIR, which is the half that survives nix-darwin's PATH reset
+  # in /etc/zshenv and fish's login init. Putting it back is Rex's own
+  # guidance for that case, and it follows wherever the bundle keeps the CLI:
+  # build 1203 renamed `Helpers/Rex Server.app` to `Rex Server.rex` and broke
+  # the wrapper that used to live here by naming the path.
+  programs.fish.shellInit = ''
+    if set -q REX_BIN_DIR
+      fish_add_path --global --path --prepend $REX_BIN_DIR
+    end
+  '';
 
   # Pi reads ~/.claude/skills too, so these two cover every agent we run.
   home.file.".claude/skills/rex/SKILL.md".source = rexSkill;

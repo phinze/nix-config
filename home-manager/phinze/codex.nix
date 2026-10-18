@@ -78,7 +78,7 @@ let
   # Rex's session context (see rex.nix); prints nothing outside Rex.
   rexHook = {
     type = "command";
-    command = "/bin/sh -c '${config.home.profileDirectory}/bin/rex __internal session-start --agent codex 2>/dev/null || true'";
+    command = "/bin/sh -c '\"$REX_BIN_DIR/rex\" __internal session-start --agent codex 2>/dev/null || true'";
     timeout = 5;
   };
   codexHooksFile = pkgs.writeText "codex-hooks.json" (
