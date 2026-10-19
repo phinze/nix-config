@@ -101,7 +101,9 @@ lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
 
   # The daily sweep keeps normal churn bounded. This second trigger is the
   # seatbelt: once / reaches 80%, run the same conservative seven-day policy
-  # within an hour instead of waiting for the next night.
+  # within an hour instead of waiting for the next night. If that isn't
+  # enough, it goes on to collect dead Nix paths and Go module versions no
+  # checkout references.
   systemd.user.services.dev-disk-pressure-cleanup = {
     Unit.Description = "Prune old development storage under disk pressure";
     Service = {
