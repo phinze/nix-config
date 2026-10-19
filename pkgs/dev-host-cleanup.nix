@@ -123,11 +123,13 @@ pkgs.writeShellApplication {
       echo "dev-host-cleanup: pruning Go module versions no checkout references"
       refs=$(mktemp)
       trap 'rm -f "$refs"' EXIT
-      # The cache spells uppercase letters as !lowercase.
+      # The cache spells uppercase letters as !lowercase. A go.sum can vanish
+      # mid-scan when a rig is torn down; that must not abort the sweep
+      # before the pressure notice.
       { find "$HOME/workspaces" "$HOME/src" "$HOME/worktrees" \
           \( -name .git -o -name .jj -o -name node_modules -o -name .direnv \) -prune \
           -o -name go.sum -type f -print0 2>/dev/null || true; } \
-        | xargs -0 -r cat \
+        | { xargs -0 -r cat 2>/dev/null || true; } \
         | awk '{
             v = $2; sub(/\/go\.mod$/, "", v); e = ""
             for (i = 1; i <= length($1); i++) {
