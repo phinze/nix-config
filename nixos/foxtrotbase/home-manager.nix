@@ -14,6 +14,7 @@
       inherit inputs outputs;
       nodeConfig = {
         isMemexHost = true;
+        isMemexObsidianBridgeHost = true;
         isNixConfigSyncHost = true;
       };
     };

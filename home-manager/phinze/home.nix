@@ -60,6 +60,8 @@ in
     ./modules/rig-surfaces.nix
     # Hourly memex commit+push (gated by nodeConfig.isMemexHost)
     ./modules/memex-autocommit.nix
+    # Obsidian Sync <-> git bridge for memex (gated by nodeConfig.isMemexObsidianBridgeHost)
+    ./modules/memex-obsidian-bridge.nix
     # Hourly main reconciliation + input bumps (gated by nodeConfig.isNixConfigSyncHost)
     ./modules/nix-config-sync.nix
     ./modules/nix-config-sync-darwin.nix

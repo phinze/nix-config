@@ -24,4 +24,5 @@ pkgs: rec {
   osc-copy = pkgs.callPackage ./osc-copy { };
   whoson = pkgs.callPackage ./whoson.nix { };
   rex-terminfo = pkgs.callPackage ./rex-terminfo { };
+  obsidian-headless = pkgs.callPackage ./obsidian-headless { };
 }
