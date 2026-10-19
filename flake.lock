@@ -56,11 +56,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792091398,
-        "narHash": "sha256-DMlV2qrnSyOsZzjnugspg7SC1A4jKbGYE8GdGQZ/BT8=",
+        "lastModified": 1792269933,
+        "narHash": "sha256-2Fjsv3ueMDiD18dr1gs+4PHIiWEm1/EpECQEUp2Ta5k=",
         "owner": "phinze",
         "repo": "belowdeck",
-        "rev": "1ed803f48815b00a162458816e4eae25b5f9b7bf",
+        "rev": "514df529830e7796e603e6e097eeb7efd19a94c8",
         "type": "github"
       },
       "original": {
