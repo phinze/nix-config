@@ -55,6 +55,14 @@ let
       # never write here at the same time.
       ob sync --path "$vault"
 
+      # Obsidian doesn't end files with a newline, and agents append diary
+      # lines with `>>`, which would glue their line onto the end of Paul's.
+      while IFS= read -r -d "" f; do
+        if [[ -s "$f" && -n "$(tail -c1 "$f")" ]]; then
+          echo >> "$f"
+        fi
+      done < <(git ls-files -z --modified --others --exclude-standard -- '*.md')
+
       git add -A
       if ! git diff --cached --quiet; then
         mapfile -t changed < <(git diff --cached --name-only)
