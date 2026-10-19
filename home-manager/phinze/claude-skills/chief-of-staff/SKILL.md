@@ -173,9 +173,15 @@ it. Silence in a domain is a fine answer.
 - **"idle" doesn't mean "waiting on Paul".** The board's agent column is a
   transcript-mtime guess (see PERS-25): it reads stale "working" after a park
   and can't tell done from blocked on input. For an idle rig whose next step
-  matters, read the latest recap with a read-only `tmux capture-pane -p` of its
-  agent pane (on its host: over ssh for a foxtrotbase rig). That recap is the only reliable "waiting on you" signal until
-  rig grows a hook-driven state.
+  matters, read the latest recap with a read-only `tmux capture-pane -e -p` of
+  its agent pane (on its host: over ssh for a foxtrotbase rig). That recap is
+  the only reliable "waiting on you" signal until rig grows a hook-driven state.
+- **The `❯` prompt line is not Paul's words.** Claude Code fills an empty
+  prompt with a gray suggested next message, and a plain `capture-pane -p`
+  strips the color, so the suggestion reads exactly like something Paul typed
+  and left unsent. Capture with `-e`: text after `❯` wrapped in `ESC[2m` (dim)
+  is the suggestion. Only undimmed text there is Paul's draft. When in doubt,
+  leave the prompt line out of the brief entirely.
 - **Convert relative dates** to absolute when retelling ("Friday" →
   "2026-05-08").
 - **Never leave a bare ticket or PR number.** Every MIR-NNNN, PERS-NN,
