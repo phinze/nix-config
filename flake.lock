@@ -141,11 +141,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1792516299,
-        "narHash": "sha256-ouNjKgZ7t9c87dqDLinmrOKLMyykWas3iE3jBmgMC4Y=",
+        "lastModified": 1792524255,
+        "narHash": "sha256-Bs7Flt4/H/iacDv/7MFhxEhbS0O0xPn1AQLH/cTVmFE=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "e68e375d22866ba36c1eb0b4cc46db96c65f6a4e",
+        "rev": "dfffc8c43f48692db02eac092dbe208293fda224",
         "type": "github"
       },
       "original": {
@@ -430,14 +430,14 @@
     "miren-cli": {
       "flake": false,
       "locked": {
-        "lastModified": 1792079917,
-        "narHash": "sha256-Z1mqPtWJ1VqcWbFg6h7TJzBEDhnij4eflNc0fyaCW6s=",
+        "lastModified": 1792521436,
+        "narHash": "sha256-4gDqGQXBhM4rFooYONRlOAhwFRTmqtuXZsHWLMeVWMI=",
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.17.0/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.17.1/miren-linux-amd64.zip"
       },
       "original": {
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.17.0/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.17.1/miren-linux-amd64.zip"
       }
     },
     "multipass": {
