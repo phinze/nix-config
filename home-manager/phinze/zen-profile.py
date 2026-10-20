@@ -131,8 +131,8 @@ def apply_routes(profile, declared_path):
         want = {
             "routes": [
                 {
-                    # Derived from the rule itself so an unchanged config
-                    # produces an identical file and apply stays a no-op.
+                    # Derived from the rule so rewrites are stable. Zen only
+                    # uses ids to edit routes in its dialog.
                     "id": str(uuid.uuid5(uuid.NAMESPACE_URL, r["match"] + ":" + r["url"])),
                     "reference": r["url"],
                     "openIn": resolve(r["space"]),
@@ -148,7 +148,13 @@ def apply_routes(profile, declared_path):
 
     path = profile / ROUTES_FILE
     have = lz4_read(path) if path.exists() else None
-    if have == want:
+
+    # Ignore ids, so the same rules entered through the dialog count as a match.
+    def rules(data):
+        routes = [{k: v for k, v in r.items() if k != "id"} for r in data.get("routes", [])]
+        return routes, data.get("defaultRouteExternal")
+
+    if have is not None and rules(have) == rules(want):
         return
     if zen_running():
         print("zen-profile: routes changed but Zen is running; quit Zen and run `zen-profile apply`", file=sys.stderr)
