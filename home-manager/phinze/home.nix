@@ -46,7 +46,7 @@ in
     ./modules/personal-tasks.nix
     # Karabiner-Elements for keyboard remapping (incl. R400 → Handy)
     ./karabiner.nix
-    # Zen Space Routing rules (mirendev links → Miren space)
+    # Zen profile: Space Routing rules and about:config prefs
     ./zen.nix
     # Tmux terminal multiplexer
     ./tmux.nix

@@ -1,10 +1,11 @@
-"""Show or apply Zen's Space Routing rules.
+"""Show or apply the Zen profile settings zen.nix declares.
 
-Zen keeps its routes in zen-space-routing.jsonlz4 in the profile, edited only
-through a settings dialog. `zen-routes` prints what's live with space names
-instead of UUIDs; `zen-routes apply` replaces the routes with the ones zen.nix
-declares. Zen holds the routes in memory and rewrites the file whenever that
-dialog saves, so apply refuses to write while Zen is running.
+`zen-profile apply` installs user.js, which Zen only reads at startup, so it's
+safe to write any time. It also replaces the Space Routing rules in
+zen-space-routing.jsonlz4. Zen holds those in memory and rewrites the file
+whenever its routing dialog saves, so routes are only written while Zen is
+quit. Bare `zen-profile` prints the live routes with space names instead of
+UUIDs, since otherwise they're only visible in that dialog.
 """
 
 import configparser
@@ -104,7 +105,18 @@ def zen_running():
     return subprocess.run(["/usr/bin/pgrep", "-x", "zen"], capture_output=True).returncode == 0
 
 
-def apply(profile, declared_path):
+def apply_user_js(profile, source):
+    path = profile / "user.js"
+    text = pathlib.Path(source).read_text()
+    if path.exists() and path.read_text() == text:
+        return
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(text)
+    tmp.replace(path)
+    print("zen-profile: wrote user.js (takes effect next time Zen starts)")
+
+
+def apply_routes(profile, declared_path):
     declared = json.loads(pathlib.Path(declared_path).read_text())
     by_name = spaces(profile)
 
@@ -131,7 +143,7 @@ def apply(profile, declared_path):
             "defaultRouteExternal": resolve(declared["defaultExternal"]),
         }
     except KeyError as e:
-        print(f"zen-routes: no Zen space named {e}; leaving routes alone", file=sys.stderr)
+        print(f"zen-profile: no Zen space named {e}; leaving routes alone", file=sys.stderr)
         return
 
     path = profile / ROUTES_FILE
@@ -139,26 +151,27 @@ def apply(profile, declared_path):
     if have == want:
         return
     if zen_running():
-        print("zen-routes: routes changed but Zen is running; quit Zen and run `zen-routes apply`", file=sys.stderr)
+        print("zen-profile: routes changed but Zen is running; quit Zen and run `zen-profile apply`", file=sys.stderr)
         return
 
     declared_refs = {r["reference"] for r in want["routes"]}
     for r in (have or {}).get("routes", []):
         if r["reference"] not in declared_refs:
-            print(f"zen-routes: dropping undeclared route {r['reference']}", file=sys.stderr)
+            print(f"zen-profile: dropping undeclared route {r['reference']}", file=sys.stderr)
     if have is not None:
         path.with_suffix(".jsonlz4.bak").write_bytes(path.read_bytes())
     lz4_write(path, want)
-    print(f"zen-routes: wrote {len(want['routes'])} route(s)")
+    print(f"zen-profile: wrote {len(want['routes'])} route(s)")
 
 
 def main():
     profile = profile_dir()
     if profile is None or not (profile / "zen-sessions.jsonlz4").exists():
-        print("zen-routes: no Zen profile found", file=sys.stderr)
+        print("zen-profile: no Zen profile found", file=sys.stderr)
         return
-    if len(sys.argv) > 2 and sys.argv[1] == "apply":
-        apply(profile, sys.argv[2])
+    if len(sys.argv) > 3 and sys.argv[1] == "apply":
+        apply_user_js(profile, sys.argv[3])
+        apply_routes(profile, sys.argv[2])
     else:
         show(profile)
 
