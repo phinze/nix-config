@@ -15,6 +15,8 @@ const CTL = "chicagotoollibrary.org";
 const PERSONAL = "phinze.com";
 
 export default {
+  // Which Zen space a URL lands in (e.g. mirendev links → Miren) is Zen's
+  // Space Routing, declared in zen.nix, not a handler here.
   defaultBrowser: "Zen",
 
   options: {
