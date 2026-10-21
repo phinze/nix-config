@@ -60,8 +60,6 @@ in
     ./modules/dev-cleanup.nix
     # rig serve on foxtrotbase, and the Mac radar's surface pointing at it
     ./modules/rig-surfaces.nix
-    # Standing ssh from the Mac to foxtrotbase, for agent and bankshot under Rex
-    ./modules/ssh-tether.nix
     # Hourly memex commit+push (gated by nodeConfig.isMemexHost)
     ./modules/memex-autocommit.nix
     # Obsidian Sync <-> git bridge for memex (gated by nodeConfig.isMemexObsidianBridgeHost)
