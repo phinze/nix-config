@@ -430,14 +430,14 @@
     "miren-cli": {
       "flake": false,
       "locked": {
-        "lastModified": 1792521436,
-        "narHash": "sha256-4gDqGQXBhM4rFooYONRlOAhwFRTmqtuXZsHWLMeVWMI=",
+        "lastModified": 1792596572,
+        "narHash": "sha256-0Ssf9flrnMT8Qc59afNMPmOv/EpTx4Cx5r3xv/473Yc=",
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.17.1/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.17.2/miren-linux-amd64.zip"
       },
       "original": {
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.17.1/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.17.2/miren-linux-amd64.zip"
       }
     },
     "multipass": {
@@ -987,11 +987,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792522695,
-        "narHash": "sha256-jTLo+OAKTDjIOEv2YA8xKTkqp1zZ+ZwXjztgXj6E7bk=",
+        "lastModified": 1792595242,
+        "narHash": "sha256-kH/E0uJDslOgYcnmU+c0cm6HrUjsEtvZQKZtuQ1+uvo=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "bb286c34998a498df925c7a7b4d69aea8c44931c",
+        "rev": "f19490ac889eabb05bdb7e8dcb85225ee75bd87b",
         "type": "github"
       },
       "original": {
