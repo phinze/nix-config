@@ -34,6 +34,27 @@ if [[ -n "$TMUX" ]]; then
   debug "sent to $pane_tty with tmux passthrough wrapper"
 else
   debug "not in tmux, sending directly"
-  # Outside tmux: send directly (may need /dev/tty fallback)
-  printf '\033]52;c;%s\a' "$encoded"
+
+  # Outside tmux, stdout is the terminal when a person runs this, but not when
+  # an agent does: Claude Code's Bash tool captures stdout, and the sequence
+  # lands in the tool result instead of reaching the terminal. tmux hid this by
+  # handing us the pane's tty; in Rex (or any bare terminal) we find it
+  # ourselves, from the first ancestor with a terminal on one of its stdio fds.
+  out=/dev/stdout
+  if [[ ! -t 1 ]]; then
+    pid=$$
+    while [[ "$pid" -gt 1 && "$out" == /dev/stdout ]]; do
+      for fd in 0 1 2; do
+        target=$(readlink "/proc/$pid/fd/$fd" 2>/dev/null)
+        if [[ "$target" == /dev/pts/* || "$target" == /dev/tty* ]]; then
+          out=$target
+          break
+        fi
+      done
+      pid=$(awk '/^PPid:/ {print $2}' "/proc/$pid/status" 2>/dev/null || echo 1)
+    done
+  fi
+  debug "writing to $out"
+
+  printf '\033]52;c;%s\a' "$encoded" > "$out"
 fi
