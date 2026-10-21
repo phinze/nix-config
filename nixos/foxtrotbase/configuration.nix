@@ -19,6 +19,9 @@
 
     # Shutdown safety for NBD device hangs
     ../../modules/nixos/shutdown-safety.nix
+
+    # Rex login server, reached from the Mac over Tailscale Serve
+    ../../modules/nixos/rex.nix
   ];
 
   # Use the systemd-boot EFI boot loader.

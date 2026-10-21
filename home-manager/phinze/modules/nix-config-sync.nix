@@ -43,6 +43,8 @@ let
     "miren-brand"
     "iso"
     "multipass"
+    # Rex server, preview channel (needs /etc/nix/netrc; see modules/nixos/rex.nix)
+    "rex"
     # Narrow nixpkgs fast lane; see the note above
     "nixpkgs-small"
   ];

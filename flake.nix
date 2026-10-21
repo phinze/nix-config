@@ -147,6 +147,14 @@
     multipass.url = "git+https://github.com/mirendev/multipass.git";
     multipass.inputs.nixpkgs.follows = "nixpkgs-unstable";
     multipass.inputs.flake-utils.follows = "flake-utils";
+
+    # Rex's official flake for the preview channel: the release binary plus a
+    # NixOS module (see modules/nixos/rex.nix). The channel URL serves the
+    # newest preview and the lock pins one, so it's a syncInput like any
+    # branch. Fetching it needs the alpha token in /etc/nix/netrc until Rex's
+    # first stable release.
+    rex.url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
+    rex.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =

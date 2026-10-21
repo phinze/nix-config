@@ -804,6 +804,23 @@
         "type": "github"
       }
     },
+    "rex": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792593189,
+        "narHash": "sha256-aEMTearzo/76KJ3PCK6mohy4RyHb1YnHgMfcdAWCAUo=",
+        "type": "tarball",
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.3.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://pkgs.superlogical.com/rex/nix/preview.tar.gz"
+      }
+    },
     "rig": {
       "inputs": {
         "flake-utils": [
@@ -855,6 +872,7 @@
         "nixvim-config": "nixvim-config",
         "pim-stuff": "pim-stuff",
         "recto": "recto",
+        "rex": "rex",
         "rig": "rig",
         "sophon": "sophon",
         "systems": "systems_4",

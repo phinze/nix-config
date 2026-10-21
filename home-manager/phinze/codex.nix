@@ -78,7 +78,7 @@ let
   # Rex's session context (see rex.nix); prints nothing outside Rex.
   rexHook = {
     type = "command";
-    command = "/bin/sh -c '\"$REX_BIN_DIR/rex\" __internal session-start --agent codex 2>/dev/null || true'";
+    command = "/bin/sh -c '\"\${REX_BIN_DIR:+$REX_BIN_DIR/}rex\" __internal session-start --agent codex 2>/dev/null || true'";
     timeout = 5;
   };
   codexHooksFile = pkgs.writeText "codex-hooks.json" (
@@ -96,7 +96,7 @@ let
                   "SessionStart"
                   "Stop"
                 ]) threadTitleHook
-                ++ lib.optional (event == "SessionStart" && pkgs.stdenv.hostPlatform.isDarwin) rexHook;
+                ++ lib.optional (event == "SessionStart" && config.phinze.rex.enable) rexHook;
               }
             ];
           })
