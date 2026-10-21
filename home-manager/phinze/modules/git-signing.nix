@@ -65,19 +65,43 @@ in
     };
   };
 
-  config = lib.mkIf (cfg.keys != [ ]) {
-    # Generate ~/.ssh/allowed_signers from keys × emails
-    home.file.".ssh/allowed_signers".text = allowedSignersContent;
+  config = lib.mkIf (cfg.keys != [ ]) (
+    lib.mkMerge [
+      {
+        # Generate ~/.ssh/allowed_signers from keys × emails
+        home.file.".ssh/allowed_signers".text = allowedSignersContent;
 
-    # git-ssh-sign wrapper overrides the key; git just needs a non-empty value
-    programs.git.signing.key = "dynamic";
+        # git-ssh-sign wrapper overrides the key; git just needs a non-empty value
+        programs.git.signing.key = "dynamic";
 
-    programs.git.settings = {
-      gpg.format = "ssh";
-      "gpg \"ssh\"" = {
-        program = "${gitSshSign}/bin/git-ssh-sign";
-        allowedSignersFile = "~/.ssh/allowed_signers";
-      };
-    };
-  };
+        programs.git.settings = {
+          gpg.format = "ssh";
+          "gpg \"ssh\"" = {
+            program = "${gitSshSign}/bin/git-ssh-sign";
+            allowedSignersFile = "~/.ssh/allowed_signers";
+          };
+        };
+      }
+
+      # jj ignores git's signing config, so commits made with jj (which is nearly
+      # all of them) went out unsigned. A host with its own key signs for free,
+      # so jj signs there too, through the same wrapper. It signs at push rather
+      # than on every rewrite, which is jj's advice for a signer that isn't
+      # instant and costs nothing here. Hosts without a local key stay as they
+      # were, since there every signature would be a 1Password prompt.
+      (lib.mkIf (cfg.localKeyFile != null) {
+        xdg.configFile."jj/conf.d/signing.toml".text = ''
+          [signing]
+          behavior = "drop"
+          backend = "ssh"
+          key = "dynamic"
+          backends.ssh.program = "${gitSshSign}/bin/git-ssh-sign"
+          backends.ssh.allowed-signers = "${config.home.homeDirectory}/.ssh/allowed_signers"
+
+          [git]
+          sign-on-push = true
+        '';
+      })
+    ]
+  );
 }
