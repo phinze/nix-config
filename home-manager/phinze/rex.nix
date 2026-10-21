@@ -72,26 +72,38 @@ in
         -- (see tmux.nix for the originals). The prefix is a one-shot mode, which
         -- Rex draws as a which-key popup listing what the next key does.
 
-        local rig = "${config.home.profileDirectory}/bin/rig"
-
-        -- rig radar. The handler is handed the session the keypress happened in,
-        -- which is the one thing Rex's API will not tell a caller: focus is
-        -- client-local state the server does not hold, so nothing else can ask
-        -- "which session is on screen". Passing it to rig as REX_SESSION means rig
-        -- opens the board over the session you are actually looking at, and rig
-        -- stays the only place that knows how to size, paint, and place the layer.
+        -- rig radar, as a floating layer over the session the keypress happened
+        -- in. The handler is handed that session, which is the one thing Rex's
+        -- API will not tell a caller: focus is client-local state the server
+        -- does not hold, so nothing else can ask "which session is on screen".
         --
-        -- rex.exec waits, but rig returns as soon as the layer exists, and the
-        -- server keeps handling keys while a config action waits. preview.15
-        -- took os.execute away in favour of it.
+        -- The layer is made here rather than by `rig radar --popup` because
+        -- this action runs in the Mac's server even when the session lives on
+        -- foxtrotbase. A rig run from here only knows the Mac's sessions, while
+        -- rex.call goes to whichever server owns ctx.session_id, and the
+        -- layer's shell starts on that host. So one path covers both: a Mac
+        -- session gets the Mac's rig, a foxtrotbase session gets foxtrotbase's.
+        -- The login shell is what puts rig on PATH on either host.
         rex.action({
           name = "rig_radar",
           title = "Rig Radar",
           category = "Rig",
           keywords = "rig radar switch session hop",
           run = function(ctx)
-            rex.exec({ rig, "radar", "--popup" },
-              { env = { REX_SESSION = ctx.session_id }, stdout = false, stderr = false })
+            local _, err = rex.call("session.new_layer", {
+              session_id = ctx.session_id,
+              bounds = { 0.1, 0.1, 0.8, 0.8 },
+              focus = true,
+              layout = rex.layout.block({
+                flavor = "com.superlogical.terminal.shell",
+                options = {
+                  command = { "/bin/sh", "-lc", "RIG_RADAR_BG='#181825' rig radar" },
+                  exit = { on_completion = true },
+                  theme = { background = "#181825", foreground = "#cdd6f4" },
+                },
+              }),
+            })
+            if err ~= nil then error(err, 0) end
           end,
         })
 
