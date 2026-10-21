@@ -13,6 +13,7 @@
 let
   # First port above Linux's default ephemeral range (32768-60999).
   bankshotBridgePort = 61000;
+  bankshotAgentSocket = "${config.home.homeDirectory}/.ssh/bankshot-agent.sock";
 
   # True on nodes that hold no keys of their own and sign with whatever agent
   # the attached session forwards in. Equivalently: the nodes where the
@@ -1112,6 +1113,9 @@ in
             tailnet = {
               enabled = true;
               allow = [ "phinze@github" ];
+              # An ssh agent backed by the Mac's 1Password, for sessions with
+              # no forwarded agent; double-agent falls back to it below.
+              agent_socket = bankshotAgentSocket;
             };
           }
         else
@@ -1124,6 +1128,12 @@ in
         tailnet = {
           enabled = true;
           allow = [ "foxtrotbase" ];
+        };
+        # Lets foxtrotbase list and sign with 1Password's keys (never add or
+        # remove them); each caller is named in a toast before Touch ID.
+        ssh_agent = {
+          enabled = true;
+          socket = "${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
         };
       };
 
@@ -1173,6 +1183,12 @@ in
   services.double-agent = {
     enable = true;
     socketPath = "${config.home.homeDirectory}/.ssh/agent.sock";
+    # A Rex pane on foxtrotbase arrives over Tailscale with no forwarded
+    # agent; fall back to bankshot's, which reaches the Mac's 1Password.
+    # Blink and Mac ssh sessions still use the agent they forward.
+    fallbackSocket = lib.mkIf (
+      pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase"
+    ) bankshotAgentSocket;
   };
 
   # Nicely reload system units when changing configs
