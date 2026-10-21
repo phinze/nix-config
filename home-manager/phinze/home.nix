@@ -1083,11 +1083,28 @@ in
     # hosts Rex reaches over Tailscale, where no ssh RemoteForward arrives.
     # Each caller is checked with tailscale whois. foxtrotbase is a tagged
     # node, so it has to be allowed by name rather than by login.
+    #
+    # foxtrotbase's monitor talks to the Mac over the tailnet, whether or not
+    # an ssh session is up, and runs the relay the Mac's forwards connect
+    # back through, which admits only the Mac's owner. Other Linux hosts
+    # stay on the ssh bridge.
     settings =
-      lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-        network = "tcp";
-        address = "127.0.0.1:${toString bankshotBridgePort}";
-      }
+      lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux (
+        if osConfig.networking.hostName == "foxtrotbase" then
+          {
+            network = "tcp";
+            address = "phinze-mrn-mbp:61000";
+            tailnet = {
+              enabled = true;
+              allow = [ "phinze@github" ];
+            };
+          }
+        else
+          {
+            network = "tcp";
+            address = "127.0.0.1:${toString bankshotBridgePort}";
+          }
+      )
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         tailnet = {
           enabled = true;
