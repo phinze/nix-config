@@ -41,6 +41,7 @@ let
   gitSshSign = pkgs.callPackage ../../../pkgs/git-ssh-sign.nix {
     signingKeys = cfg.keys;
     sshAuthSock = if pkgs.stdenv.hostPlatform.isDarwin then opAgentSock else null;
+    inherit (cfg) localKeyFile;
   };
 in
 {
@@ -49,6 +50,12 @@ in
       type = lib.types.listOf keyType;
       default = [ ];
       description = "SSH signing keys in priority order";
+    };
+
+    localKeyFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Private key file on this host to sign with instead of the agent, when it exists";
     };
 
     emails = lib.mkOption {

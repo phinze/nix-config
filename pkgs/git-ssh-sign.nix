@@ -3,7 +3,8 @@
 # Git calls: <program> -Y sign -f <key> -n git <file>
 # This wrapper ignores the -f <key> argument, queries the SSH agent for
 # available keys, matches against an allowlist in priority order, and
-# signs with the first match.
+# signs with the first match. A host with its own signing key (localKeyFile)
+# signs with that instead and never asks the agent.
 {
   lib,
   writeShellScriptBin,
@@ -11,6 +12,7 @@
   coreutils,
   signingKeys,
   sshAuthSock ? null,
+  localKeyFile ? null,
 }:
 let
   # Build the allowlist as a bash array literal
@@ -59,6 +61,17 @@ writeShellScriptBin "git-ssh-sign" ''
           ;;
       esac
     done
+  ${lib.optionalString (localKeyFile != null) ''
+
+    # A host-held key signs on its own, with no agent and nobody at the
+    # keyboard. When it's present it wins over the agent, so every commit from
+    # this host carries the same signature whether or not a laptop happens to
+    # be forwarding its agent in.
+    if [[ -r "${localKeyFile}" ]]; then
+      echo "git-ssh-sign: signing with local key '${localKeyFile}'" >&2
+      exec ssh-keygen -f "${localKeyFile}" "''${args[@]}"
+    fi
+  ''}
 
     # Allowlist of signing keys in priority order
     allowed_keys=(

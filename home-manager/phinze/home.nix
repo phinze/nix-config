@@ -85,14 +85,26 @@ in
         publicKey = "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKri4aveRRo7osskk6Wg8urqRm1RuAZK0bksJvKiHcKUk55kQoES/aPIr+vC5tVETE+2AHrFmIuZfGf2PHeruwM=";
       }
       {
-        name = "foxtrotbase";
+        # The Mac's 1Password key. It signs anywhere that agent reaches.
+        name = "phinze-mrn-mbp";
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEu+8Why8CmSWV5FHEeIsaAgYTN156U3kpCa/QMxdnaC";
       }
       {
         name = "xiezhi";
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILDHP/N4P043PsjSR8rsvpBDAwOy7PEZCMVM1+gs32Nn";
       }
+      {
+        # foxtrotbase's own key, so commits there sign with no agent forwarded
+        # in: from Rex, from Blink, or from an agent while the laptop sleeps.
+        # It is a GitHub signing key only, so it can't push or log in.
+        name = "foxtrotbase";
+        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjtn30SPh5eEZ85a69wN/JYUIdRqJ07wQW6aknnFUJx";
+      }
     ];
+    # Made by hand on the host (ssh-keygen -t ed25519 -N ""), never in the store.
+    localKeyFile = lib.mkIf (
+      pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase"
+    ) "${config.home.homeDirectory}/.ssh/signing_foxtrotbase";
     emails = [
       "phinze@phinze.com"
       "paul@miren.dev"
