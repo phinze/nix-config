@@ -1078,10 +1078,22 @@ in
 
     # The Mac daemon keeps its private Unix socket. Linux reaches it through
     # the race-safe loopback TCP endpoint forwarded by SSH above.
-    settings = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-      network = "tcp";
-      address = "127.0.0.1:${toString bankshotBridgePort}";
-    };
+    #
+    # The daemon also listens on the Mac's tailnet address, for monitors on
+    # hosts Rex reaches over Tailscale, where no ssh RemoteForward arrives.
+    # Each caller is checked with tailscale whois. foxtrotbase is a tagged
+    # node, so it has to be allowed by name rather than by login.
+    settings =
+      lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+        network = "tcp";
+        address = "127.0.0.1:${toString bankshotBridgePort}";
+      }
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+        tailnet = {
+          enabled = true;
+          allow = [ "foxtrotbase" ];
+        };
+      };
 
     # On macOS this is the launchd agent that owns the SSH forwards. On Linux
     # the monitor runs as a system service instead (services.bankshot.monitor
