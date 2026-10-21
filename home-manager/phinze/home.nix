@@ -1076,6 +1076,21 @@ in
     enable = true;
     enableXdgOpen = true;
 
+    # `op` on foxtrotbase proxies to the Mac's 1Password through the local
+    # bankshot monitor, which attributes each request to the process that made
+    # it; the Mac shows that in a toast beside the Touch ID prompt.
+    enableOpProxy = pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase";
+    opProxy = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+      enabled = true;
+      # launchd's PATH stops at the system directories.
+      opPath = "/opt/homebrew/bin/op";
+      # The Mac is signed in to the Miren team account too; never reach it.
+      account = "phinze.1password.com";
+      # A vault holding only what remote CLIs need.
+      allowedVaults = [ "cli" ];
+      readOnly = true;
+    };
+
     # The Mac daemon keeps its private Unix socket. Linux reaches it through
     # the race-safe loopback TCP endpoint forwarded by SSH above.
     #
