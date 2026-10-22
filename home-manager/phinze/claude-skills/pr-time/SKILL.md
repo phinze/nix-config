@@ -241,9 +241,13 @@ app after measuring biscuit as the stronger reviewer (RFD-95, MIR-1896). A
 
 8. **Babysit the PR**: fully autonomous from here. Only check in if something needs human judgment.
 
+   CI and biscuit run side by side, so watch them in one loop. Sleep 15 seconds for checks to register, then every 30 seconds poll both 8a and 8b and act on whichever lands first. **Not `--watch`**, which streams and bloats context. biscuit usually finishes well before a long CI run, and a finding means a push that throws that run away anyway, so never sit on a verdict waiting for green.
+
+   Every push restarts both clocks: CI starts over, and biscuit cancels any review in flight and re-reviews after the settle. So when one side needs a push while the other is close (a CI fix while the `biscuit` check is `in_progress`, say), land the fix, hold the push for the verdict, and push one round that covers both.
+
    **8a. Watch CI**
 
-   Sleep 15 seconds for checks to register, then poll every 30 seconds until everything is final. **Not `--watch`**, which streams and bloats context. **CI always runs**, so zero checks means they haven't registered yet; flag it if they're still missing after 5 minutes.
+   **CI always runs**, so zero checks means they haven't registered yet; flag it if they're still missing after 5 minutes.
 
    ```bash
    gh pr checks $PR_NUMBER --json name,state,bucket,description \
@@ -252,12 +256,12 @@ app after measuring biscuit as the stronger reviewer (RFD-95, MIR-1896). A
 
    The `biscuit` row is its review progress, not CI (see Bot Reviewers); 8b reads it. Leaving it in makes a `not ready` verdict look like a red build and a settle window look like a hung one.
 
-   - **All green**: on to 8b.
-   - **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's straightforward (lint, formatting, typo, simple test update) and you're confident, write the fix into `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the breaking one), then `jj tug && jj git push` and loop. **Two auto-fix attempts, then stop.** If the failure needs discussion, report what failed, what you tried, and the options.
+   - **All green**: CI's half is done. Finish once 8b is clean too.
+   - **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's straightforward (lint, formatting, typo, simple test update) and you're confident, write the fix into `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the breaking one), then `jj tug && jj git push` (or hold it for biscuit, as above) and loop. **Two auto-fix attempts, then stop.** If the failure needs discussion, report what failed, what you tried, and the options.
 
-   **8b. Wait for biscuit's review**
+   **8b. Watch biscuit's review**
 
-   Don't bail early assuming it isn't set up. See Bot Reviewers above for where its findings hide. biscuit takes five to ten minutes from the PR opening, and if 8a pushed a CI fix the clock restarts from that push plus the two-minute settle, so allow up to 12 minutes from the last push.
+   Don't bail early assuming it isn't set up. See Bot Reviewers above for where its findings hide. biscuit takes five to ten minutes from the PR opening, and every push restarts the clock from that push plus the two-minute settle, so allow up to 12 minutes from the last push.
 
    ```bash
    gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
@@ -266,7 +270,7 @@ app after measuring biscuit as the stronger reviewer (RFD-95, MIR-1896). A
             | {author: .user.login, submitted_at, body}]'
    ```
 
-   Poll every 30 seconds until it shows up, then read the body and any inline threads.
+   Poll it alongside 8a until it shows up, then read the body and any inline threads.
 
    biscuit's review counts only if it's of the head you pushed. Its footer names the commit, so check it rather than trusting the timestamp:
 
@@ -283,8 +287,8 @@ app after measuring biscuit as the stronger reviewer (RFD-95, MIR-1896). A
 
    A stale review with the `biscuit` check `queued` or `in_progress` means the re-review is on its way; keep waiting. Stale with the check `cancelled` (or no row for this head) well past the 12 minutes is the one case that warrants `/biscuit review`.
 
-   - **Clean** (`✅ ready to merge` with nothing raised): if it's still a draft, `gh pr ready $PR_NUMBER`. Report green CI, clean review, ready for humans. Done.
-   - **Findings**: report what turned up, then kick off `/address-pr-review`.
+   - **Clean** (`✅ ready to merge` with nothing raised): biscuit's half is done. Once 8a is green too, `gh pr ready $PR_NUMBER` if it's still a draft. Report green CI, clean review, ready for humans. Done.
+   - **Findings**: report what turned up, then kick off `/address-pr-review` right away, even with CI still running. Its push restarts CI, and its Phase 7 watches the new run.
 
    A `⚠️ ready with caveats` isn't automatically work. Sometimes it names a real gap worth a follow-up issue, sometimes it's biscuit narrating a worry it then resolves on its own. Judge it, don't reflex-fix it.
 

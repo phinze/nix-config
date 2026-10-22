@@ -372,9 +372,13 @@ Run all resolve mutations in parallel when there are multiple threads. Confirm z
 
 After fixes are pushed, stick around and make sure everything actually lands clean. This phase is fully autonomous.
 
+CI and biscuit's re-review run side by side, so watch 7a and 7b in one loop. Sleep 15 seconds for checks to register, then every 30 seconds poll both and act on whichever lands first. **Not `--watch`**, which streams and bloats context. biscuit usually finishes well before a long CI run, and new findings mean a push that throws that run away anyway, so never sit on a verdict waiting for green.
+
+Every push restarts both clocks: CI starts over, and biscuit cancels any review in flight and re-reviews after the settle. So when one side needs a push while the other is close (a CI fix while the `biscuit` check is `in_progress`, say), land the fix, hold the push for the verdict, and push one round that covers both.
+
 **7a. Watch CI**
 
-Sleep 15 seconds for checks to register, then poll every 30 seconds until everything reaches a final status. **Not `--watch`**, which streams and bloats context. **CI always runs**, so zero checks means they haven't registered yet, not that the repo has none; flag it if they're still missing after 5 minutes.
+**CI always runs**, so zero checks means they haven't registered yet, not that the repo has none; flag it if they're still missing after 5 minutes.
 
 ```bash
 gh pr checks $PR_NUMBER --json name,state,bucket,description \
@@ -383,15 +387,15 @@ gh pr checks $PR_NUMBER --json name,state,bucket,description \
 
 The `biscuit` row is its review progress, not CI (see Bot Reviewers); 7b reads it. Leaving it in makes a `not ready` verdict look like a red build and a settle window look like a hung one.
 
-- **All green**: move on to 7b.
-- **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident, write it at `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the failing one), `jj git push`, and loop back. **Two auto-fix attempts, then stop.** If the failure reveals something that needs discussion, stop and report instead of burning an attempt.
+- **All green**: CI's half is done. Keep polling 7b if its review hasn't landed.
+- **Failure**: read the logs (`gh run view $RUN_ID --log-failed`). If it's a straightforward fix (lint, formatting, typo, simple test update) and you're confident, write it at `@`, land it (`jj desc -m 'fix CI: <what>'` as its own rev, or `jj squash --into <broken-rev> -u` to fold it into the failing one), `jj git push` (or hold it for biscuit, as above), and loop back. **Two auto-fix attempts, then stop.** If the failure reveals something that needs discussion, stop and report instead of burning an attempt.
 
 **7b. Wait for biscuit to review the new head**
 
 biscuit re-reviews on push, so after a push a current-head review is expected,
 not optional. It waits two minutes for the pushes to settle and then takes five
 to ten, so allow up to 12 minutes from the last push (a CI-fix push in 7a
-restarts that clock). Poll every 30 seconds:
+restarts that clock). Poll it alongside 7a:
 
 ```bash
 gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/reviews" --paginate \
@@ -435,8 +439,8 @@ treating it as new.
 
 For its new review:
 
-- **Clean**: it comes back `✅ ready to merge` (or repeats a caveat we've consciously accepted) with nothing new raised. Move on.
-- **Has new comments**: Loop back to Phase 1 and work through the new feedback.
+- **Clean**: it comes back `✅ ready to merge` (or repeats a caveat we've consciously accepted) with nothing new raised. Move on to 7c; the 7d flip still waits for 7a's green.
+- **Has new comments**: Loop back to Phase 1 and work through the new feedback right away, even with CI still running.
 
 **Polling mechanics**: Check every 30 seconds. Use `sleep 30` between checks. Keep it simple.
 
