@@ -12,6 +12,18 @@ debug() {
   fi
 }
 
+# OSC 52 can only write, so reading the clipboard fails fast. Without this,
+# `xclip -o` was taken for a copy and blocked on stdin: Claude Code's ctrl+v
+# probes the clipboard that way and hung on "Pasting…" forever.
+for arg in "$@"; do
+  case "$arg" in
+    -o | -ou | -out | --output)
+      echo "[$progname] can't read the clipboard over OSC 52" >&2
+      exit 1
+      ;;
+  esac
+done
+
 encoded=$(base64 | tr -d '\n')
 debug "encoded ${#encoded} bytes"
 
