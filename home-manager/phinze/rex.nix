@@ -7,9 +7,9 @@
 # no package here, only the config file, the way ghostty.nix handles the
 # Homebrew cask. On Linux it's a server only, installed system-wide by
 # modules/nixos/rex.nix; a host gets the agent wiring below when that module
-# runs its login server. init.lua stays Mac-only for now: whether a remote
-# server's config or the client's drives keys in a remote session is still
-# to be found out.
+# runs its login server. A key pressed in a pane runs that pane's server's
+# init.lua (probed 2026-10-22, PERS-63), so foxtrotbase gets a small one of
+# its own for what only it can do.
 {
   lib,
   pkgs,
@@ -232,6 +232,32 @@ in
             end
           end,
         })
+      '';
+    })
+
+    (lib.mkIf (config.phinze.rex.enable && !isDarwin && osConfig.networking.hostName == "foxtrotbase") {
+      xdg.configFile."rex/init.lua".text = ''
+        local bankshot = "${config.home.profileDirectory}/bin/bankshot"
+
+        -- cmd+v with an image on the Mac's clipboard. Rex can't paste an image
+        -- into a pane on this host: with nothing it can paste as text, it
+        -- forwards the key and a bare "v" arrives. So bankshot fetches the
+        -- image into its inbox here, and the path is pasted instead, bracketed
+        -- so Claude Code attaches it as an image. With no image, returning
+        -- nothing leaves the key to Rex's own paste. The Mac is the one
+        -- pressing the key, so it's awake; still, every cmd+v here costs a
+        -- round trip to it.
+        rex.bind("cmd+v", function(ctx)
+          local r = rex.exec({ bankshot, "paste" }, { timeout = 3 })
+          if not (r and r.ok) then return end
+          local path = r.stdout:gsub("%s+$", "")
+          rex.call("com.superlogical.terminal.write", {
+            session_id = ctx.session_id,
+            block_id = ctx.block_id,
+            args = { data = "\27[200~" .. path .. "\27[201~" },
+          })
+          return true
+        end)
       '';
     })
   ];

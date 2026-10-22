@@ -1081,6 +1081,11 @@ in
     # bankshot monitor, which attributes each request to the process that made
     # it; the Mac shows that in a toast beside the Touch ID prompt.
     enableOpProxy = pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase";
+
+    # Claude Code's ctrl+v image paste on Linux reads the clipboard with
+    # wl-paste; bankshot answers it with the Mac clipboard's image (images
+    # only, never text). osc-copy owns xclip and xsel, which only copy.
+    enableWlPaste = pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase";
     opProxy = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       enabled = true;
       # launchd's PATH stops at the system directories.
