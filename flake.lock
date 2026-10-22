@@ -141,11 +141,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1792627125,
-        "narHash": "sha256-I7Ko4Ssksx6mkhej73jihZ3cuHuS7qePfBwpUebwttI=",
+        "lastModified": 1792703343,
+        "narHash": "sha256-3MhKqxW3zoDqd18E7ztytB9gpJ9Dn9J+bu2vZtTEteI=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "af59ee3a1051a29dda4a2e7a2af221aa457ae08b",
+        "rev": "465f09344424225c25d438f2e052732c3d688d2f",
         "type": "github"
       },
       "original": {
@@ -811,10 +811,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1792609031,
-        "narHash": "sha256-Ybn0kosm90oT3zfC+1TmJpPNnsS9PPyQ4E46AyQDUVY=",
+        "lastModified": 1792701358,
+        "narHash": "sha256-9hTc0iUB9EelTorITI6mt6lpetF4NjKu7eMHm8Hn6C8=",
         "type": "tarball",
-        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.4.tar.gz"
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.5.tar.gz"
       },
       "original": {
         "type": "tarball",
