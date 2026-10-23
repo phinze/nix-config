@@ -194,6 +194,7 @@ in
         rex.bind("prefix/shift+4", "session.rename")
         rex.bind("prefix/shift+r", "client.config.reload")
         rex.bind("prefix/a", "pane.send_key", { key = "ctrl+a" })
+        rex.bind("prefix/ctrl+a", "pane.send_key", { key = "ctrl+a" })
         for i = 1, 9 do
           rex.bind("prefix/" .. i, "client.tab.goto", { index = i })
         end
