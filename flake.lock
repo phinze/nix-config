@@ -811,10 +811,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1792701358,
-        "narHash": "sha256-9hTc0iUB9EelTorITI6mt6lpetF4NjKu7eMHm8Hn6C8=",
+        "lastModified": 1792753581,
+        "narHash": "sha256-Idx0zWlmifZW5d4GM5z7VkAT2ATAqaBuSAxRxWXRfEs=",
         "type": "tarball",
-        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.5.tar.gz"
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.6.tar.gz"
       },
       "original": {
         "type": "tarball",
