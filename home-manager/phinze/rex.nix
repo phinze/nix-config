@@ -240,16 +240,16 @@ in
       xdg.configFile."rex/init.lua".text = ''
         local bankshot = "${config.home.profileDirectory}/bin/bankshot"
 
-        -- cmd+v with an image on the Mac's clipboard. Rex can't paste an image
-        -- into a pane on this host: with nothing it can paste as text, it
-        -- forwards the key and a bare "v" arrives. So bankshot fetches the
-        -- image into its inbox here, and the path is pasted instead, bracketed
-        -- so Claude Code attaches it as an image. With no image, returning
-        -- nothing leaves the key to Rex's own paste. The Mac is the one
-        -- pressing the key, so it's awake; still, every cmd+v here costs a
-        -- round trip to it.
+        -- cmd+v with an image, or a copied recording, on the Mac's clipboard.
+        -- Rex can't paste either into a pane on this host: an image becomes a
+        -- bare "v", and a file becomes its Mac path. So bankshot fetches it
+        -- into its inbox here, and that path is pasted instead, bracketed so
+        -- Claude Code attaches an image. With neither, returning nothing
+        -- leaves the key to Rex's own paste. The Mac is the one pressing the
+        -- key, so it's awake; still, every cmd+v here costs a round trip to
+        -- it, and the timeout leaves room for a long recording.
         rex.bind("cmd+v", function(ctx)
-          local r = rex.exec({ bankshot, "paste" }, { timeout = 3 })
+          local r = rex.exec({ bankshot, "paste" }, { timeout = 60 })
           if not (r and r.ok) then return end
           local path = r.stdout:gsub("%s+$", "")
           rex.call("com.superlogical.terminal.write", {

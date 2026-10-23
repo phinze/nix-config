@@ -33,11 +33,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792781517,
-        "narHash": "sha256-CmQxqAs6zK/6eRuq10ru2KgZMeqh2I3FE/4tIHMie8M=",
+        "lastModified": 1792782897,
+        "narHash": "sha256-Isv3GQFpVeJFzIw5mb3MGwLpaY+iy9AW5OVqEIIf89U=",
         "owner": "phinze",
         "repo": "bankshot",
-        "rev": "5c3c60cc3698e1cac512413247acf92665d1300f",
+        "rev": "10693ddd6a940c7d62aada8d9cfa9478781eb100",
         "type": "github"
       },
       "original": {
