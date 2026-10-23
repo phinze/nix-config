@@ -259,6 +259,11 @@ in
           return true
         end)
       '';
+      # The server reads init.lua once, so a deploy has to tell it to look
+      # again. It may be down mid-switch; it reads the file when it starts.
+      xdg.configFile."rex/init.lua".onChange = ''
+        ${osConfig.services.rex.package}/bin/rex config reload --autostart=false || true
+      '';
     })
   ];
 }
