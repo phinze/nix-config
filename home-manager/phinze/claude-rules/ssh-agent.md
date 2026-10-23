@@ -1,27 +1,37 @@
 # SSH agent on this node
 
-This node holds no SSH keys of its own. Every outbound ssh, and so every
-`git push` and `jj git push`, signs with whatever agent the attached session
-forwarded in, proxied by `double-agent`. When the attached client goes away
-(Blink on iOS suspending is the usual cause), that agent stops answering and
-new connections fail.
+This node holds no SSH keys of its own. Outbound ssh signs through
+`double-agent` at `~/.ssh/agent.sock`, which hands each request to the agent
+the attached session forwarded in. On foxtrotbase, when nothing is forwarded,
+it falls back to bankshot's agent (`~/.ssh/bankshot-agent.sock`), which
+reaches the Mac's 1Password over the tailnet. Hosts without their own signing
+key also sign commits through it.
 
-ssh reports this as `Permission denied (publickey)`. That message is
-misleading here: the config is right and the key is right, there is just
-nothing awake to sign with.
+On foxtrotbase, GitHub doesn't need the agent at all: `git push` and
+`jj git push` go over HTTPS with gh's credentials, and commits sign with the
+host's own key. A failing push there is not an agent problem.
+
+When nothing can sign, ssh reports `Permission denied (publickey)`. That
+message is misleading: the config and key are right, there's just nothing
+awake to sign with. Either the forwarding client went away (Blink on iOS
+suspending is the usual cause), or on foxtrotbase the fallback can't reach
+the Mac either: the bankshot monitor is down, or the Mac is asleep or off the
+tailnet.
 
 **Check the agent before you touch any config.**
 
 ```bash
-ssh-add -l                              # fast; nonzero or "agent refused operation" = dead
-double-agent --health ~/.ssh/agent.sock # slower, but says why
-journalctl --user -u double-agent -n 20 # its own diagnosis, with a hint
+ssh-add -l                               # fast; nonzero or "agent refused operation" = dead
+double-agent --health ~/.ssh/agent.sock  # slower, but says why
+journalctl --user -u double-agent -n 20  # its own diagnosis, with a hint
+systemctl --user status bankshot-monitor # foxtrotbase: the fallback's path to the Mac
 ```
 
 If the agent is down, report that and stop. Do not edit `~/.ssh/config`, do
 not generate or add keys, and do not retry in a loop. It recovers on its own
-when the client reconnects, and the socket legitimately churns as that
-happens.
+when a client reconnects or the Mac wakes, and the socket legitimately churns
+as that happens. A fallback signature from the Mac can raise a 1Password
+prompt there, so batch commands that need the agent into one connection.
 
 Two signals that point at the agent rather than at config:
 

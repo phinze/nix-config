@@ -987,20 +987,10 @@ in
         IdentityAgent = "\"~/.1password/agent.sock\"";
       };
 
+      # foxtrotbase's bankshot monitor reaches the Mac over the tailnet, so
+      # no socket rides along. The agent still does, for plain ssh and tmux.
       "foxtrotbase" = {
         ForwardAgent = true;
-      }
-      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-        RemoteForward = [
-          {
-            # A loopback TCP listener disappears cleanly with its SSH
-            # transport. Competing non-multiplexed connections can fail to
-            # bind it, but cannot unlink the long-lived master's listener.
-            bind.address = "127.0.0.1";
-            bind.port = bankshotBridgePort;
-            host.address = "/Users/phinze/.bankshot.sock";
-          }
-        ];
       };
 
       "pixiu" = {
@@ -1088,8 +1078,9 @@ in
       readOnly = true;
     };
 
-    # The Mac daemon keeps its private Unix socket. Linux reaches it through
-    # the race-safe loopback TCP endpoint forwarded by SSH above.
+    # The Mac daemon keeps its private Unix socket. Other Linux hosts look
+    # for it on a loopback TCP port, which an ssh RemoteForward of that
+    # socket would provide; none is configured now.
     #
     # The daemon also listens on the Mac's tailnet address, for monitors on
     # hosts Rex reaches over Tailscale, where no ssh RemoteForward arrives.
