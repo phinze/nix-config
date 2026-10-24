@@ -65,6 +65,10 @@ let
     defaultProvider = "lithosai";
     defaultModel = "moonshotai/Kimi-K3";
 
+    # Thinking starts collapsed; Ctrl+T expands it for the session. Since nix
+    # wins on merge, every switch resets this default.
+    hideThinkingBlock = true;
+
     # Loaded from the store instead of `pi install`, which would need npm on
     # PATH and update itself behind our back.
     packages = [ "${pkgs.pi-mcp-adapter}/lib/node_modules/pi-mcp-adapter" ];
