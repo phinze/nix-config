@@ -811,10 +811,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1792986743,
-        "narHash": "sha256-Cn99YZigOAA2DUiGLkNycZsaiOhr603o0kqNIlwnbe0=",
+        "lastModified": 1793041098,
+        "narHash": "sha256-dd6GRxsuxMcYbRYP/LtjMm8/NQ+rkEU03b3OA1G0ZJ8=",
         "type": "tarball",
-        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.7.tar.gz"
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.8.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -831,11 +831,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792784847,
-        "narHash": "sha256-5wVkJMqA1S064E1qFOtuLYusxWXhM64+Rl4+3KWw+cs=",
+        "lastModified": 1793044993,
+        "narHash": "sha256-IKJAoFMQOOy+l1wkUvIkkqmrWqQ20UPQFBZodppaCls=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "b40ce362a958e1c4c2812c2dc8453e69cceef175",
+        "rev": "612013558b9a68be02fa092f692f18e9ccb7adba",
         "type": "github"
       },
       "original": {
