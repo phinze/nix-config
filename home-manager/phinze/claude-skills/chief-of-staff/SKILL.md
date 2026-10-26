@@ -32,8 +32,8 @@ and `rig ls --format=json` answers it as JSON for a machine read.
 
 1. **`rig ls --format=json`** — the whole board as one JSON document. Every rig
    with age, state (`working` / `idle` / `parked` / `stopped` / `building`),
-   agent type, per-repo branches and WIP, and the waiting-style disposition per
-   rig. Add `--full` for PR state with review decision and CI rollup plus
+   agent type, the agent's own `agent_status` where its backend reports one,
+   per-repo branches and WIP, and the waiting-style disposition per rig. Add `--full` for PR state with review decision and CI rollup plus
    failing job names, one `gh` call per repo, sharing the radar's PR cache
    (60s TTL) so repeat reads are cheap. `--refresh` ignores that cache.
    The cheap tier (no `--full`) skips `gh` entirely when PR state doesn't
@@ -170,12 +170,17 @@ it. Silence in a domain is a fine answer.
   rather than closing keeps its issue In Progress on purpose, and Linear's
   GitHub sync holds it there while a related draft stays open. Look for a
   closing keyword first.
-- **"idle" doesn't mean "waiting on Paul".** The board's agent column is a
-  transcript-mtime guess (see PERS-25): it reads stale "working" after a park
-  and can't tell done from blocked on input. For an idle rig whose next step
-  matters, read the latest recap with a read-only `tmux capture-pane -e -p` of
-  its agent pane (on its host: over ssh for a foxtrotbase rig). That recap is
-  the only reliable "waiting on you" signal until rig grows a hook-driven state.
+- **Read `agent_status` for "waiting on Paul".** On a Rex rig the board's row
+  carries the agent's own report: `agent_status.state` is `done` (its turn
+  ended and the next move is Paul's), `blocked` (with `kind`: permission,
+  question or auth), `working` (with its one-line `msg`) or `idle`, and
+  `since` says how long it has stood. Order a re-entry by it: blocked first,
+  then done, oldest `since` first. `agent` alone is still a working/idle guess
+  from transcript mtimes, so a row without `agent_status` (a tmux rig, or a
+  host whose rig predates it) can't tell done from quiet. Only for those, and
+  only when the next step matters, read the latest recap with a read-only
+  `tmux capture-pane -e -p` of its agent pane (on its host: over ssh for a
+  foxtrotbase rig).
 - **The `❯` prompt line is not Paul's words.** Claude Code fills an empty
   prompt with a gray suggested next message, and a plain `capture-pane -p`
   strips the color, so the suggestion reads exactly like something Paul typed
