@@ -75,10 +75,11 @@ let
     type = "command";
     command = "${config.home.profileDirectory}/bin/codex-thread-title";
   };
-  # Rex's session context (see rex.nix); prints nothing outside Rex.
+  # Rex's session context (see rex.nix); prints nothing outside Rex. Session
+  # naming is off for the same reason as in claude-code.nix.
   rexHook = {
     type = "command";
-    command = "/bin/sh -c '\"\${REX_BIN_DIR:+$REX_BIN_DIR/}rex\" __internal session-start --agent codex 2>/dev/null || true'";
+    command = "/bin/sh -c '\"\${REX_BIN_DIR:+$REX_BIN_DIR/}rex\" __internal session-start --agent codex --feature-session-naming=false 2>/dev/null || true'";
     timeout = 5;
   };
   codexHooksFile = pkgs.writeText "codex-hooks.json" (

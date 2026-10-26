@@ -207,10 +207,12 @@ in
             command = config.phinze.agentHooks.sophonCommand;
           };
           # Tells a session started inside Rex which session and pane it's
-          # in (see rex.nix); prints nothing outside Rex.
+          # in (see rex.nix); prints nothing outside Rex. Session naming is
+          # off: rig names its sessions after the rig id and addresses them by
+          # it, and an agent-chosen label would drift from that.
           rexHook = {
             type = "command";
-            command = "/bin/sh -c '\"\${REX_BIN_DIR:+$REX_BIN_DIR/}rex\" __internal session-start --agent claude 2>/dev/null || true'";
+            command = "/bin/sh -c '\"\${REX_BIN_DIR:+$REX_BIN_DIR/}rex\" __internal session-start --agent claude --feature-session-naming=false 2>/dev/null || true'";
             timeout = 5;
           };
         in
