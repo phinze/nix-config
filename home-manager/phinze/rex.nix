@@ -84,8 +84,20 @@ in
         -- layer's shell starts on that host. So one path covers both: a Mac
         -- session gets the Mac's rig, a foxtrotbase session gets foxtrotbase's.
         -- The login shell is what puts rig on PATH on either host.
-        -- RIG_REX_CLIENT tells rig which app to switch on enter; without it
-        -- rig gives up as soon as a phone is connected alongside the Mac.
+        --
+        -- Unlike foxtrotbase's radar, this one hands rig the app's label
+        -- rather than ctx.client_id. The id is the Mac as this Mac's server
+        -- knows it, and means nothing to foxtrotbase, while every server
+        -- sees the same label. rig needs it to switch the Mac on enter while
+        -- the phone is also connected; without it rig falls back to
+        -- switching the one connected app.
+        local function client_label(ctx)
+          local list = rex.call("client.list", {})
+          for _, c in ipairs(list and list.clients or {}) do
+            if c.client_id == ctx.client_id then return c.info and c.info.label end
+          end
+        end
+
         rex.action({
           name = "rig_radar",
           title = "Rig Radar",
@@ -99,8 +111,8 @@ in
               layout = rex.layout.block({
                 flavor = "com.superlogical.terminal.shell",
                 options = {
-                  command = { "/bin/sh", "-lc",
-                    "RIG_REX_CLIENT='" .. (ctx.client_id or "") .. "' RIG_RADAR_BG='#181825' rig radar" },
+                  command = { "/bin/sh", "-lc", "RIG_REX_CLIENT_LABEL='"
+                    .. (client_label(ctx) or ""):gsub("'", "") .. "' RIG_RADAR_BG='#181825' rig radar" },
                   exit = { on_completion = true },
                   theme = { background = "#181825", foreground = "#cdd6f4" },
                 },
@@ -268,8 +280,9 @@ in
         -- iPhone's (probed on Rex for iOS 1542). It's a tab rather than the
         -- Mac's floating layer because iOS doesn't draw layers, and the
         -- action moves the phone to the tab itself because a new window
-        -- doesn't take focus on a client. ctx.client_id is the phone, which
-        -- rig needs to switch it on enter while the Mac is also connected.
+        -- doesn't take focus on a client. ctx.client_id is the phone as this
+        -- server knows it, which rig needs to switch it on enter while the
+        -- Mac is also connected.
         rex.action({
           name = "rig_radar",
           title = "Rig Radar",
