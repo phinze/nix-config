@@ -15,6 +15,7 @@ in
 {
   imports = [
     ../modules/darwin/colima.nix
+    ../modules/ca-distrust.nix
   ];
   environment.systemPackages = [
     pkgs.mosh

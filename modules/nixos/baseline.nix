@@ -10,6 +10,7 @@
 {
   imports = [
     inputs.bankshot.nixosModules.default
+    ../ca-distrust.nix
   ];
   # Nixpkgs configuration
   nixpkgs = {
