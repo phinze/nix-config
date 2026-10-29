@@ -10,7 +10,6 @@
 {
   imports = [
     inputs.bankshot.nixosModules.default
-    ../ca-distrust.nix
   ];
   # Nixpkgs configuration
   nixpkgs = {
@@ -52,6 +51,7 @@
           "atuin.cachix.org-1:aNJ8IU+udXIYNtrF+LHH8yIzXqgmva4hVnuHq2REgK0="
         ];
       };
+      optimise.automatic = true;
       channel.enable = false;
       registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
       nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
@@ -108,6 +108,13 @@
 
   # Enable fish shell
   programs.fish.enable = true;
+
+  # nh helper with automatic cleanup
+  programs.nh = {
+    enable = true;
+    clean.enable = true;
+    clean.extraArgs = "--nogcroots --keep 3";
+  };
 
   # Enable mtr for network diagnostics
   programs.mtr.enable = true;

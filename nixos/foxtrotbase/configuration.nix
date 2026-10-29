@@ -59,13 +59,6 @@
     MaxRetentionSec=7day
   '';
 
-  # nh helper with automatic cleanup
-  programs.nh = {
-    enable = true;
-    clean.enable = true;
-    clean.extraArgs = "--nogcroots --keep 3";
-  };
-
   # Memory pressure handling. The combination keeps the box alive when one
   # workload (typically a runaway Claude session) tries to take it down:
   #   - zram gives us compressed-RAM swap, so reclaim is fast and the box

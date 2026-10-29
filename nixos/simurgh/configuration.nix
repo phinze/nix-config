@@ -65,13 +65,6 @@
   virtualisation.docker.enable = true;
   users.users.phinze.extraGroups = [ "docker" ];
 
-  # nh helper with automatic cleanup
-  programs.nh = {
-    enable = true;
-    clean.enable = true;
-    clean.extraArgs = "--nogcroots --keep 3";
-  };
-
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "24.11";
 }
