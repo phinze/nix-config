@@ -161,41 +161,46 @@ It is session-durable, local-only, and safe to read repeatedly:
     recto review
 
 In a rig, use `rig recto <repo> review`. The response carries the PR identity,
-head oid, stable comment ids, anchors, bodies, and `last_editor`.
-`last_editor` coordinates concurrent editing; it is not public attribution and
-cannot tell you who authored the words already present.
+head oid, the verdict, the summary, and the inline comments in posting order,
+each with its stable id, anchor, body, diff snippet, `revision`, and
+`last_editor`. `last_editor` coordinates concurrent editing; it is not public
+attribution and cannot tell you who authored the words already present.
 
-The user creates or opens a yellow shared draft with `c` on a diff line, Enter
-on its file-pane child row, or a double click in either pane. You can create
-one from the companion side:
+The user reads the whole slate on Recto's Review tab: verdict and blockers,
+then the summary, then each inline comment beside its code, in file and line
+order. They edit the item in view there with `c` or `e`, set the verdict with
+`V`, or start a comment with `c` on a diff line. You can create one from the
+companion side:
 
     recto review-comment 'path/to/file.go:99=Draft Markdown'
 
-Revise the same object by stable id:
+Revise the same object by stable id, passing the revision you read:
 
-    recto review-comment --id 7 'Revised Markdown'
+    recto review-comment --id 7 --if-revision 2 'Revised Markdown'
 
 An empty replacement deletes it. Every mutation returns the complete updated
-draft, so read that response rather than assuming the write landed.
+draft, so read that response rather than assuming the write landed. Your
+writes never move the user's view; point them at the result with
+`recto review-focus 7` (or `review-focus summary`).
 
 ### Work comment by comment
 
 Use this loop for each finding:
 
-1. Read the current body with `recto review` immediately before touching it.
+1. Read the item's current body and revision with `recto review` immediately
+   before touching it.
 2. Verify the technical claim against the current head and real runtime paths.
 3. Discuss the point as needed, then revise the shared body directly when the
-   direction is clear. If the wording choice is genuinely open, offer the
-   alternatives before writing.
-4. Read back the mutation response. Briefly name any substantive change you
-   made and whether it changes the authorship class, so the user knows what to
-   inspect in Recto.
+   direction is clear, with `--if-revision` set to the revision you read. If
+   the wording choice is genuinely open, offer the alternatives before writing.
+4. Read back the mutation response and run `recto review-focus ID` so the user
+   is looking at it. Briefly name any substantive change you made and whether
+   it changes the authorship class.
 5. Let the user edit it in place. Re-peek before the next agent revision.
 
-Do not edit several ids from one stale snapshot. `review-comment --id`
-replaces the whole body, so a delayed write can overwrite a user edit even
-though reads are non-consuming. One comment at a time keeps the collaboration
-legible and the race window small.
+A refused write means the user edited the item after your read. The refusal
+prints the current draft: start from their body, never resend yours. One
+comment at a time still keeps the collaboration legible.
 
 ### Mark the actual authorship
 
@@ -266,11 +271,15 @@ REQUEST_CHANGES for a specific blocking concern. If we take the pen and push
 commits ourselves, request changes while those commits are outstanding, then
 approve once they land.
 
-Recto currently owns inline comment drafts, not the top-level review body.
-Compose that short summary in conversation, show its exact final text, and
-apply the same four-way authorship classification. A co-written summary ends
-with `--p+🤖`; a human-written one is unadorned; an agent-written one starts
-with `🤖`; a human prefix plus agent continuation uses the split form.
+The summary lives in Recto's slate beside the inline comments. Write it with
+`recto review-body --if-revision N 'Markdown'`, under the same four-way
+authorship classification: a co-written summary ends with `--p+🤖`; a
+human-written one is unadorned; an agent-written one starts with `🤖`; a human
+prefix plus agent continuation uses the split form.
+
+The verdict lives on the slate too. The user sets it with `V`, or tells you to
+set it with `recto review-verdict approve` (or `request-changes`, `comment`).
+Never pick it yourself.
 
 ## Publication boundary
 
@@ -282,18 +291,25 @@ Before asking to send:
 1. Re-read `headRefOid`, local `@-`, and `recto review`'s
    `pull_request.head_oid`. All three must name the head whose code and anchors
    you verified.
-2. Re-check every path and line against that head. Reject empty bodies and any
-   remaining `TODO`.
+2. Re-check every path and line against that head. Reject empty bodies, any
+   remaining `TODO`, and any comment without a `snippet` (it no longer
+   resolves in the diff). The slate's header counts these as blockers.
 3. Confirm each inline body and the top-level summary carry the marker for
    their actual authorship class. Do not infer this from `last_editor`.
 4. Fetch existing comments one last time for duplicate or newly resolved
    findings.
-5. Build the exact review payload. Set `commit_id` explicitly. For a one-line
+5. Build the exact review payload from `recto review`: its verdict as `event`,
+   its summary as `body`, and its comments in the order it returns them. Set
+   `commit_id` explicitly. For a one-line
    current-side comment, use `line` and `side: "RIGHT"`. For a Recto range,
    preserve both ends with `start_line`, `start_side: "RIGHT"`, `line`, and
    `side: "RIGHT"`.
-6. Show the user the exact verdict, top-level body, authorship class, and every
-   inline body in posting order. Wait for an explicit send confirmation.
+6. Run `recto review-focus summary` and ask the user to read the slate top to
+   bottom on the Review tab: that is the exact text, in posting order. In the
+   conversation, show only the verdict, the comment count, the blocker count,
+   and the head oid. Wait for an explicit send confirmation. If Recto is
+   unavailable, fall back to showing the exact verdict, summary, authorship
+   class, and every inline body in posting order here.
 
 Then post one final review:
 
