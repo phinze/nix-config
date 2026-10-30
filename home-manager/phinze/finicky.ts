@@ -27,15 +27,21 @@ export default {
 
   handlers: [
     {
-      // Google Meet links - open in Chrome with Work profile
-      match: (url) => {
-        return (
-          url.host === "meet.google.com" || url.pathname?.startsWith("/meet/")
-        );
-      },
-      browser: {
-        name: "Google Chrome",
-        profile: WORK,
+      // Google Meet links - open in the Chrome profile for the account in
+      // `authuser`, which MeetingBar stamps from the event's attendee entry
+      // for you, falling back to the account the calendar is read through.
+      // That only works with MeetingBar on its macOS Calendar data source,
+      // which knows every account. Its Google Calendar API source holds one
+      // account and stamps it on every event, shared calendars included.
+      // Anything without a recognized authuser keeps going to Work.
+      match: (url) =>
+        url.host === "meet.google.com" || url.pathname?.startsWith("/meet/"),
+      browser: (url) => {
+        const authuser = url.searchParams.get("authuser") ?? "";
+        let profile = WORK;
+        if (authuser.endsWith("@chicagotoollibrary.org")) profile = CTL;
+        else if (authuser === "phinze@phinze.com") profile = PERSONAL;
+        return { name: "Google Chrome", profile };
       },
     },
     {
