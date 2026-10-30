@@ -184,8 +184,25 @@ in
     (pkgs.writeShellScriptBin "snap" (builtins.readFile ./scripts/snap.sh))
   ];
 
+  # settings.json and keybindings.json are generated under ~/.claude/nix/ and
+  # installed into ~/.claude/ as real files, never as symlinks. Claude Code's
+  # settings watcher follows a symlink and watches the target's parent, which
+  # for a home-manager link is /nix/store itself; every store write then sends
+  # each session into a full store rescan at 250% CPU with gigabytes of heap
+  # churn (anthropics/claude-code#98701). On 2026-10-30 that, not the session
+  # count, is what drove foxtrotbase sessions to 6G within half an hour.
+  # The rename is atomic so a running session never reads a half-written file.
+  home.activation.claudeSettingsFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    for f in settings.json keybindings.json; do
+      src=${config.home.homeDirectory}/.claude/nix/$f
+      dst=${config.home.homeDirectory}/.claude/$f
+      $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 0444 "$src" "$dst.tmp"
+      $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv -f "$dst.tmp" "$dst"
+    done
+  '';
+
   # Claude Code settings with statusline and LSP plugins
-  home.file.".claude/settings.json" = {
+  home.file.".claude/nix/settings.json" = {
     text = builtins.toJSON {
       statusLine = {
         type = "command";
@@ -295,7 +312,7 @@ in
   # keymap validator - "plain `esc` is reserved for cancelling a pending chord"
   # - so this looks like a property of terminal keymaps generally, not a bug in
   # one implementation. Tested against Claude Code 2.1.263.
-  home.file.".claude/keybindings.json" = {
+  home.file.".claude/nix/keybindings.json" = {
     text = builtins.toJSON {
       "$schema" = "https://www.schemastore.org/claude-code-keybindings.json";
       "$docs" = "https://code.claude.com/docs/en/keybindings";
