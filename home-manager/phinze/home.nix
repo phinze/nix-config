@@ -59,6 +59,8 @@ in
     ./modules/nushell.nix
     # Nightly cleanup of stale dev sessions and merged branches
     ./modules/dev-cleanup.nix
+    # Five-minute samples of Claude session memory (Linux)
+    ./modules/claude-mem-sampler.nix
     # rig serve on foxtrotbase, and the Mac radar's surface pointing at it
     ./modules/rig-surfaces.nix
     # Hourly memex commit+push (gated by nodeConfig.isMemexHost)

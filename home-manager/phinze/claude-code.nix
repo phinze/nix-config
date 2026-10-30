@@ -28,6 +28,32 @@ let
     '';
   };
 
+  # On Linux each claude runs in its own transient scope under agents.slice,
+  # named for the rig it was started in. Every Rex pane otherwise shares the
+  # cgroup of whatever SSH login started the Rex server, so systemd-oomd has
+  # no smaller target than "every agent at once", and a pile of idle 8G
+  # sessions wedged foxtrotbase for six hours before anything was killed.
+  # The raised OOM score makes an agent, not a 60M shell helper, the kernel's
+  # first choice when it does get that far. CLAUDE_SCOPE keeps a nested
+  # `claude -p` in its parent's scope, and the socket check falls back to a
+  # plain exec when there's no user manager to talk to.
+  claude-code-scoped = pkgs.writeShellScriptBin "claude" ''
+    if [ -z "''${CLAUDE_SCOPE:-}" ] && [ -S "''${XDG_RUNTIME_DIR:-/nonexistent}/systemd/private" ]; then
+      rig=adhoc
+      case "$PWD" in
+        "$HOME"/workspaces/*)
+          rig=''${PWD#"$HOME"/workspaces/}
+          rig=''${rig%%/*}
+          ;;
+      esac
+      export CLAUDE_SCOPE="claude-$(printf %s "$rig" | ${pkgs.coreutils}/bin/tr -c 'A-Za-z0-9_.-' _)-$$"
+      exec ${pkgs.systemd}/bin/systemd-run --user --scope --quiet --collect \
+        --slice=agents.slice --unit="$CLAUDE_SCOPE" \
+        -- ${pkgs.util-linux}/bin/choom -n 500 -- ${claude-code-wrapped}/bin/claude "$@"
+    fi
+    exec ${claude-code-wrapped}/bin/claude "$@"
+  '';
+
   # Status line script with colors
   claude-statusline = pkgs.writeShellScript "claude-statusline" ''
     read -r input
@@ -147,7 +173,7 @@ in
 {
   # Claude Code package with LSP fallbacks
   home.packages = [
-    claude-code-wrapped
+    (if pkgs.stdenv.hostPlatform.isLinux then claude-code-scoped else claude-code-wrapped)
     agent-browser
     pkgs.ast-grep
     pkgs.yq-go # YAML/TOML/JSON processor

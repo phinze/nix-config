@@ -59,13 +59,22 @@
     MaxRetentionSec=7day
   '';
 
-  # Memory pressure handling. The combination keeps the box alive when one
-  # workload (typically a runaway Claude session) tries to take it down:
+  # Memory pressure handling. The usual threat is Claude sessions that each
+  # grow to several GB; the claude wrapper (home-manager/phinze/claude-code.nix)
+  # puts every session in its own scope so the pieces below can evict one
+  # session instead of all of them.
   #   - zram gives us compressed-RAM swap, so reclaim is fast and the box
   #     stays responsive under pressure instead of thrashing on disk swap.
-  #   - systemd-oomd watches user-slice PSI and kills the largest cgroup
-  #     (i.e. the offending tmux-spawn scope) at ~20s of sustained pressure,
-  #     before kernel OOM has a chance to flail.
+  #   - systemd-oomd kills the worst cgroup under user.slice after sustained
+  #     memory pressure, and anywhere once swap passes SwapUsedLimit. The swap
+  #     rule matters because zram can hold pressure under the PSI limit while
+  #     swap fills: on 2026-10-30 both swaps sat full, the PSI rule never
+  #     fired, and the box wedged for six hours.
+  #   - The floors keep oomd, sshd, tailscaled and journald resident while
+  #     agents thrash. That same morning oomd's own pages were evicted, its
+  #     watchdog killed it, and every restart timed out paging back in. The
+  #     cgroup2 mount has no memory_recursiveprot, so a floor only counts if
+  #     system.slice carries one too.
   # No per-session memory cap: a single session can grow as needed; only
   # under genuine system-wide pressure does anyone get evicted.
   zramSwap = {
@@ -74,7 +83,14 @@
   };
   systemd.oomd = {
     enableUserSlices = true;
+    settings.OOM.SwapUsedLimit = "75%";
   };
+  systemd.slices."-".sliceConfig.ManagedOOMSwap = "kill";
+  systemd.slices.system.sliceConfig.MemoryMin = "1G";
+  systemd.services.systemd-oomd.serviceConfig.MemoryMin = "64M";
+  systemd.services.sshd.serviceConfig.MemoryMin = "64M";
+  systemd.services.tailscaled.serviceConfig.MemoryMin = "128M";
+  systemd.services.systemd-journald.serviceConfig.MemoryMin = "128M";
 
   # Disable the firewall since we're in a VM and we want to make it
   # easy to visit stuff in here. We only use NAT networking anyways.
