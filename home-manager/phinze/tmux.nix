@@ -95,39 +95,6 @@ in
             bind B break-pane
           '';
         }
-        {
-          plugin = resurrect;
-          extraConfig = ''
-            # Keep pane text visible across restarts.
-            set -g @resurrect-capture-pane-contents 'on'
-
-            # Resurrect Claude Code panes by RESUMING the on-disk conversation for
-            # the pane's directory instead of starting a fresh chat. resurrect's
-            # inline strategy is `match->restore-command`. The leading ~ is
-            # resurrect's "match leniently as a substring" token (NOT a home dir),
-            # so `bin/claude` matches the real command line
-            # (.../bin/claude ...) regardless of its profile path, and the pane is
-            # relaunched as `claude --continue`, reattaching to the latest session
-            # for that cwd. Assumes one Claude pane per directory.
-            set -g @resurrect-processes '"~bin/claude->claude --continue --dangerously-skip-permissions"'
-          '';
-        }
-        {
-          plugin = continuum;
-          extraConfig = ''
-            # Auto-save every 15 min and auto-restore on a fresh server. This is
-            # what makes the post-upgrade `tmux kill-server` cheap: reopen a pane
-            # and every session/window/pane (and resumed Claude) comes back.
-            set -g @continuum-restore 'on'
-            set -g @continuum-save-interval '15'
-
-            # Resurrect binds these by default. Keep intentional save/restore in
-            # command mode, but remove the easy-to-hit prefix bindings after
-            # Resurrect has loaded.
-            unbind-key -T prefix C-s
-            unbind-key -T prefix C-r
-          '';
-        }
       ];
 
     extraConfig = ''
