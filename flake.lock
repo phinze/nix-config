@@ -450,11 +450,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792679858,
-        "narHash": "sha256-Q7tdkHVZywQgDcX1PFocAX7b0e/urTyjZKSLJHiDcRA=",
+        "lastModified": 1793321337,
+        "narHash": "sha256-0pU5HPNTz9F54SzHQF8rlCxp50u0rtkyB8yS9NF4xmc=",
         "ref": "refs/heads/main",
-        "rev": "5b84343a337c95006dda630a6a4b083c0fb2673b",
-        "revCount": 67,
+        "rev": "2cd9681568ed62c7cc3dcfc9bb2e9e5438f72994",
+        "revCount": 71,
         "type": "git",
         "url": "https://github.com/mirendev/multipass.git"
       },
@@ -586,11 +586,11 @@
     },
     "nixpkgs-small": {
       "locked": {
-        "lastModified": 1793290624,
-        "narHash": "sha256-gg52qF/kKSc9ipQ3k3XLRQDRhUDXlyiJmIBznU8rgtk=",
+        "lastModified": 1793312669,
+        "narHash": "sha256-Unl0OWUgLUBTOcCIM18U0UfIWXIf1JHXyMrpAqF88LE=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "bc55ca2970b483c8ce4952395e5aa24fa01c3c11",
+        "rev": "6da3f247f92c898cfebde206192bb8dac7472ab4",
         "type": "github"
       },
       "original": {
