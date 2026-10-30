@@ -40,9 +40,10 @@ let
   claude-code-scoped = pkgs.writeShellScriptBin "claude" ''
     if [ -z "''${CLAUDE_SCOPE:-}" ] && [ -S "''${XDG_RUNTIME_DIR:-/nonexistent}/systemd/private" ]; then
       rig=adhoc
-      case "$PWD" in
+      cwd=$(pwd -P)
+      case "$cwd" in
         "$HOME"/workspaces/*)
-          rig=''${PWD#"$HOME"/workspaces/}
+          rig=''${cwd#"$HOME"/workspaces/}
           rig=''${rig%%/*}
           ;;
       esac
