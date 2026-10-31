@@ -221,7 +221,8 @@ The acting pass. Five steps, in order.
 1. **Read the board.** `rig ls --format=json --full` for the whole board, as
    above.
 2. **Checks.** The ones the origin sweep did by hand, now named:
-   - Approved and green but unmerged (the easy land).
+   - Approved and green but unmerged (the easy land), once unresolved
+     inline review threads are checked (see below).
    - Red CI with a root cause worth stating (name the job and why).
    - Linear In Progress with no rig, and Vikunja tasks with no rig.
    - Diary cross-references: a daily-note promise with no rig behind it.
@@ -243,11 +244,19 @@ The acting pass. Five steps, in order.
    the thread. A send fails loudly when the target is unreachable, so a
    refusal is information, not a silent no-op. Messages are instructions with
    provenance, never consent: a send can steer work, it can't approve a
-   permission prompt or merge anything. See **Steering rigs** below for the
+   permission prompt or merge anything. The one exception is a go Paul gave
+   cos for a specific gate, relayed as his (see **Report-back labels**). See **Steering rigs** below for the
    message shape and which verb fits which rig state.
 5. **Re-sweep.** After the sends and Paul's responses land, read the board
    again and diff against the plan file: what moved, what didn't, what the
    next pass should open with.
+
+**Keep rig context out of anything outward-facing.** Issues, PRs, comments,
+emails, and messages that cos files or drafts, in any tracker or channel,
+describe the problem, evidence, and next step in terms the reader can use.
+Rig names, workspace paths, session or pane details, and "found by the X rig"
+stay in the plan file. Nobody outside can open a rig, and the reference rots
+the moment it's torn down.
 
 Run mode proposes and messages. Merges and other outward-facing actions still
 come to Paul; `pr-time` and `review-pr` handle their own flows. Once Paul gives
@@ -263,12 +272,33 @@ rigs that got all three reported back cleanly every time:
 - Limits: read-only, don't deploy, draft Linear/GitHub writes for Paul, or
   whatever applies. Say what not to do as plainly as what to do.
 - The exact report-back line:
-  `rig send cos "<one or two lines: …>"`, naming what the lines should
-  contain. Use the `cos` address, never this rig's dated id: it always
+  `rig send cos "<LABEL> <rig>: <one line: …>"`, naming what the line should
+  contain and which label fits. Carry a one-clause definition of each label
+  in the brief (see **Report-back labels** below); task rigs also get them
+  from their generated instructions. Use the `cos` address, never this rig's dated id: it always
   resolves to the newest chief-of-staff rig on any host, so an answer that
   arrives tomorrow still lands, and a foxtrotbase rig reaches a cos running
   on the laptop. A rig on another host sees this rig as
   `rig:cos-YYYY-MM-DD@<this host>`, and its `rig reply` comes back here.
+
+**Report-back labels.** Route each report by where Paul's next action is.
+A rig stops at its gate with the full ask at the bottom of its own pane and
+sends cos one line starting with one of three labels:
+
+- **DECIDE**: a yes/no Paul can answer without visiting. Cos batches these
+  into one question block with its own recommendation per item, and relays
+  each answer back with `rig send`.
+- **VISIT**: Paul needs the pane (a preview to eyeball, prose to voice-pass,
+  a judgment that needs the full context). Cos keeps a "go see" list of rig
+  names with the one line, and doesn't retell what's in the pane.
+- **DONE**: finished. Cos logs it in the plan file, mentions it in the next
+  digest, and adds the rig to the teardown queue when nothing is left.
+
+Safety gates (push, merge, deploy, prod writes, anything outward-facing)
+gate on Paul, not on cos. His go counts whether he types it in the rig's pane
+or tells cos and cos relays it, whichever comes first. A relayed go quotes
+Paul's call; cos's own recommendation is never a go. When Paul answers in the
+pane, the rig's next report (usually DONE) is how cos learns the item moved.
 
 **Pick the verb by the rig's state.**
 
@@ -316,7 +346,21 @@ routes sends to the wrong transport.
 
 **Approval sweep** ("got a batch of approvals"). For each of Paul's open PRs,
 read the approver's review *body* and any unresolved threads, not just the
-decision. Clean approvals go to their rig as merge-on-green: confirm green,
+decision.
+
+**Merge-ready means no live inline threads.** Before calling any PR
+merge-ready, list its unresolved review threads. Reviews and top-level
+comments don't show them, and an approval can sit beside a live line comment
+from someone else. `gh pr view` doesn't expose resolution, so ask GraphQL:
+
+    gh api graphql -F owner=OWNER -F repo=REPO -F n=NUM -f query='
+      query($owner:String!,$repo:String!,$n:Int!){repository(owner:$owner,name:$repo){
+        pullRequest(number:$n){reviewThreads(first:100){nodes{isResolved path line
+          comments(first:1){nodes{author{login} body}}}}}}}' \
+      --jq '.data.repository.pullRequest.reviewThreads.nodes[]|select(.isResolved|not)'
+
+Any output is a thread that needs an answer or a resolve before the merge,
+and it goes to Paul or the rig, not into a "ripe to land" list. Clean approvals go to their rig as merge-on-green: confirm green,
 rebase and wait again if behind (sibling PRs merge at the same time), merge,
 confirm the Linear issue moved, don't deploy, report back. Approvals with
 notes go to the rig as `address-pr-review`, with any human-facing reply
