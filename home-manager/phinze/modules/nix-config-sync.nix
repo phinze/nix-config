@@ -84,12 +84,24 @@ let
       systemd
     ];
     text = ''
+      # A kick that lands while a run is in flight would otherwise vanish: the
+      # unit is a oneshot, so `systemctl start` on an activating unit just
+      # joins the running job. That run may be past its last fetch of main
+      # (deep in an input bump, say), and the push you kicked for then waits
+      # for the next hourly tick. So a kick also leaves this marker, and `run`
+      # goes around again for as long as one turns up.
+      KICK_MARKER="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/nix-config-sync.kick"
+
       if [[ "''${1:-}" == "kick" ]]; then
         if [[ $# -ne 1 ]]; then
           echo "usage: nix-config-sync kick" >&2
           exit 2
         fi
         echo "nix-config-sync: asking the user service to reconcile now..."
+        touch "$KICK_MARKER"
+        if systemctl --user is-active --quiet nix-config-sync.service; then
+          echo "nix-config-sync: a run is in progress; it will reconcile again when it finishes"
+        fi
         systemctl --user start --no-block nix-config-sync.service
         echo "nix-config-sync: reconciliation requested"
         echo "nix-config-sync: follow with: nix-config-sync logs"
@@ -100,7 +112,20 @@ let
           exit 2
         fi
         exec journalctl --user -fu nix-config-sync.service
-      elif [[ "''${1:-}" != "run" || $# -ne 1 ]]; then
+      elif [[ "''${1:-}" == "run" && $# -eq 1 ]]; then
+        # Clear the marker before each pass, so only a kick that arrives
+        # during the pass triggers another. A pass's exit status is reported
+        # only when it is the last one.
+        while :; do
+          rm -f "$KICK_MARKER"
+          rc=0
+          "$0" once || rc=$?
+          if [[ ! -e "$KICK_MARKER" ]]; then
+            exit "$rc"
+          fi
+          echo "nix-config-sync: kicked during the run; reconciling again"
+        done
+      elif [[ "''${1:-}" != "once" || $# -ne 1 ]]; then
         echo "usage: nix-config-sync {kick|logs|run}" >&2
         exit 2
       fi
