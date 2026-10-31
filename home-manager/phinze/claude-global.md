@@ -151,8 +151,8 @@ the writing checkpoint; do not ask for piecemeal approval while building it.
 
 ## Personal Task Tracking
 
-Use the `personal-tasks` skill for durable personal, household, CTL, and NDSM
-outcomes and follow-ups at https://tasks.inze.ph/. Keep execution checklists
+Use the `personal-tasks` skill for durable outcomes and follow-ups outside
+work, in the private Vikunja tracker it describes. Keep execution checklists
 inside the session. Search before capture, record enough context to resume,
 and let bots close tasks when the stated outcome is complete and verified.
 Capture new follow-ups without taking on unrelated work. Keep existing
@@ -174,7 +174,9 @@ If you learn something worth retaining, suggest a change to the appropriate
 version-controlled file in the nix-config repo
 (`~/src/github.com/phinze/nix-config`) instead:
 
-- **Skill behavior** → `home-manager/phinze/claude-skills/*.md`
+- **Skill behavior** → `home-manager/phinze/claude-skills/*.md`, or
+  `~/src/github.com/phinze/agent-private` for chief-of-staff and
+  personal-tasks
 - **Project conventions** → the project's `CLAUDE.md`
 - **Global preferences** → `home-manager/phinze/claude-global.md` (this file)
 

@@ -124,8 +124,8 @@ let
     pr-time = ./claude-skills/pr-time;
     address-pr-review = ./claude-skills/address-pr-review;
     review-pr = ./claude-skills/review-pr;
-    chief-of-staff = ./claude-skills/chief-of-staff;
-    personal-tasks = ./claude-skills/personal-tasks;
+    chief-of-staff = "${inputs.agent-private}/skills/chief-of-staff";
+    personal-tasks = "${inputs.agent-private}/skills/personal-tasks";
   };
 
   # Keep each slash command tiny: it explicitly activates the installed skill,

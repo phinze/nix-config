@@ -19,7 +19,9 @@ checkout.
 - `home-manager/phinze/`: the user environment shared across hosts
 - `home-manager/phinze/claude-*`: Claude Code config, with skills in
   `claude-skills/`, global instructions in `claude-global.md`, and wiring in
-  `claude-code.nix`
+  `claude-code.nix`. chief-of-staff and personal-tasks live in the private
+  `agent-private` input instead, because they name Paul's own domains and
+  hosts
 - `flake.nix`: inputs, including Paul's own repos (recto, rig, pim-stuff, ...)
 
 Flake inputs come in three kinds. Which kind an input is decides who moves

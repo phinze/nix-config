@@ -285,12 +285,12 @@ in
   # Chief-of-staff skill, same story: bare SKILL.md before, a real skill
   # directory now. It replaces the two whatsup skills that used to live here.
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/chief-of-staff" = {
-    source = ./claude-skills/chief-of-staff;
+    source = "${inputs.agent-private}/skills/chief-of-staff";
     recursive = true;
   };
 
   home.file.".gemini/antigravity-cli/plugins/personal-setup/skills/personal-tasks" = {
-    source = ./claude-skills/personal-tasks;
+    source = "${inputs.agent-private}/skills/personal-tasks";
     recursive = true;
   };
 

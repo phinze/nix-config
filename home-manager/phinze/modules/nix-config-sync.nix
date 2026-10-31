@@ -30,6 +30,7 @@ let
     "belowdeck"
     "nixvim-config"
     "pim-stuff"
+    "agent-private"
     "zen-browser"
     # AI harnesses
     "claude-code-nix"

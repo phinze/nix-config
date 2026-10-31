@@ -571,9 +571,10 @@ in
   # rig send -> re-sweep. Domain (Linear vs Vikunja) is decided per row, not
   # per skill, so the split that motivated two whatsups is gone. The rig board
   # is the spine either way; the enrichment sources hang off the rows that
-  # need them.
-  home.file.".claude/skills/chief-of-staff".source = ./claude-skills/chief-of-staff;
-  home.file.".claude/skills/personal-tasks".source = ./claude-skills/personal-tasks;
+  # need them. It and personal-tasks ship from the private agent-private
+  # input, because both name Paul's own domains and hosts.
+  home.file.".claude/skills/chief-of-staff".source = "${inputs.agent-private}/skills/chief-of-staff";
+  home.file.".claude/skills/personal-tasks".source = "${inputs.agent-private}/skills/personal-tasks";
 
   # nix-config skill: a map of where config lives and how a change reaches a
   # host. Agents kept hand-switching and hand-bumping sync-managed inputs,

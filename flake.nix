@@ -77,6 +77,12 @@
     # Keys, hostnames and coordinates kept out of this public repo.
     nix-private.url = "git+https://github.com/phinze/nix-private.git";
 
+    # Skills and tooling that run Paul's own board and task tracker
+    # (chief-of-staff, personal-tasks). They name his domains and hosts as a
+    # matter of course, so they live in a private repo; the craft skills stay
+    # here where they can be linked.
+    agent-private.url = "git+https://github.com/phinze/agent-private.git";
+
     # Upstream's flake, not nixpkgs'. We sat on v18.18.1 for a while because
     # v18.19.0's move to native-tls (atuinsh/atuin#3807) left the installed
     # binary with no RPATH for libssl.so.3, so it died the moment home-manager

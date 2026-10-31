@@ -127,8 +127,8 @@ the writing checkpoint; do not ask for piecemeal approval while building it.
 
 ## Personal Task Tracking
 
-Use the `personal-tasks` skill for durable personal, household, CTL, and NDSM
-outcomes and follow-ups at https://tasks.inze.ph/. Keep execution checklists
+Use the `personal-tasks` skill for durable outcomes and follow-ups outside
+work, in the private Vikunja tracker it describes. Keep execution checklists
 inside the session. Search before capture, record enough context to resume,
 and let bots close tasks when the stated outcome is complete and verified.
 Capture new follow-ups without taking on unrelated work. Keep existing

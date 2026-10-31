@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "agent-private": {
+      "locked": {
+        "lastModified": 1793456403,
+        "narHash": "sha256-6p4osSpSvB4H74s4jUzBN/qMQ9OIkM8COOyjyY+YdJE=",
+        "ref": "refs/heads/main",
+        "rev": "55e0e012356dc806a61722c1fb5a3c6e268c2f49",
+        "revCount": 2,
+        "type": "git",
+        "url": "https://github.com/phinze/agent-private.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/phinze/agent-private.git"
+      }
+    },
     "atuin": {
       "inputs": {
         "crane": "crane",
@@ -846,6 +861,7 @@
     },
     "root": {
       "inputs": {
+        "agent-private": "agent-private",
         "atuin": "atuin",
         "bankshot": "bankshot",
         "belowdeck": "belowdeck",

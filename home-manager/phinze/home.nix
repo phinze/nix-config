@@ -44,7 +44,7 @@ in
     # Pi coding agent on LithosAI (wrapper + models + Linear MCP adapter)
     ./pi.nix
     # Durable private tasks shared by human and agents
-    ./modules/personal-tasks.nix
+    inputs.agent-private.homeManagerModules.personal-tasks
     # Karabiner-Elements for keyboard remapping (incl. R400 → Handy)
     ./karabiner.nix
     # Zen profile: Space Routing rules and about:config prefs
