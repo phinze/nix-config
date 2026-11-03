@@ -44,7 +44,8 @@ let
     "miren-brand"
     "iso"
     "multipass"
-    # Rex server, preview channel (needs /etc/nix/netrc; see modules/nixos/rex.nix)
+    # Rex server, preview channel (needs /etc/nix/netrc; see modules/nixos/rex.nix).
+    # Temporarily pinned to one snapshot build, so bumping it is a no-op; see flake.nix.
     "rex"
     # Narrow nixpkgs fast lane; see the note above
     "nixpkgs-small"
