@@ -171,9 +171,8 @@ in
     # prefix+t opens the session picker, prefix+r opens radar.
     r = "rig radar";
 
-    # Claude Code shorthand
-    cld = "claude --dangerously-skip-permissions";
-    cldr = "claude --dangerously-skip-permissions --resume";
+    # Claude Code shorthand (cld, cldr) lives in programs.fish.functions, since
+    # both need to notice when they're running inside a rig.
 
     # Antigravity CLI shorthand
     agy = "agy --dangerously-skip-permissions";
@@ -473,6 +472,43 @@ in
       # the welcome message. Survives fish upgrades that reset universal vars
       # (e.g. the fish 4.x rewrite), since it ships as a config-managed file.
       fish_greeting = "";
+
+      # Everything rig passes claude on launch, so an agent started by hand
+      # inside a rig stays reachable. Without these, cross-session messages to
+      # it are held behind a prompt a bypassed session never surfaces. Mirrors
+      # claudeLaunchLine in rig: same flags, and no id means no flags. The id
+      # has to come from the manifest because it can differ from the dir name.
+      __rig_claude_args = {
+        description = "print rig's claude launch flags, if inside a rig";
+        body = ''
+          set -l dir $PWD
+          while true
+              set -l settings $dir/.rig/claude-settings.json
+              set -l manifest $dir/.rig/manifest.toml
+              if test -f $settings -a -f $manifest
+                  set -l id (string replace -rf '^id\s*=\s*"(.*)"\s*$' '$1' <$manifest)
+                  if test -n "$id[1]"
+                      printf '%s\n' --settings $settings --name $id[1]
+                  end
+                  return
+              end
+              test "$dir" = /; and return
+              set dir (path dirname $dir)
+          end
+        '';
+      };
+
+      cld = {
+        description = "claude, permissions skipped, rig-aware";
+        wraps = "claude";
+        body = "claude (__rig_claude_args) --dangerously-skip-permissions $argv";
+      };
+
+      cldr = {
+        description = "claude --resume, permissions skipped, rig-aware";
+        wraps = "claude";
+        body = "claude (__rig_claude_args) --dangerously-skip-permissions --resume $argv";
+      };
 
       ghq = {
         description = "wraps ghq utility to provide 'look' subcommand which cds to repo";
