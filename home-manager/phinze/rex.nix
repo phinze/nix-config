@@ -99,18 +99,40 @@ in
           end
         end
 
+        -- One radar per session. Pressing the key again replaces the radar
+        -- rather than focusing it, because the server's focus calls don't move
+        -- the focus on screen, and this way the new one always has it. Other
+        -- sessions keep theirs, so one left open elsewhere can't get in the
+        -- way here. A failed close is ignored: a spare radar beats no radar.
+        local function close_radars(session_id)
+          local view = rex.call("session.view", { session_id = session_id })
+          for _, w in ipairs(view and view.windows or {}) do
+            for _, layer in ipairs(w.layers or {}) do
+              for _, b in ipairs(layer.blocks or {}) do
+                if b.label == "radar" then
+                  rex.call("session.close_layer",
+                    { session_id = session_id, layer_id = layer.layer_id })
+                  break
+                end
+              end
+            end
+          end
+        end
+
         rex.action({
           name = "rig_radar",
           title = "Rig Radar",
           category = "Rig",
           keywords = "rig radar switch session hop",
           run = function(ctx)
+            close_radars(ctx.session_id)
             local _, err = rex.call("session.new_layer", {
               session_id = ctx.session_id,
               bounds = { 0.1, 0.1, 0.8, 0.8 },
               focus = true,
               layout = rex.layout.block({
                 flavor = "com.superlogical.terminal.shell",
+                label = "radar",
                 options = {
                   command = { "/bin/sh", "-lc", "RIG_REX_CLIENT_LABEL='"
                     .. (client_label(ctx) or ""):gsub("'", "") .. "' RIG_RADAR_BG='#181825' rig radar" },
@@ -293,6 +315,16 @@ in
           category = "Rig",
           keywords = "rig radar switch session hop",
           run = function(ctx)
+            -- One radar tab per session, as on the Mac: a new one replaces any
+            -- already open, and a failed close still leaves a radar to use.
+            local view = rex.call("session.view", { session_id = ctx.session_id })
+            for _, w in ipairs(view and view.windows or {}) do
+              if w.label == "radar" then
+                rex.call("session.close_window",
+                  { session_id = ctx.session_id, window_id = w.window_id })
+              end
+            end
+
             local win, err = rex.call("session.new_window", {
               session_id = ctx.session_id,
               window_label = "radar",
