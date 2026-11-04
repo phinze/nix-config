@@ -7,8 +7,9 @@
 # no package here, only the config file, the way ghostty.nix handles the
 # Homebrew cask. On Linux it's a server only, installed system-wide by
 # modules/nixos/rex.nix; a host gets the agent wiring below when that module
-# runs its login server. A key pressed in a pane runs that pane's server's
-# init.lua (probed 2026-10-22, PERS-63), so foxtrotbase gets a small one of
+# runs its login server. The Mac's bindings work in foxtrotbase panes too
+# (cmd+shift+r, seen 2026-11-04), and a Lua function bound on foxtrotbase also
+# fires from the Mac (cmd+v, PERS-63), so foxtrotbase gets a small init.lua of
 # its own for what only it can do.
 {
   lib,
@@ -135,10 +136,13 @@ in
 
         rex.mode("prefix", { exclusive = true })
 
-        -- A block ssh'd into foxtrotbase's tmux gets its prefix and navigator
-        -- keys handed straight down the pty, so the remote tmux keeps owning them.
+        -- A block running tmux gets its prefix and navigator keys handed straight
+        -- down the pty, so tmux keeps owning them. ssh and mosh don't count: a
+        -- plain ssh to a host has no tmux to hand them to, and passing them
+        -- along left no way to change panes. Over ssh, ctrl+a a reaches a remote
+        -- tmux, and ctrl+hjkl move Rex panes even when the remote program is nvim.
         local function nested(fg)
-          return fg == "ssh" or fg == "mosh-client" or fg == "tmux"
+          return fg == "tmux"
         end
         local function passthrough(ctx, byte)
           rex.call("com.superlogical.terminal.write",
