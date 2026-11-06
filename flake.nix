@@ -160,17 +160,16 @@
     # branch. Fetching it needs the alpha token in /etc/nix/netrc until Rex's
     # first stable release.
     #
-    # TEMPORARY (2026-11-03): pinned to one snapshot build instead of the
-    # preview channel, to test the fix for the new-pane state-save hang seen
-    # on preview.12 (Rex Beta #feedback-linux, "New pane ignores input for
-    # ~10s while its state save times out"). The fix is 0642f8d ("blocking
-    # until snapshot ctx ends"), which no preview had yet. This is the
-    # immutable URL for snapshot commit 1af98f6, not the moving snapshot.tar.gz
-    # channel, so the sync's hourly bump leaves it alone instead of restarting
-    # Rex for every snapshot. Go back to the preview channel URL below once a
-    # preview cut after 0.1.0-preview.12 ships with the fix:
+    # TEMPORARY (2026-11-06): pinned to one snapshot build instead of the
+    # preview channel, because the newest Linux preview (preview.13) has no
+    # upload support, and the Mac app needs that to paste a screenshot into a
+    # pane on this host. This is the immutable URL for 01d6c4f, the commit of
+    # the 2026-11-06 CLI release, not the moving snapshot.tar.gz channel, so
+    # the sync's hourly bump leaves it alone instead of restarting Rex for
+    # every snapshot. Go back to the preview channel URL below once a preview
+    # after 0.1.0-preview.13 has `com.superlogical.terminal.upload_begin`:
     #   rex.url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
-    rex.url = "https://pkgs.superlogical.com/rex/nix/snapshot/0.0.1793716919-g1af98f.tar.gz";
+    rex.url = "https://pkgs.superlogical.com/rex/nix/snapshot/0.0.1793981048-g01d6c4.tar.gz";
     rex.inputs.nixpkgs.follows = "nixpkgs";
   };
 
