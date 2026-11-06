@@ -279,28 +279,6 @@ in
 
     (lib.mkIf (config.phinze.rex.enable && !isDarwin && osConfig.networking.hostName == "foxtrotbase") {
       xdg.configFile."rex/init.lua".text = ''
-        local bankshot = "${config.home.profileDirectory}/bin/bankshot"
-
-        -- cmd+v with an image, or a copied recording, on the Mac's clipboard.
-        -- Rex can't paste either into a pane on this host: an image becomes a
-        -- bare "v", and a file becomes its Mac path. So bankshot fetches it
-        -- into its inbox here, and that path is pasted instead, bracketed so
-        -- Claude Code attaches an image. With neither, returning nothing
-        -- leaves the key to Rex's own paste. The Mac is the one pressing the
-        -- key, so it's awake; still, every cmd+v here costs a round trip to
-        -- it, and the timeout leaves room for a long recording.
-        rex.bind("cmd+v", function(ctx)
-          local r = rex.exec({ bankshot, "paste" }, { timeout = 60 })
-          if not (r and r.ok) then return end
-          local path = r.stdout:gsub("%s+$", "")
-          rex.call("com.superlogical.terminal.write", {
-            session_id = ctx.session_id,
-            block_id = ctx.block_id,
-            args = { data = "\27[200~" .. path .. "\27[201~" },
-          })
-          return true
-        end)
-
         -- rig radar for the phone, whose only server is this one. The Mac
         -- shows its own radar from its own init.lua, so this one is the
         -- iPhone's (probed on Rex for iOS 1542). It's a tab rather than the
