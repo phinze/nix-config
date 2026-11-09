@@ -98,8 +98,8 @@ in
           backends.ssh.program = "${gitSshSign}/bin/git-ssh-sign"
           backends.ssh.allowed-signers = "${config.home.homeDirectory}/.ssh/allowed_signers"
 
-          [git]
-          sign-on-push = true
+          [revsets]
+          git-sign-on-push = "~signed() & mine()"
         '';
       })
     ]
