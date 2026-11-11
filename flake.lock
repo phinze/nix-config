@@ -179,11 +179,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794348542,
-        "narHash": "sha256-fOS55Ti40BIaqhh+n56vOBslQUT8ymFM352ec9tza3s=",
+        "lastModified": 1794438551,
+        "narHash": "sha256-ys4QqflPngMq5fzNw5CVT1x+SKoY7k5Bo48o01P5NS4=",
         "owner": "sadjow",
         "repo": "codex-cli-nix",
-        "rev": "8a99245315baee447cd2833f5965222c50d74c9f",
+        "rev": "894a81eade3797ce641cd295cb7ff471447bbb30",
         "type": "github"
       },
       "original": {
@@ -601,11 +601,11 @@
     },
     "nixpkgs-small": {
       "locked": {
-        "lastModified": 1794406962,
-        "narHash": "sha256-qjmHl3Lvvjld2DywBMATg+nRpX7Mol5fqPZAcJcrNE8=",
+        "lastModified": 1794435240,
+        "narHash": "sha256-6AV2Z8qpQ3TUQQdFENWTE39iLuf8MFqWO5QM9iXtnpY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "39b15f146050cf402c45e0f0ea09170da0293fba",
+        "rev": "18808198c9047939daaaefad3772c72b4e955116",
         "type": "github"
       },
       "original": {
@@ -758,11 +758,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794322577,
-        "narHash": "sha256-f4XVYEVD6JpuU4qZ7XaPtLBkS2Tub5yDH6Ie1HNdAN8=",
+        "lastModified": 1794439621,
+        "narHash": "sha256-G/g60dha6TDJK4NH+7mR6ZSJAFbMjM2YZ8jCN/t+wqg=",
         "ref": "refs/heads/main",
-        "rev": "4316ee9ea3c748b9a91da1578bdb696318f6d275",
-        "revCount": 134,
+        "rev": "927fe8b4c261c82c869e776c30348e0d1215c341",
+        "revCount": 135,
         "type": "git",
         "url": "https://github.com/phinze/pim-stuff.git"
       },
