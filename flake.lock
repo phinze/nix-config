@@ -179,11 +179,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794520241,
-        "narHash": "sha256-7/Zlz0zDbOYxumc2NKO0hdt6LsMu7r3NAglovH5cpZ8=",
+        "lastModified": 1794543096,
+        "narHash": "sha256-+RU5LuNCgkeED6DCwChvm8DllZw9SfoBqN32gpk7FVQ=",
         "owner": "sadjow",
         "repo": "codex-cli-nix",
-        "rev": "85ab428c0f5fdcc3d561c7553fe89009d7f45738",
+        "rev": "2343eecd03ba6ca2996136f81464a5418af68155",
         "type": "github"
       },
       "original": {
@@ -806,11 +806,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794542856,
-        "narHash": "sha256-/cV+tn0O0u8mX6UO4aMIlDJO6rvcGMUJD78p3+TLHjc=",
+        "lastModified": 1794544049,
+        "narHash": "sha256-uUE3g0135/0MOmug4xkBO5mhWWN/N56nHue9yQ8AzqQ=",
         "owner": "phinze",
         "repo": "recto",
-        "rev": "f9e63a9ca6c6f70070b1a43484a4a479873edc2b",
+        "rev": "9bf9d0a6cd4754cafb3747251919a24a0f80ba9d",
         "type": "github"
       },
       "original": {
@@ -846,11 +846,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794542862,
-        "narHash": "sha256-+kfjMtAUUEaiyC4d5zP11cQ5RXTgoaU5zJ58zQa50tU=",
+        "lastModified": 1794544055,
+        "narHash": "sha256-q2NMQYrXk4L9wVKatUJvsqwYjW8H82bliNcLWZOqvro=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "ce252ac5c2575c6741d20ec4e46bf175eef0117f",
+        "rev": "d021a4003eae1b9b43bfe50489ea047492a3398c",
         "type": "github"
       },
       "original": {
