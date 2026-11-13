@@ -1000,11 +1000,11 @@
     },
     "understudy": {
       "locked": {
-        "lastModified": 1792081641,
-        "narHash": "sha256-HP2Ic3oo08zN6QxvAl1HxYsfeV7h20ayrw66Qv5+EZQ=",
+        "lastModified": 1794593610,
+        "narHash": "sha256-Q1ZpJVpfayoPWK6qP2m8R5QT940awlMHxBG2KXddnBs=",
         "owner": "phinze",
         "repo": "understudy",
-        "rev": "09f021c79fbf8cd56440311ce9ae9c77bb8315a9",
+        "rev": "d75f5a705c9784555a94965ce1d4ceed80cc1cf3",
         "type": "github"
       },
       "original": {
