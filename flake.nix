@@ -159,17 +159,7 @@
     # newest preview and the lock pins one, so it's a syncInput like any
     # branch. Fetching it needs the alpha token in /etc/nix/netrc until Rex's
     # first stable release.
-    #
-    # TEMPORARY (2026-11-06): pinned to one snapshot build instead of the
-    # preview channel, because the newest Linux preview (preview.13) has no
-    # upload support, and the Mac app needs that to paste a screenshot into a
-    # pane on this host. This is the immutable URL for 01d6c4f, the commit of
-    # the 2026-11-06 CLI release, not the moving snapshot.tar.gz channel, so
-    # the sync's hourly bump leaves it alone instead of restarting Rex for
-    # every snapshot. Go back to the preview channel URL below once a preview
-    # after 0.1.0-preview.13 has `com.superlogical.terminal.upload_begin`:
-    #   rex.url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
-    rex.url = "https://pkgs.superlogical.com/rex/nix/snapshot/0.0.1793981048-g01d6c4.tar.gz";
+    rex.url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
     rex.inputs.nixpkgs.follows = "nixpkgs";
   };
 
