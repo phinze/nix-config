@@ -24,7 +24,7 @@ tailnet.
 ssh-add -l                               # fast; nonzero or "agent refused operation" = dead
 double-agent --health ~/.ssh/agent.sock  # slower, but says why
 journalctl --user -u double-agent -n 20  # its own diagnosis, with a hint
-systemctl --user status bankshot-monitor # foxtrotbase: the fallback's path to the Mac
+systemctl status bankshot-monitor        # foxtrotbase: the fallback's path to the Mac (a system unit)
 ```
 
 If the agent is down, report that and stop. Do not edit `~/.ssh/config`, do

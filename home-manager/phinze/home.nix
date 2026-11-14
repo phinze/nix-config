@@ -1166,9 +1166,14 @@ in
       logLevel = "info";
     };
 
-    # Monitor configuration (applies to bankshot monitor on remote servers)
-    # Default: forward all non-privileged ports (>= 1024)
+    # Monitor configuration (applies to bankshot monitor on remote servers).
+    # Auto-forward is off: most of what it forwarded were listeners nobody
+    # opened, and Rex forwards on demand now. `bankshot forward PORT` and
+    # `bankshot wrap` still forward when asked, and the monitor keeps serving
+    # open, paste, op and the ssh-agent fallback. The filters below only
+    # matter if autoForward comes back on.
     monitor = {
+      autoForward = false;
       pollInterval = "1s";
       gracePeriod = "30s";
       ignorePorts = [ bankshotBridgePort ];
