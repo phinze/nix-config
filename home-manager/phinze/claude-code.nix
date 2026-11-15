@@ -181,10 +181,13 @@ in
     pkgs.yq-go # YAML/TOML/JSON processor
     pkgs.python3 # stdlib-only interpreter for data processing (no pip)
     pkgs.poppler-utils # pdftoppm/pdftotext so Read tool can open PDFs
-    # snap: capture a macOS window to /tmp by app+title. Lives in PATH (not
-    # a fish function) so subagents shelling out via bash can call it too.
-    (pkgs.writeShellScriptBin "snap" (builtins.readFile ./scripts/snap.sh))
-  ];
+  ]
+  # snap: capture a macOS window to /tmp by app+title. Lives in PATH (not
+  # a fish function) so subagents shelling out via bash can call it too.
+  # Mac only: it needs screencapture, and elsewhere its skill was a dead end.
+  ++ lib.optional pkgs.stdenv.hostPlatform.isDarwin (
+    pkgs.writeShellScriptBin "snap" (builtins.readFile ./scripts/snap.sh)
+  );
 
   # settings.json and keybindings.json are generated under ~/.claude/nix/ and
   # installed into ~/.claude/ as real files, never as symlinks. Claude Code's
@@ -459,7 +462,9 @@ in
   home.file.".claude/skills/clipboard/SKILL.md".source = ./claude-skills/clipboard/SKILL.md;
 
   # snap skill: capture a macOS window to /tmp by app+title without focus-stealing
-  home.file.".claude/skills/snap/SKILL.md".source = ./claude-skills/snap/SKILL.md;
+  home.file.".claude/skills/snap/SKILL.md" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+    source = ./claude-skills/snap/SKILL.md;
+  };
 
   # second-opinion skill: ask a fresh Claude or Codex session to review a jj/git
   # diff with read-only tools, then verify its findings in the host session.

@@ -13,8 +13,11 @@ invocation you need is a quoted heredoc into `pbcopy`:
     EOF
 
 `pbcopy` is shimmed via OSC 52 (see `pkgs/osc-copy/`), so it works on
-macOS, NixOS, through SSH, and inside tmux. The same binary is also
-installed as `xclip` and `xsel` — they're symlinks, not separate tools.
+macOS, NixOS, through SSH, in Rex panes, and inside tmux. When the Bash
+tool captures stdout, the shim finds the pane's terminal itself (tmux's
+pane tty, or the nearest ancestor holding one), so the sequence reaches
+the terminal rather than your tool result. The same binary is also
+installed as `xclip` and `xsel`; they're symlinks, not separate tools.
 
 ## Do this
 
@@ -35,9 +38,9 @@ installed as `xclip` and `xsel` — they're symlinks, not separate tools.
   OSC 52 doesn't need them.
 - **Don't write to `/tmp/foo.txt` first** and then figure out how to
   copy it. Just heredoc into `pbcopy`.
-- **Don't reach for `tmux load-buffer` / `tmux set-buffer`**. The
-  `pbcopy` shim already wraps OSC 52 in the tmux passthrough sequence
-  when `$TMUX` is set.
+- **Don't reach for `tmux load-buffer` / `tmux set-buffer`**, or write
+  escape sequences to a tty yourself. The shim already handles tmux
+  passthrough and finding the terminal.
 - **Don't use an unquoted heredoc (`<<EOF`)** unless you actually want
   shell interpolation. Default to quoted.
 
