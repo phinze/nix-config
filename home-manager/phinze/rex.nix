@@ -241,6 +241,128 @@ in
         end
         rex.bind("prefix/escape", "client.mode.exit")
 
+        -- Open a web link from the pane in the Mac's default browser, where
+        -- the sign-ins live: the only one straight away, a pick from several,
+        -- or the newest without asking. Build 1925 gave shift+cmd+click to Quick
+        -- Look, whose web view has no cookies, so most links land on a login
+        -- page there, and clicks can't be rebound (rex.bind takes keys only).
+        -- cmd+click still opens the browser; this is the no-mouse path, for
+        -- the link an agent just printed.
+        --
+        -- Like the radar, this runs in the Mac's server whatever host the
+        -- pane is on: rex.call reads the pane from the server that owns it,
+        -- and rex.exec runs `open` here on the Mac. Only the text is read,
+        -- so a link an app wrapped onto two lines itself (Claude Code does)
+        -- comes out cut short, the same as Quick Look's.
+        local URL_TAIL = 262144
+        local function pane_tail(ctx)
+          local function call(method, args)
+            local r, err = rex.call("com.superlogical.terminal." .. method,
+              { session_id = ctx.session_id, block_id = ctx.block_id, args = args })
+            if err ~= nil then error(err, 0) end
+            return r
+          end
+          local r = call("format", { format = "text", unwrap = true, trim = true, max_bytes = URL_TAIL })
+          if r.id == nil or (r.total or 0) <= URL_TAIL then return r.content end
+          -- A long scrollback: the newest link is at the end, so read that.
+          return call("blob_read", { id = r.id, offset = r.total - URL_TAIL, max_bytes = URL_TAIL }).data
+        end
+
+        -- Sentence punctuation, and a ) the link didn't open, aren't part of it.
+        --
+        -- Don't reassign two variables in one statement in a function here:
+        -- Rex's Lua (preview.19) gets `a, b = b, a` wrong and crashes on
+        -- `url, n = url:sub(1, -2), n - 1`. A local declaration is fine.
+        local function trim_url(url)
+          url = url:gsub("[%.,;:!%?'\"]+$", "")
+          local _, opens = url:gsub("%(", "")
+          local _, closes = url:gsub("%)", "")
+          while closes > opens and url:sub(-1) == ")" do
+            url = url:sub(1, -2)
+            closes = closes - 1
+          end
+          return url
+        end
+
+        -- Every web link in the text, newest first, each once. One that ends
+        -- in an ellipsis is a program's truncation (Claude Code shortens long
+        -- commands that way), not a link, so it's left out.
+        local function pane_urls(ctx)
+          if not ctx.block_id then error("no pane to read a link from", 0) end
+          local text, found = pane_tail(ctx), {}
+          for url, after in text:gmatch("(https?://[%w%-%._~:/%?#%[%]@!%$&'%*%+,;=%%()]+)()") do
+            if text:sub(after, after + 2) ~= "…" then
+              found[#found + 1] = trim_url(url)
+            end
+          end
+          local urls, seen = {}, {}
+          for i = #found, 1, -1 do
+            if not seen[found[i]] then
+              seen[found[i]] = true
+              urls[#urls + 1] = found[i]
+            end
+          end
+          if #urls == 0 then error("no web link in this pane", 0) end
+          return urls
+        end
+
+        local function open_url(url)
+          local r, err = rex.exec({ "/usr/bin/open", url }, { timeout = 10 })
+          if r == nil then error("open failed: " .. tostring(err), 0) end
+          if not r.ok then error("open failed: " .. r.stderr, 0) end
+          return { url = url }
+        end
+
+        -- The picker is fzf in a floating layer, which starts on the pane's
+        -- host the way the radar's does, so it opens the pick from there:
+        -- with xdg-open on foxtrotbase, which is bankshot and so still the
+        -- Mac's browser, and with open on the Mac. The links ride in as argv,
+        -- so nothing in them is ever read by a shell.
+        local PICK = [[
+          u=$(printf '%s\n' "$@" | fzf --no-sort --reverse --prompt='open> ') || exit 0
+          if command -v xdg-open >/dev/null 2>&1; then xdg-open "$u"; else open "$u"; fi
+        ]]
+
+        rex.action({
+          name = "open_url",
+          title = "Open Link in Browser…",
+          category = "Links",
+          keywords = "open url link browser pick choose hints hyperlink authed",
+          run = function(ctx)
+            local urls = pane_urls(ctx)
+            if #urls == 1 then return open_url(urls[1]) end
+            local command = { "/bin/sh", "-lc", PICK, "pick-url" }
+            for i = 1, math.min(#urls, 50) do command[#command + 1] = urls[i] end
+            local _, err = rex.call("session.new_layer", {
+              session_id = ctx.session_id,
+              bounds = { 0.15, 0.3, 0.7, 0.4 },
+              focus = true,
+              layout = rex.layout.block({
+                flavor = "com.superlogical.terminal.shell",
+                label = "links",
+                options = {
+                  command = command,
+                  exit = { on_completion = true },
+                  theme = { background = "#181825", foreground = "#cdd6f4" },
+                },
+              }),
+            })
+            if err ~= nil then error(err, 0) end
+          end,
+        })
+
+        rex.action({
+          name = "open_last_url",
+          title = "Open Last Link in Browser",
+          category = "Links",
+          keywords = "open url link browser last recent newest hyperlink authed",
+          run = function(ctx)
+            return open_url(pane_urls(ctx)[1])
+          end,
+        })
+        rex.bind("prefix/o", "open_url")
+        rex.bind("prefix/shift+o", "open_last_url")
+
         -- No cmd+w. It's File > Close, which destroys the whole session without
         -- asking, and it sits one modifier away from ctrl+w (delete word). Two
         -- sessions lost to that slip mid-typing. The menu item stays for when
