@@ -4,6 +4,7 @@
   lib,
   pkgs,
   nodeConfig ? { },
+  osConfig ? { },
   ...
 }:
 let
@@ -439,6 +440,14 @@ in
     lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && !(nodeConfig.isGraphical or false))
       {
         source = ./claude-rules/ssh-agent.md;
+      };
+
+  # foxtrotbase forwards dev servers to the Mac only on request (bankshot's
+  # autoForward is off in home.nix), so its agents need to know to ask.
+  home.file.".claude/rules/mac-preview.md" =
+    lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && (osConfig.networking.hostName or "") == "foxtrotbase")
+      {
+        source = ./claude-rules/mac-preview.md;
       };
 
   # jj skill: version control playbook, auto-loads on any jj/git-adjacent work
