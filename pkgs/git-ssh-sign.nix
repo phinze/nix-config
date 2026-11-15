@@ -66,8 +66,11 @@ writeShellScriptBin "git-ssh-sign" ''
     # A host-held key signs on its own, with no agent and nobody at the
     # keyboard. When it's present it wins over the agent, so every commit from
     # this host carries the same signature whether or not a laptop happens to
-    # be forwarding its agent in.
+    # be forwarding its agent in. ssh-keygen would still ask the agent
+    # whether it holds the key, which stalls when the agent's upstream is
+    # asleep, so hide the agent from it.
     if [[ -r "${localKeyFile}" ]]; then
+      unset SSH_AUTH_SOCK
       echo "git-ssh-sign: signing with local key '${localKeyFile}'" >&2
       exec ssh-keygen -f "${localKeyFile}" "''${args[@]}"
     fi

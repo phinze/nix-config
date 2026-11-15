@@ -43,6 +43,16 @@ let
     sshAuthSock = if pkgs.stdenv.hostPlatform.isDarwin then opAgentSock else null;
     inherit (cfg) localKeyFile;
   };
+
+  # ssh-keygen asks SSH_AUTH_SOCK whether the agent holds the key before it
+  # reads the file, and there's no flag to skip that (-U only forces the
+  # agent). With nothing forwarded, double-agent falls back to the Mac, and a
+  # sleeping Mac stalls every signature about 5s. The key is on disk, so hide
+  # the agent.
+  sshKeygenNoAgent = pkgs.writeShellScript "ssh-keygen-no-agent" ''
+    unset SSH_AUTH_SOCK
+    exec ${pkgs.openssh}/bin/ssh-keygen "$@"
+  '';
 in
 {
   options.phinze.git.signing = {
@@ -98,14 +108,15 @@ in
       # jj calls ssh-keygen on the key file directly rather than the wrapper,
       # because the wrapper falls back to the agent and, at one signature per
       # snapshot, a missing key would mean a 1Password prompt per jj command.
-      # Without the fallback a missing key makes jj fail loudly instead.
+      # Without the fallback a missing key makes jj fail loudly instead. It goes
+      # through sshKeygenNoAgent so no signature waits on an agent.
       (lib.mkIf (cfg.localKeyFile != null) {
         xdg.configFile."jj/conf.d/signing.toml".text = ''
           [signing]
           behavior = "own"
           backend = "ssh"
           key = "${cfg.localKeyFile}"
-          backends.ssh.program = "${pkgs.openssh}/bin/ssh-keygen"
+          backends.ssh.program = "${sshKeygenNoAgent}"
           backends.ssh.allowed-signers = "${config.home.homeDirectory}/.ssh/allowed_signers"
 
           [revsets]
