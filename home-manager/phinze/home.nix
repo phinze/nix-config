@@ -101,11 +101,22 @@ in
         name = "foxtrotbase";
         publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjtn30SPh5eEZ85a69wN/JYUIdRqJ07wQW6aknnFUJx";
       }
+      {
+        # The Mac's own key, so git and jj there sign without 1Password. Like
+        # foxtrotbase's, it is a GitHub signing key only.
+        name = "phinze-mrn-mbp-local";
+        publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPeMIdiYg8kuMsAq06CyTcG7H0vwd3gFmKAdFmb3cCP4";
+      }
     ];
-    # Made by hand on the host (ssh-keygen -t ed25519 -N ""), never in the store.
-    localKeyFile = lib.mkIf (
-      pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase"
-    ) "${config.home.homeDirectory}/.ssh/signing_foxtrotbase";
+    # Hosts we develop on sign with a key of their own, so git and jj behave
+    # the same on each and nothing waits on an agent or a 1Password prompt.
+    # Made by hand on the host (ssh-keygen -t ed25519 -N ""), never in the
+    # store, at ~/.ssh/signing_<hostname>. jj fails on every command until the
+    # file exists, so make the key before the host takes this config.
+    localKeyFile = lib.mkIf (lib.elem osConfig.networking.hostName [
+      "foxtrotbase"
+      "phinze-mrn-mbp"
+    ]) "${config.home.homeDirectory}/.ssh/signing_${osConfig.networking.hostName}";
     emails = [
       "phinze@phinze.com"
       "paul@miren.dev"
