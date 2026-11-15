@@ -319,8 +319,16 @@ in
               urls[#urls + 1] = found[i]
             end
           end
-          if #urls == 0 then error("no web link in this pane", 0) end
           return urls
+        end
+
+        -- No link on screen isn't a failure, so it gets the Mac's alert sound
+        -- (what a key with nothing to act on does anywhere in macOS) instead of
+        -- an error, which Rex can only show as "Action failed". Lua has no
+        -- gentler notice to reach for. The sound is best effort.
+        local function nothing_to_open()
+          rex.exec({ "/usr/bin/osascript", "-e", "beep" }, { timeout = 5 })
+          return { url = nil }
         end
 
         local function open_url(url)
@@ -347,6 +355,7 @@ in
           keywords = "open url link browser pick choose hints hyperlink authed",
           run = function(ctx)
             local urls = pane_urls(ctx)
+            if #urls == 0 then return nothing_to_open() end
             if #urls == 1 then return open_url(urls[1]) end
             local command = { "/bin/sh", "-lc", PICK, "pick-url" }
             for i = 1, math.min(#urls, 50) do command[#command + 1] = urls[i] end
@@ -374,7 +383,9 @@ in
           category = "Links",
           keywords = "open url link browser last recent newest hyperlink authed",
           run = function(ctx)
-            return open_url(pane_urls(ctx)[1])
+            local urls = pane_urls(ctx)
+            if #urls == 0 then return nothing_to_open() end
+            return open_url(urls[1])
           end,
         })
         rex.bind("prefix/o", "open_url")
