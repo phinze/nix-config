@@ -85,17 +85,27 @@ in
 
       # jj ignores git's signing config, so commits made with jj (which is nearly
       # all of them) went out unsigned. A host with its own key signs for free,
-      # so jj signs there too, through the same wrapper. It signs at push rather
-      # than on every rewrite, which is jj's advice for a signer that isn't
-      # instant and costs nothing here. Hosts without a local key stay as they
-      # were, since there every signature would be a 1Password prompt.
+      # so jj signs there too. Hosts without a local key stay as they were,
+      # since there every signature would be a 1Password prompt.
+      #
+      # It signs every commit as jj writes it, not at push. Signing at push
+      # rewrote each commit on its way out, so the id an agent had already
+      # quoted, watched for, or relayed was dead by the time it landed. A local
+      # key costs about 50ms per rewrite, so the id you see is the id that
+      # ships. The push-time revset stays as a backstop for commits written
+      # before this, or by another tool.
+      #
+      # jj calls ssh-keygen on the key file directly rather than the wrapper,
+      # because the wrapper falls back to the agent and, at one signature per
+      # snapshot, a missing key would mean a 1Password prompt per jj command.
+      # Without the fallback a missing key makes jj fail loudly instead.
       (lib.mkIf (cfg.localKeyFile != null) {
         xdg.configFile."jj/conf.d/signing.toml".text = ''
           [signing]
-          behavior = "drop"
+          behavior = "own"
           backend = "ssh"
-          key = "dynamic"
-          backends.ssh.program = "${gitSshSign}/bin/git-ssh-sign"
+          key = "${cfg.localKeyFile}"
+          backends.ssh.program = "${pkgs.openssh}/bin/ssh-keygen"
           backends.ssh.allowed-signers = "${config.home.homeDirectory}/.ssh/allowed_signers"
 
           [revsets]
