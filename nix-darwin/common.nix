@@ -248,6 +248,10 @@ in
   homebrew.masApps = {
     "Xcode" = 497799835;
     "Flighty" = 1358823008;
+    # Declared so cleanup keeps it: removing an App Store app from
+    # /Applications trips macOS's App Management guard on the installer's
+    # bash, which fails the whole activation.
+    "1Password for Safari" = 1569813296;
   };
 
   # Colima for Docker on macOS
