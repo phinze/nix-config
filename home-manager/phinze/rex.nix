@@ -218,8 +218,25 @@ in
           rex.bind("prefix/shift+" .. key, "pane.resize", { direction = dir, amount = 5 })
         end
 
+        -- Bring the rig web window forward. It's Safari's Add to Dock app,
+        -- ~/Applications/rig.app, and it already follows whichever session
+        -- is on screen, so showing it is all there is to do. By name rather
+        -- than bundle id, because the id is a UUID Safari mints per install.
+        rex.action({
+          name = "rig_window",
+          title = "Show Rig Window",
+          category = "Rig",
+          keywords = "rig web window pwa recto safari web app show",
+          run = function()
+            local r, err = rex.exec({ "/usr/bin/open", "-a", "rig" }, { timeout = 10 })
+            if r == nil then error("open failed: " .. tostring(err), 0) end
+            if not r.ok then error("couldn't open the rig app: " .. r.stderr, 0) end
+          end,
+        })
+
         rex.bind("cmd+shift+r", "rig_radar")
         rex.bind("prefix/r", "rig_radar")
+        rex.bind("prefix/w", "rig_window")
         rex.bind("prefix/t", "session.switch")
         rex.bind("prefix/s", "pane.split.down")
         rex.bind("prefix/v", "pane.split.right")
@@ -396,6 +413,15 @@ in
             end
           end,
         })
+      '';
+      # As on foxtrotbase, the server reads init.lua once, so a deploy has to
+      # tell it to look again; without this, new bindings sat unloaded after
+      # the Mac's install until someone reloaded by hand. The CLI lives in the
+      # app bundle (no package here), so a missing or renamed one is skipped
+      # rather than failing the activation.
+      xdg.configFile."rex/init.lua".onChange = ''
+        rex="/Applications/Rex.app/Contents/Helpers/Rex Server.rex/Contents/MacOS/rex"
+        if [ -x "$rex" ]; then "$rex" config reload --autostart=false || true; fi
       '';
     })
 
