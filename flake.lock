@@ -2,11 +2,11 @@
   "nodes": {
     "agent-private": {
       "locked": {
-        "lastModified": 1793456403,
-        "narHash": "sha256-6p4osSpSvB4H74s4jUzBN/qMQ9OIkM8COOyjyY+YdJE=",
+        "lastModified": 1794775753,
+        "narHash": "sha256-xhxBLcMRpYTV8vP/D2PZfe7NF3YiwtaoZs+27cVQz8A=",
         "ref": "refs/heads/main",
-        "rev": "55e0e012356dc806a61722c1fb5a3c6e268c2f49",
-        "revCount": 2,
+        "rev": "33e94d3cb87e9e0fc42282de27455753bb35fdd2",
+        "revCount": 3,
         "type": "git",
         "url": "https://github.com/phinze/agent-private.git"
       },
