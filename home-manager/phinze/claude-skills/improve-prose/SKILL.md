@@ -13,6 +13,16 @@ This is not a controlled-language compliance check. Do not enforce a restricted
 vocabulary, fixed sentence length, or ban on contractions. Optimize for the
 reader, not an AI-detector score or a generic idea of what sounds human.
 
+## How the work divides
+
+You find the point and gather the facts the prose rests on: what changed, what
+was decided, what is still uncertain. You write the first draft. Then Gemini 4
+Carbon revises it, using the rest of this skill as its rubric, because it
+writes noticeably less like a chatbot than Claude does. You check its revision
+and return the result. `references/carbon.md` covers the call, when to skip
+Carbon, and what may be sent to it. When Carbon is skipped, revise the draft
+yourself against the same rubric.
+
 ## Find the point
 
 Infer the audience, purpose, and desired response from the request and source
@@ -103,7 +113,14 @@ build a through-line that makes their order matter.
 
 Compare a revision with its source. Make sure every fact, number, date,
 citation, qualification, and commitment survives, and that the rewrite invents
-none.
+none. Check especially for a dropped clause that gives a reason, names a
+tradeoff, or says what would go wrong otherwise. A reviser tends to trim those
+as asides, and they are often the point of the sentence.
+
+When the revision came from Carbon, restore what it lost and fix what it got
+wrong, but otherwise keep its wording, even where you would have phrased it
+differently. Its value is a different writer's ear, and overruling it on taste
+throws that away.
 
 ## Return the result
 

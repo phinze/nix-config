@@ -556,6 +556,16 @@ in
   # conversational voice in the global instructions.
   home.file.".claude/skills/improve-prose".source = ./claude-skills/improve-prose;
 
+  # improve-prose's Carbon revision sends samples of Paul's own writing along
+  # with each draft. They stay out of this public repo and ship from
+  # agent-private; the guard keeps eval working until the sync picks up an
+  # agent-private rev that has them.
+  home.file.".config/carbon/voice" =
+    lib.mkIf (builtins.pathExists "${inputs.agent-private}/prose/voice")
+      {
+        source = "${inputs.agent-private}/prose/voice";
+      };
+
   # PR workflow skills. These were slash commands for a long time, which meant
   # only a human could start them: a command is invisible to the model, so an
   # agent asked to "take us through pr-time" had to go read the prompt file off

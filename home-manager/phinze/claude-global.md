@@ -30,6 +30,11 @@ messages, docs), follow these principles:
   use commas or parentheses, or just split into two sentences. The only
   exceptions: a genuine mid-sentence interruption that really earns it, or
   ASCII art / diagrams.
+- **Run first drafts through Carbon.** Unless you are a Gemini model, hand
+  prose you drafted for human readers (PR and issue bodies, code comments,
+  docs, plans) to Gemini 4 Carbon before showing it to anyone, then check its
+  version against the facts. The improve-prose skill says how.
+  Chat replies are exempt.
 
 Individual skills may layer on additional voice guidance (e.g. pr-time's
 narrative style, review-pr's collaborative tone). These globals apply

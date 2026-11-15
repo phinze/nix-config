@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+"""carbon: one-shot prose edit through Gemini 4 Carbon.
+
+Sends a draft, the facts behind it, and the writing rules to Carbon and prints
+only the revision. The caller still checks the result against the facts.
+
+Rules sent by default (skip them with --no-defaults):
+  - the improve-prose SKILL.md next to this script
+  - the "## Voice" section of ~/.claude/CLAUDE.md
+  - samples of Paul's own writing: every *.md in $CARBON_VOICE_DIR, or
+    ~/.config/carbon/voice when that directory exists
+
+Auth, first match wins:
+  GEMINI_API_KEY          Gemini API key from the environment
+  CARBON_OP_REF           1Password reference read with `op read`
+                          (default op://cli/gemini/credential)
+
+--code edits only the comments in a source file, then checks that the code
+outside comments came back unchanged. It exits 2 if the code changed.
+"""
+
+import argparse
+import json
+import os
+import pathlib
+import re
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+MODEL = os.environ.get("CARBON_MODEL", "gemini-4-carbon")
+HERE = pathlib.Path(__file__).resolve().parent
+
+ROLE = """\
+You are editing prose that another model drafted for a human reader. Rewrite it
+so it reads like a thoughtful person wrote it: clear, direct, specific, in the
+author's voice. Keep every fact, number, identifier, qualification and
+commitment. Do not add claims the facts don't support. Leave code blocks,
+commands, identifiers, links and frontmatter exactly as they are. Restructure
+when the order makes the reader work; don't just swap words.
+
+Leave quotations, and any passage marked as the author's own words, exactly as
+they are. Keep the title and headings unless they're unclear. Don't make the
+text longer: turning a fragment into a sentence is fine, but cut filler,
+restated conclusions and framing sentences rather than adding them. Don't spell
+out an inference the draft only hints at.
+
+Keep the reasons. A clause that says why something is done, what tradeoff it
+makes, or what would go wrong otherwise is usually the most important part of
+the sentence, even when it looks like an aside. Shorten it if you can; don't
+drop it.
+
+Return only the revised text, in the same format (Markdown stays Markdown). No
+preamble, no commentary, no code fence around the whole thing.
+"""
+
+CODE_BRIEF = """\
+This draft is a source file. Edit ONLY the comments. Every line of code, every
+import, every string literal, and the blank lines between declarations must
+come back byte-identical. Return the complete file as plain source, with no
+Markdown fence.
+
+Good code comments are shorter than prose. Say what the code does when it
+isn't obvious and why it does it that way. Say each fact once: if a package or
+module doc already explains something, a later comment can point to it instead
+of retelling it. History (what an earlier version did, what review changed)
+belongs in commit messages, not comments, unless it stops someone from
+reintroducing a known mistake, and then keep it to a sentence. Keep real
+numbers and measured facts where they justify a constant. Follow the
+language's doc-comment conventions.
+"""
+
+
+def read(path):
+    return sys.stdin.read() if path == "-" else pathlib.Path(path).read_text()
+
+
+def strip_frontmatter(text):
+    return re.sub(r"\A---\n.*?\n---\n", "", text, count=1, flags=re.S)
+
+
+def voice_section(text):
+    m = re.search(r"^## Voice\n(.*?)(?=^## |\Z)", text, flags=re.S | re.M)
+    return m.group(0) if m else ""
+
+
+def default_rules():
+    rules = [strip_frontmatter((HERE.parent / "SKILL.md").read_text())]
+    claude_md = pathlib.Path.home() / ".claude" / "CLAUDE.md"
+    if claude_md.exists():
+        rules.append(voice_section(claude_md.read_text()))
+    return [r for r in rules if r.strip()]
+
+
+def default_sample():
+    d = pathlib.Path(
+        os.environ.get("CARBON_VOICE_DIR")
+        or pathlib.Path.home() / ".config" / "carbon" / "voice"
+    )
+    return [p.read_text() for p in sorted(d.glob("*.md"))] if d.is_dir() else []
+
+
+def build_request(draft, rules, facts, samples, brief, thinking):
+    system = ROLE
+    if rules:
+        system += "\n\n## Writing rules from the author\n\n" + "\n\n".join(rules)
+    if samples:
+        system += (
+            "\n\n## Samples of the author's own writing (match this voice)\n\n"
+            + "\n\n---\n\n".join(samples)
+        )
+    user = ""
+    if facts:
+        user += "## Facts behind the draft (ground truth)\n\n" + facts + "\n\n"
+    if brief:
+        user += "## Instructions for this edit\n\n" + brief + "\n\n"
+    user += "## Draft to edit\n\n" + draft
+    return {
+        "systemInstruction": {"parts": [{"text": system}]},
+        "contents": [{"role": "user", "parts": [{"text": user}]}],
+        "generationConfig": {"thinkingConfig": {"thinkingLevel": thinking}},
+    }
+
+
+def api_key():
+    key = os.environ.get("GEMINI_API_KEY")
+    if key:
+        return key
+    ref = os.environ.get("CARBON_OP_REF", "op://cli/gemini/credential")
+    r = subprocess.run(["op", "read", ref], capture_output=True, text=True)
+    if r.returncode != 0 or not r.stdout.strip():
+        sys.exit(f"carbon: no GEMINI_API_KEY and `op read {ref}` failed: {r.stderr.strip()}")
+    return r.stdout.strip()
+
+
+def call(body):
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json", "x-goog-api-key": api_key()},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=900) as r:
+            resp = json.load(r)
+    except urllib.error.HTTPError as e:
+        sys.exit(f"carbon: HTTP {e.code}: {e.read().decode()[:2000]}")
+    parts = resp["candidates"][0]["content"]["parts"]
+    text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+    u = resp.get("usageMetadata", {})
+    print(
+        f"carbon: {u.get('promptTokenCount')} in / {u.get('candidatesTokenCount')} out / "
+        f"{u.get('thoughtsTokenCount', 0)} thinking tokens "
+        f"({u.get('cachedContentTokenCount', 0)} input cached)",
+        file=sys.stderr,
+    )
+    return text
+
+
+COMMENT_LINE = re.compile(r"^\s*(//|#(?!!)|--|;)")
+
+
+def code_only(text):
+    """Source with comment lines, trailing // comments and blank lines removed.
+
+    Crude on purpose: the same transform runs on both versions, so it only has
+    to be consistent, not a parser. It covers //, #, -- and ; line comments.
+    """
+    out = []
+    for line in text.splitlines():
+        if COMMENT_LINE.match(line):
+            continue
+        line = re.sub(r"\s//\s.*$", "", line).rstrip()
+        if line:
+            out.append(line)
+    return out
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    p.add_argument("draft", help="draft file, or - for stdin")
+    p.add_argument("--facts", help="file with the facts behind the draft")
+    p.add_argument("--brief", default="", help="instructions specific to this edit")
+    p.add_argument("--code", action="store_true", help="edit only comments in a source file and check the code")
+    p.add_argument("--rules", action="append", default=[], help="extra writing rules file (repeatable)")
+    p.add_argument("--sample", action="append", default=[], help="extra sample of the author's writing (repeatable)")
+    p.add_argument("--no-defaults", action="store_true", help="skip the default rules and voice sample")
+    p.add_argument("--thinking", default="low", choices=["low", "medium", "high"])
+    p.add_argument("--dry-run", action="store_true", help="print the request instead of sending it")
+    a = p.parse_args()
+
+    draft = read(a.draft)
+    rules = ([] if a.no_defaults else default_rules()) + [read(r) for r in a.rules]
+    samples = ([] if a.no_defaults else default_sample()) + [read(s) for s in a.sample]
+    brief = "\n\n".join(b for b in [CODE_BRIEF if a.code else "", a.brief] if b)
+    body = build_request(draft, rules, read(a.facts) if a.facts else "", samples, brief, a.thinking)
+
+    if a.dry_run:
+        json.dump(body, sys.stdout, indent=2)
+        return
+
+    text = call(body)
+    if draft.endswith("\n") and not text.endswith("\n"):
+        text += "\n"
+    sys.stdout.write(text)
+
+    if a.code and code_only(draft) != code_only(text):
+        print("carbon: the code outside comments changed; don't use this output as-is", file=sys.stderr)
+        sys.exit(2)
+
+
+if __name__ == "__main__":
+    main()
