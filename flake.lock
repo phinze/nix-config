@@ -140,11 +140,11 @@
     "claude-plugin-miren-team": {
       "flake": false,
       "locked": {
-        "lastModified": 1793987273,
-        "narHash": "sha256-hq5iqq7lH7RQ2XheGg7A76yHclvuR8NXcDCJgvOgXhE=",
+        "lastModified": 1794837952,
+        "narHash": "sha256-/6oOBsTm3z+X+S+d76/+slIPJ+EHfCY2Esw21L0v2XM=",
         "ref": "refs/heads/main",
-        "rev": "0b505e5c41122b81bbbf6f46e65ace4404d9875f",
-        "revCount": 26,
+        "rev": "4a21f75c9a08700efc9b7a7d74176e6b9454444a",
+        "revCount": 28,
         "type": "git",
         "url": "https://github.com/mirendev/claude-skills.git"
       },
