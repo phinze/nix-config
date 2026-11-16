@@ -122,16 +122,9 @@
   # Enable mosh for remote connections
   programs.mosh.enable = true;
 
-  # Bankshot port monitoring, as a system service running as phinze.
-  #
-  # It has to be a system service: the monitor needs CAP_BPF and CAP_PERFMON
-  # for eBPF, systemd can only grant capabilities to a system unit, and a
-  # user unit's only way to get them is to exec a setcap copy out of
-  # /run/wrappers. That route leaves a capability-carrying bankshot any local
-  # user can exec, and it decouples the unit from the binary it runs, so the
-  # monitor silently drifts a build behind on every rebuild. Ambient
-  # capabilities scope the grant to this one process and let ExecStart name
-  # the store path.
+  # The bankshot monitor, as a system service running as phinze. Starting at
+  # boot rather than at login means the ssh-agent fallback, op and paste are
+  # there before anyone attaches.
   #
   # Pointing configFile at the file home-manager already renders keeps one
   # source of truth for the settings, and means a config change changes the

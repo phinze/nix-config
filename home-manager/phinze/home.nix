@@ -1060,7 +1060,7 @@ in
         # 1. stty -echo: prevent echoing of focus events already in flight
         # 2. printf '\e[?1004l': tell terminal to stop sending focus events
         # The login shell (exec $SHELL) restores terminal settings.
-        RemoteCommand = "stty -echo 2>/dev/null; printf '\\e[?1004l'; bankshot monitor reconcile >/dev/null 2>&1 || true; exec \$SHELL -l";
+        RemoteCommand = "stty -echo 2>/dev/null; printf '\\e[?1004l'; exec \$SHELL -l";
         RequestTTY = "yes";
       };
     };
@@ -1166,43 +1166,14 @@ in
         };
       };
 
-    # On macOS this is the launchd agent that owns the SSH forwards. On Linux
-    # the monitor runs as a system service instead (services.bankshot.monitor
-    # in the NixOS baseline), because only a system unit can be granted the
-    # eBPF capabilities it needs, so home-manager should not stand up a
-    # second, user-scoped one here.
+    # On macOS this is the launchd agent for the daemon. On Linux the monitor
+    # runs as a system service instead (services.bankshot.monitor in the
+    # NixOS baseline), so home-manager should not stand up a second,
+    # user-scoped one here.
     daemon = {
       enable = pkgs.stdenv.hostPlatform.isDarwin;
       autoStart = true;
       logLevel = "info";
-    };
-
-    # Monitor configuration (applies to bankshot monitor on remote servers).
-    # Auto-forward is off: most of what it forwarded were listeners nobody
-    # opened, and Rex forwards on demand now. `bankshot forward PORT` and
-    # `bankshot wrap` still forward when asked, and the monitor keeps serving
-    # open, paste, op and the ssh-agent fallback. The filters below only
-    # matter if autoForward comes back on.
-    monitor = {
-      autoForward = false;
-      pollInterval = "1s";
-      gracePeriod = "30s";
-      ignorePorts = [ bankshotBridgePort ];
-      ignoreProcesses = [
-        "sshd"
-        "systemd"
-        "ssh-agent"
-        "miren"
-        "agy"
-        "agy-wrapped"
-        ".agy-wrapped"
-        "etcd"
-        "victoria"
-        "containerd"
-        "postgres"
-        "/\\.test$/"
-        "/^chromedp-runner/"
-      ];
     };
   };
 
