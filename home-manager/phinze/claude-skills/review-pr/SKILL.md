@@ -64,6 +64,11 @@ Do this quietly and quickly. It is plumbing, not review.
    If no Recto is listening, continue with the conversation fallback below,
    but say that the shared draft surface is unavailable.
 
+   Web first, while `rig config recto` says `web`: no terminal Recto opens,
+   so skip `ping`, which only answers from one. `pr`, `review`,
+   `review-comment`, `review-body`, `review-verdict` and `review-focus` work
+   without one, writing the saved slate Paul reads in the web window.
+
 5. **On a stacked PR, fix Recto's base.** If `baseRefName` is not trunk,
    Recto may be showing every PR below this one. Compare `recto ping`'s `files`
    with the PR diff. If they disagree, tell the user to press `b` and set the
