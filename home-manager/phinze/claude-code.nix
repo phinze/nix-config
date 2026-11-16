@@ -445,8 +445,8 @@ in
         source = ./claude-rules/ssh-agent.md;
       };
 
-  # foxtrotbase forwards dev servers to the Mac only on request (bankshot's
-  # autoForward is off in home.nix), so its agents need to know to ask.
+  # foxtrotbase forwards dev servers to the Mac only when Paul ⌘-clicks a
+  # localhost link in Rex, so its agents need to print one.
   home.file.".claude/rules/mac-preview.md" =
     lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && (osConfig.networking.hostName or "") == "foxtrotbase")
       {
