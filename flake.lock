@@ -156,11 +156,11 @@
     "claude-plugins-official": {
       "flake": false,
       "locked": {
-        "lastModified": 1794616868,
-        "narHash": "sha256-2rggi6MyrjwIRhM/TCOoDvqlGs4l5V0beE11537mO1Y=",
+        "lastModified": 1794851582,
+        "narHash": "sha256-g4ilhs1xWRX7Z3m8TaXbPG9gG/pXMuY18dbejmXF99A=",
         "owner": "anthropics",
         "repo": "claude-plugins-official",
-        "rev": "b5b01ac4f889fec0c4c6bb89f27ca7c8574473f6",
+        "rev": "f59aa2e6dd7d93e45910afcb7569d73b375f31f7",
         "type": "github"
       },
       "original": {
@@ -445,14 +445,14 @@
     "miren-cli": {
       "flake": false,
       "locked": {
-        "lastModified": 1794420906,
-        "narHash": "sha256-W7GwSuk5kZ+hfoIKebHuDcu7U5dNcoDok60RgKrKVVc=",
+        "lastModified": 1794850018,
+        "narHash": "sha256-kdJQoXy3KaEcJPsXtrtupnqmbUPhDiGQxCWFRsgZ/YY=",
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.17.4/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.18.0/miren-linux-amd64.zip"
       },
       "original": {
         "type": "tarball",
-        "url": "https://api.miren.cloud/assets/release/miren/v0.17.4/miren-linux-amd64.zip"
+        "url": "https://api.miren.cloud/assets/release/miren/v0.18.0/miren-linux-amd64.zip"
       }
     },
     "multipass": {
@@ -826,10 +826,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1794599376,
-        "narHash": "sha256-EXeKXr+NeDEc6JyfZHckVzkJCiCU0/rRkR3EVOFR3vE=",
+        "lastModified": 1794850191,
+        "narHash": "sha256-kLN4bhTD2pbpr5FMWqh3FxzJr9xaRFc3rQWEibZOhIg=",
         "type": "tarball",
-        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.19.tar.gz"
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.20.tar.gz"
       },
       "original": {
         "type": "tarball",
