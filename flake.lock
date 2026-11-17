@@ -806,11 +806,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794865744,
-        "narHash": "sha256-P0CXOwUPbgQkjzWYaHVFs4s1F6rzpc6llNm7GpPx8hw=",
+        "lastModified": 1794872100,
+        "narHash": "sha256-mU+wmxiz3iLxJjJa4qg2fjXQSUnTY1kBGCFQeSaUR3I=",
         "owner": "phinze",
         "repo": "recto",
-        "rev": "f9f859dbd0b8986b240b7e3e4a0c09f60a08244e",
+        "rev": "22765881935c7f42e2235020a4a1e85ab06e4ebc",
         "type": "github"
       },
       "original": {
@@ -846,11 +846,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794865839,
-        "narHash": "sha256-JIiCCVgmxi4hyTx4MUGLyFSGtV/+Awe3MmKeqRjO7W8=",
+        "lastModified": 1794871724,
+        "narHash": "sha256-IfufXZDjQiDT5yPrC2u5M/W7H4WMANLffn7WD6Mbzz4=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "0c17d01b6e422e8ee8b6ae86653a854e5014db59",
+        "rev": "d62e9920f1c1e7058c0ed9cf2a19b6c52cb79927",
         "type": "github"
       },
       "original": {
