@@ -338,16 +338,11 @@ in
           return { url = url }
         end
 
-        -- The picker is fzf in a floating layer, which starts on the pane's
-        -- host the way the radar's does, so it opens the pick from there:
-        -- with xdg-open on foxtrotbase, which is bankshot and so still the
-        -- Mac's browser, and with open on the Mac. The links ride in as argv,
-        -- so nothing in them is ever read by a shell.
-        local PICK = [[
-          u=$(printf '%s\n' "$@" | fzf --no-sort --reverse --prompt='open> ') || exit 0
-          if command -v xdg-open >/dev/null 2>&1; then xdg-open "$u"; else open "$u"; fi
-        ]]
-
+        -- When there are several links, rex.ui.pick (Mac preview.32) asks in
+        -- the command palette. Because the action runs in this Mac's server,
+        -- the answer returns here and opens directly via open_url even for
+        -- foxtrotbase panes (unlike a floating shell picker, which runs on the
+        -- pane's host and needs xdg-open to reach the Mac).
         rex.action({
           name = "open_url",
           title = "Open Link in Browser…",
@@ -357,23 +352,21 @@ in
             local urls = pane_urls(ctx)
             if #urls == 0 then return nothing_to_open() end
             if #urls == 1 then return open_url(urls[1]) end
-            local command = { "/bin/sh", "-lc", PICK, "pick-url" }
-            for i = 1, math.min(#urls, 50) do command[#command + 1] = urls[i] end
-            local _, err = rex.call("session.new_layer", {
-              session_id = ctx.session_id,
-              bounds = { 0.15, 0.3, 0.7, 0.4 },
-              focus = true,
-              layout = rex.layout.block({
-                flavor = "com.superlogical.terminal.shell",
-                label = "links",
-                options = {
-                  command = command,
-                  exit = { on_completion = true },
-                  theme = { background = "#181825", foreground = "#cdd6f4" },
-                },
-              }),
+            local items = {}
+            for i = 1, math.min(#urls, 200) do
+              items[i] = { id = urls[i], icon = "link" }
+            end
+            local url, why = rex.ui.pick({
+              title = "Open link",
+              placeholder = "Filter links, newest first",
+              confirm = "Open in browser",
+              items = items,
             })
-            if err ~= nil then error(err, 0) end
+            if url == nil then
+              if why == "cancelled" then return { url = nil } end
+              error("link picker: " .. tostring(why), 0)
+            end
+            return open_url(url)
           end,
         })
 
