@@ -243,6 +243,9 @@ in
         rex.bind("prefix/ctrl+s", "pane.split.down")
         rex.bind("prefix/ctrl+v", "pane.split.right")
         rex.bind("prefix/z", "pane.zoom")
+        -- tmux's copy-mode key. Rex's copy mode (preview.32) already moves
+        -- and yanks with vi keys, so only the way in needs binding.
+        rex.bind("prefix/[", "pane.copy_mode.enter")
         rex.bind("prefix/x", "pane.close")
         rex.bind("prefix/shift+b", "pane.move_to_new_tab")
         rex.bind("prefix/c", "client.tab.new")
