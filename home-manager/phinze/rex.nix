@@ -119,29 +119,67 @@ in
           end
         end
 
+        local function open_radar(ctx)
+          close_radars(ctx.session_id)
+          local _, err = rex.call("session.new_layer", {
+            session_id = ctx.session_id,
+            bounds = { 0.1, 0.1, 0.8, 0.8 },
+            focus = true,
+            layout = rex.layout.block({
+              flavor = "com.superlogical.terminal.shell",
+              label = "radar",
+              options = {
+                command = { "/bin/sh", "-lc", "RIG_REX_CLIENT_LABEL='"
+                  .. (client_label(ctx) or ""):gsub("'", "") .. "' RIG_RADAR_BG='#181825' rig radar" },
+                exit = { on_completion = true },
+                theme = { background = "#181825", foreground = "#cdd6f4" },
+              },
+            }),
+          })
+          if err ~= nil then error(err, 0) end
+        end
+
         rex.action({
           name = "rig_radar",
           title = "Rig Radar",
           category = "Rig",
           keywords = "rig radar switch session hop",
+          run = open_radar,
+        })
+
+        -- Hop to a rig (the radar keys below). In a session on another host,
+        -- the hop belongs to that host's own init.lua (foxtrotbase's
+        -- rig_hop), since only its rig sees its rigs, and an action here can
+        -- call that server's API but can't run anything there. So this
+        -- starts the Mac's CLI on `rex do rig_hop` against that server and
+        -- lets the palette question come from there. A Mac session has no
+        -- other host to ask, so it keeps the radar.
+        --
+        -- The CLI waits until the question is answered, so it's detached,
+        -- and the action only waits long enough to report a quick failure,
+        -- such as a server the CLI can't reach.
+        local REX_CLI = [[
+          r="''${REX_BIN_DIR:+$REX_BIN_DIR/}rex"
+          command -v "$r" >/dev/null 2>&1 || r="/Applications/Rex.app/Contents/Helpers/Rex Server.rex/Contents/MacOS/rex"
+          exec "$r" "$@"
+        ]]
+
+        rex.action({
+          name = "rig_hop",
+          title = "Hop to Rig…",
+          category = "Rig",
+          keywords = "rig hop jump switch session wake radar",
           run = function(ctx)
-            close_radars(ctx.session_id)
-            local _, err = rex.call("session.new_layer", {
-              session_id = ctx.session_id,
-              bounds = { 0.1, 0.1, 0.8, 0.8 },
-              focus = true,
-              layout = rex.layout.block({
-                flavor = "com.superlogical.terminal.shell",
-                label = "radar",
-                options = {
-                  command = { "/bin/sh", "-lc", "RIG_REX_CLIENT_LABEL='"
-                    .. (client_label(ctx) or ""):gsub("'", "") .. "' RIG_RADAR_BG='#181825' rig radar" },
-                  exit = { on_completion = true },
-                  theme = { background = "#181825", foreground = "#cdd6f4" },
-                },
-              }),
-            })
-            if err ~= nil then error(err, 0) end
+            if not ctx.server then return open_radar(ctx) end
+            local h, err = rex.exec.start({ "/bin/sh", "-c", REX_CLI, "rex",
+              "-S", ctx.server, "--timeout", "330s", "do", "rig_hop",
+              "session_id=" .. (ctx.session_id or ""),
+              "client_label=" .. (client_label(ctx) or "") }, { detach = true })
+            if h == nil then error("rig hop: " .. tostring(err), 0) end
+            local r = h:wait(3)
+            if r ~= nil and not r.ok then
+              error("rig hop on " .. ctx.server .. ": " .. (r.stderr or ""), 0)
+            end
           end,
         })
 
@@ -234,8 +272,9 @@ in
           end,
         })
 
-        rex.bind("cmd+shift+r", "rig_radar")
-        rex.bind("prefix/r", "rig_radar")
+        -- The radar keys hop now; the radar itself stays in the palette.
+        rex.bind("cmd+shift+r", "rig_hop")
+        rex.bind("prefix/r", "rig_hop")
         rex.bind("prefix/w", "rig_window")
         rex.bind("prefix/t", "session.switch")
         rex.bind("prefix/s", "pane.split.down")
@@ -473,6 +512,93 @@ in
             })
             if err ~= nil then error(err, 0) end
             rex.client.queue("session.select", { session_id = ctx.session_id, window_id = win.window_id })
+          end,
+        })
+
+        -- Hop to another rig from the command palette. This is the radar's
+        -- Enter without the rest of the radar: it picks from rig's board
+        -- (cached PR state included) and runs `rig wake`, which switches to
+        -- a live rig and wakes a parked one. It lives here, not in the Mac's
+        -- init.lua, because only this server's rig can see these rigs. The
+        -- question goes to every app connected here, Mac and phone alike,
+        -- and the first answer wins.
+        local function rig_board()
+          local r, err = rex.exec({ "/bin/sh", "-lc", "rig ls --format=json --full" }, { timeout = 30 })
+          if r == nil then error("rig ls: " .. tostring(err), 0) end
+          if not r.ok then error("rig ls: " .. r.stderr, 0) end
+          return rex.json.decode(r.stdout).rigs or {}
+        end
+
+        -- The rig a session belongs to is its label, give or take the glyph
+        -- some labels lead with.
+        local function rig_of_session(session_id)
+          local list = rex.call("session.list", {})
+          for _, s in ipairs(list and list.sessions or {}) do
+            if s.session_id == session_id then
+              return (s.label or ""):match("([%w%._%-]+)$")
+            end
+          end
+        end
+
+        local function hop_item(g)
+          local target, where = g.id, ""
+          if g.location and g.location ~= "local" then
+            target = g.id .. "@" .. g.location
+            where = " on " .. g.location
+          end
+          local state = g.parked and "parked" or (g.agent_status and g.agent_status.state or g.state or "")
+          local pr = g.disposition
+          if pr == "no PR" then pr = nil end
+          return {
+            id = target,
+            title = g.id,
+            subtitle = state .. where,
+            detail = pr,
+            icon = g.parked and "clock" or (where ~= "" and "server" or "terminal"),
+          }
+        end
+
+        -- The Mac's hop key runs this through `rex do`, which brings no ctx
+        -- of its own, so it passes along the session the key was pressed in
+        -- and its app's label, which every server sees the same.
+        rex.action({
+          name = "rig_hop",
+          title = "Hop to Rig…",
+          category = "Rig",
+          keywords = "rig hop jump switch session wake radar",
+          args = { session_id = "string?", client_label = "string?" },
+          run = function(ctx, args)
+            args = args or {}
+            local here = rig_of_session(ctx.session_id or args.session_id)
+            local rigs = {}
+            for _, g in ipairs(rig_board()) do
+              if g.id ~= here then rigs[#rigs + 1] = g end
+            end
+            -- Live rigs first, each group most recently active first. The
+            -- timestamps share an offset, so they sort as strings.
+            table.sort(rigs, function(a, b)
+              if (a.parked or false) ~= (b.parked or false) then return not a.parked end
+              return (a.last_active or "") > (b.last_active or "")
+            end)
+            local items = {}
+            for i, g in ipairs(rigs) do items[i] = hop_item(g) end
+
+            local target, why = rex.ui.pick({
+              title = "Hop to rig",
+              placeholder = "Filter rigs",
+              confirm = "Hop",
+              items = items,
+            })
+            if target == nil then
+              if why == "cancelled" then return end
+              error("rig hop: " .. tostring(why), 0)
+            end
+            -- The client and rig ride in as argv, so no shell reads them.
+            local r, err = rex.exec({ "/bin/sh", "-lc",
+              'RIG_REX_CLIENT="$1" RIG_REX_CLIENT_LABEL="$2" exec rig wake "$3"',
+              "rig-hop", ctx.client_id or "", args.client_label or "", target }, { timeout = 120 })
+            if r == nil then error("rig wake: " .. tostring(err), 0) end
+            if not r.ok then error("rig wake: " .. r.stderr, 0) end
           end,
         })
       '';
