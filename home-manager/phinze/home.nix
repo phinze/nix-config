@@ -278,7 +278,13 @@ in
       opencode # AI coding agent for the terminal, multi-provider
       unstable.fabric-ai # AI framework for augmenting humans
       unstable.deno # JS runtime required by yt-dlp for YouTube signature solving
-      unstable.mpv # Media player for YouTube DJ sets and streams
+      # Media player for YouTube DJ sets and streams. Its wrapper bakes in a
+      # yt-dlp of its own (appended to PATH), and under launchd's bare PATH
+      # that baked-in copy is the only one mpv can see. Hand it the same
+      # small.yt-dlp so there's one yt-dlp, not a fresh one plus a stale one
+      # (2026-11: mpv kept unstable's 2026.08.19 while the profile had
+      # 2026.11.23, and dj playback broke).
+      (unstable.mpv.override { yt-dlp = small.yt-dlp; })
       # Video downloader, used by mpv and fabric. Reads from the small channel
       # on purpose: YouTube breaks yt-dlp releases within weeks, so the
       # regular unstable pin is stale by the time it lands (2026-09: a
