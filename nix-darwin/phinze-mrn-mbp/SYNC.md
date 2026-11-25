@@ -11,17 +11,22 @@ On battery it skips the check. On AC power it fetches and builds the Mac system
 as the logged-in user, with lockfile updates and writes disabled. An unchanged
 revision or an already active closure doesn't produce an install prompt.
 
-Once a build is ready, a notification offers **Install** for 15 minutes. Clicking
-the notification body, dismissing it, or letting it expire does not install
-anything. The next scheduled run or manual kick can offer it again. A single
-notification group keeps offers from piling up.
+Once a build is ready, it becomes a standing offer in `pending.json`, along
+with the commits it would install. The offer stands until something replaces
+it: a newer `main` builds, the active system changes, or the install succeeds.
+Nothing about the notification decides its fate.
+
+The notification is a nudge. Clicking it runs `nix-config-sync install`.
+Dismissing it, clearing Notification Center, or missing it costs nothing,
+because each scheduled run that finds the same offer still valid nudges again
+without rebuilding. A single notification group keeps nudges from piling up.
 
 Install starts a separate one-shot LaunchAgent. It uses the same lock as the
 scheduled job, then asks for the normal sudo Touch ID prompt without opening
 Terminal. `sudo -S -v` runs with stdin closed: the existing `pam_reattach` and
 `pam_tid` configuration supplies Touch ID, but password fallback cannot wait
 for invisible input. Cancellation or unavailable authentication defers the
-install and posts a notification. No passwordless sudo rule is added.
+install and posts a notification, and the offer stays for another try. No passwordless sudo rule is added.
 
 After authentication, the installer checks power and the active system again.
 It activates the exact closure offered using `sudo -n`, so activation cannot
@@ -44,27 +49,32 @@ a changed system profile, and need inspection before retrying.
 
 ## Commands
 
-- `nix-config-sync kick` asks launchd to check now, without bypassing AC power.
-  If a check is already running or waiting for a click, it remains that check;
-  kick doesn't kill it or start a competing run.
-- `nix-config-sync status` prints the last recorded phase and timestamp. This
-  is a record, not a live process-health check; an interrupted run can leave an
-  old phase behind.
+- `nix-config-sync kick` asks launchd to check now, and that check runs even on
+  battery. If a check is already running, it remains that check; kick doesn't
+  kill it or start a competing run. With a valid offer standing, the check just
+  nudges again.
+- `nix-config-sync install` hands the standing offer to the installer, which
+  asks for Touch ID. It refuses while a check holds the lock, rather than
+  queueing an authentication prompt that would show up minutes later.
+- `nix-config-sync status` prints the last recorded phase and timestamp, plus
+  the standing offer and its commits if there is one. This is a record, not a
+  live process-health check; an interrupted run can leave an old phase behind.
 - `nix-config-sync logs` follows the agent and install logs in
   `~/Library/Logs/nix-config-sync/`.
 
 If the active system differs from the last recorded deployment while `main`
 hasn't changed, sync preserves that manual configuration. A new `main` can
-produce a new offer, but still needs an Install click. A manual activation after
+produce a new offer, but still needs an install. A manual activation after
 an offer invalidates that offer rather than silently overwriting the preview.
 
 ## First use
 
 After deploying this configuration, allow terminal-notifier to send
 notifications. Choose Banners or Alerts in System Settings → Notifications →
-terminal-notifier. A button can require hovering over a banner; Alerts keep it
-visible. Focus and notification settings can suppress delivery. Without an
-Install click, no authentication or activation happens.
+terminal-notifier. Banners are enough now that the notification is a nudge.
+Focus and notification settings can suppress delivery. Notifications
+are only a nudge. Without a click or `nix-config-sync install`, no
+authentication or activation happens.
 
 Homebrew installs `terminal-notifier`; there is no custom Nix package. Sync uses
 `/opt/homebrew/bin/terminal-notifier` directly. Home activation registers the
@@ -73,15 +83,16 @@ before starting the agent; without registration macOS can reject even the
 permission request. After a Homebrew upgrade, notification permissions may
 need checking again.
 
-Homebrew updates and cleanup remain part of the normal Darwin activation. An
-Install click approves that activation too, not just a Nix profile change.
+Homebrew updates and cleanup remain part of the normal Darwin activation. Approving
+an install approves that activation too, not just a Nix profile change.
 
 ## Validation
 
 Run `scripts/test-nix-config-sync-darwin` for mocked reconciliation and install
 tests. These cover power changes, previews, unchanged closures, failed builds,
-notification dismissal, expired offers, authentication cancellation, and failed
-activation without invoking sudo or changing a real system.
+standing offers that survive missed nudges, offers replaced by a newer `main`,
+installs refused during a running check, authentication cancellation, and
+failed activation without invoking sudo or changing a real system.
 
 Build the generated command to run its ShellCheck validation, and evaluate both
 host configurations to check that the Darwin module doesn't change the Linux

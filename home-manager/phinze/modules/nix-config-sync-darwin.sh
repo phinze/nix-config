@@ -35,10 +35,33 @@ record_deployment() {
   mv "$STATE_DIR/deployed.json.tmp" "$STATE_DIR/deployed.json"
 }
 
-request_install() {
+# The offer lives in pending.json, not in this notification. Clicking it runs
+# the same `install` command a terminal (or a future menubar app) would, and
+# dismissing or missing it costs nothing: the next tick nudges again.
+nudge_install() {
+  local command
+  printf -v command '%q install' "$0"
   "$NOTIFIER" -title "Configuration update ready" \
-    -message "Install ${1:0:12}? Approve with Touch ID. Offer expires in 15 minutes." \
-    -group nix-config-sync -action Install -timeout 900
+    -message "Click to install ${1:0:12} with Touch ID, or run nix-config-sync install." \
+    -group nix-config-sync -execute "$command"
+}
+
+lock_busy() {
+  ! /usr/bin/lockf -k -s -t 0 "$STATE_DIR/lock" /usr/bin/true
+}
+
+offer_still_valid() {
+  local candidate="$1" current="$2"
+  [[ -f "$STATE_DIR/pending.json" ]] || return 1
+  [[ "$(jq -r '.revision' "$STATE_DIR/pending.json" 2>/dev/null)" == "$candidate" ]] || return 1
+  [[ "$(jq -r '.previous' "$STATE_DIR/pending.json" 2>/dev/null)" == "$current" ]] || return 1
+  [[ "$(readlink -f "$STATE_DIR/result" 2>/dev/null)" == "$(jq -r '.system' "$STATE_DIR/pending.json")" ]]
+}
+
+offer_nudge() {
+  if ! nudge_install "$1"; then
+    echo "Notification failed; the offer stands. Check terminal-notifier permissions" >&2
+  fi
 }
 
 start_installer() {
@@ -64,14 +87,18 @@ cleanup_installer() {
 }
 
 reconcile() {
-  local candidate current deployed_revision deployed_system built token answer notification_status
+  local candidate current deployed_revision deployed_system built token changes
   local forced=0
   if [[ -f "$STATE_DIR/kicked" ]]; then
     forced=1
     rm -f "$STATE_DIR/kicked"
   fi
   if [[ "$forced" -eq 0 ]] && ! on_power; then
-    set_status deferred "On battery; leaving the system alone"
+    if [[ -f "$STATE_DIR/pending.json" ]]; then
+      set_status deferred "On battery; $(jq -r '.revision[:12]' "$STATE_DIR/pending.json") is still waiting for Install"
+    else
+      set_status deferred "On battery; leaving the system alone"
+    fi
     return 0
   fi
   set_status checking "Fetching committed main"
@@ -87,11 +114,17 @@ reconcile() {
   deployed_revision=$(jq -r '.revision' "$STATE_DIR/deployed.json" 2>/dev/null || true)
   deployed_system=$(jq -r '.system' "$STATE_DIR/deployed.json" 2>/dev/null || true)
   if [[ "$candidate" == "$deployed_revision" ]]; then
+    rm -f "$STATE_DIR/pending.json"
     if [[ "$current" == "$deployed_system" ]]; then
       set_status current "Already running ${candidate:0:12}"
     else
       set_status preview "Main is unchanged; preserving the manually activated system"
     fi
+    return 0
+  fi
+  if offer_still_valid "$candidate" "$current"; then
+    set_status ready "${candidate:0:12} is built; waiting for Install"
+    offer_nudge "$candidate"
     return 0
   fi
   rm -f "$STATE_DIR/pending.json"
@@ -109,40 +142,50 @@ reconcile() {
     return 0
   fi
   token=$(/usr/bin/uuidgen) || return
+  changes=""
+  if [[ -n "$deployed_revision" ]]; then
+    changes=$(git log --format='%h %s' -n 20 "$deployed_revision..$candidate" 2>/dev/null) || changes=""
+  fi
   jq -n --arg token "$token" --arg revision "$candidate" --arg system "$built" \
-    --arg previous "$current" --argjson expires "$(($(date +%s) + 900))" \
+    --arg previous "$current" --arg built_at "$(date -u +%FT%TZ)" --arg changes "$changes" \
     --argjson forced "$forced" \
-    '{token: $token, revision: $revision, system: $system, previous: $previous, expires: $expires, forced: ($forced == 1)}' \
+    '{token: $token, revision: $revision, system: $system, previous: $previous,
+      built_at: $built_at, forced: ($forced == 1),
+      changes: ($changes | split("\n") | map(select(length > 0)))}' \
     > "$STATE_DIR/pending.json.tmp"
   mv "$STATE_DIR/pending.json.tmp" "$STATE_DIR/pending.json"
   set_status ready "${candidate:0:12} is built; waiting for Install"
-  notification_status=0
-  answer=$(request_install "$candidate") || notification_status=$?
-  if [[ "$notification_status" != 0 && "$notification_status" != 6 ]]; then
-    rm -f "$STATE_DIR/pending.json"
-    echo "Notification failed ($notification_status); check notification permissions" >&2
-    return "$notification_status"
+  offer_nudge "$candidate"
+}
+
+# Public front door: hand the current offer to the one-shot installer agent.
+request_install() {
+  local token
+  if [[ ! -f "$STATE_DIR/pending.json" ]]; then
+    echo "No install offer is pending; run nix-config-sync kick" >&2
+    notify "Nothing to install right now."
+    return 1
   fi
-  if [[ "$notification_status" == 6 || "$answer" != Install ]]; then
-    rm -f "$STATE_DIR/pending.json"
-    set_status deferred "No install requested; retry on the next tick or kick"
-    return 0
+  if lock_busy; then
+    echo "A sync check is running; try Install again when it finishes" >&2
+    notify "A sync check is running. Try Install again when it finishes."
+    return 1
   fi
-  set_status awaiting-auth "Starting background installer for ${candidate:0:12}"
-  start_installer "$token"
+  token=$(jq -er '.token' "$STATE_DIR/pending.json") || return
+  start_installer "$token" || return
+  echo "Installer started; approve with Touch ID"
 }
 
 install_pending() {
-  local token candidate built previous expires forced
+  local token candidate built previous forced
   if [[ ! -f "$STATE_DIR/pending.json" ]]; then
     echo "No pending offer; run nix-config-sync kick" >&2
     return 1
   fi
   token=$(jq -er '.token' "$STATE_DIR/pending.json") || return
-  expires=$(jq -er '.expires' "$STATE_DIR/pending.json") || return
   forced=$(jq -r '.forced // false' "$STATE_DIR/pending.json" 2>/dev/null || echo "false")
-  if [[ "$1" != "$token" || $(date +%s) -gt "$expires" ]]; then
-    echo "This install offer has expired; run nix-config-sync kick" >&2
+  if [[ "$1" != "$token" ]]; then
+    echo "This install offer was replaced by a newer one; run nix-config-sync install" >&2
     return 1
   fi
   if [[ "$forced" != "true" ]] && ! on_power; then
@@ -159,9 +202,8 @@ install_pending() {
   fi
   set_status awaiting-auth "Approve ${candidate:0:12} with Touch ID"
   if ! authenticate; then
-    rm -f "$STATE_DIR/pending.json"
-    set_status deferred "Authentication cancelled or unavailable; retry on the next tick or kick"
-    notify "Install deferred: Touch ID was cancelled or unavailable."
+    set_status deferred "Authentication cancelled or unavailable; the offer stands, run nix-config-sync install"
+    notify "Install deferred: Touch ID was cancelled or unavailable. The update is still waiting."
     return 0
   fi
   if [[ "$forced" != "true" ]] && ! on_power; then
@@ -202,6 +244,11 @@ main() {
       else
         echo "No reconciliation recorded yet"
       fi
+      if [[ -f "$STATE_DIR/pending.json" ]]; then
+        jq -r '"Pending: \(.revision[:12]), built \(.built_at // "earlier")",
+          (.changes // [] | .[] | "  \(.)"),
+          "Run nix-config-sync install to approve it with Touch ID"' "$STATE_DIR/pending.json"
+      fi
       ;;
     logs)
       [[ $# -eq 1 ]] || return 2
@@ -213,6 +260,10 @@ main() {
       exec /usr/bin/lockf -k -t 0 "$STATE_DIR/lock" "$0" _run
       ;;
     install)
+      if [[ $# -eq 1 ]]; then
+        request_install
+        return
+      fi
       [[ $# -eq 2 ]] || return 2
       [[ "$2" =~ ^[A-Fa-f0-9-]{36}$ ]] || return 2
       INSTALL_TOKEN="$2"
@@ -231,7 +282,7 @@ main() {
       fi
       ;;
     *)
-      echo "usage: nix-config-sync {kick|status|logs|run}" >&2
+      echo "usage: nix-config-sync {kick|status|install|logs|run}" >&2
       return 2
       ;;
   esac

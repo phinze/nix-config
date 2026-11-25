@@ -42,7 +42,8 @@ mkdir -p "$build_output" "$initial_system" "$STATE_DIR/repo/.git"
 on_power() { [[ "$power" == yes ]]; }
 active_system() { cat "$work/active"; }
 notify() { echo "$*" >> "$work/notifications"; }
-request_install() { echo "$notification_answer"; return "$notification_exit"; }
+nudge_install() { echo "nudge $1" >> "$work/notifications"; return "$notification_exit"; }
+lock_busy() { [[ "$lock_held" == yes ]]; }
 start_installer() { echo "$1" > "$work/opened"; }
 authenticate() {
   echo auth >> "$work/actions"
@@ -60,6 +61,7 @@ git() {
   case "$1" in
     fetch) return "$fetch_exit" ;;
     rev-parse) echo "$main_revision" ;;
+    log) printf '%s\n' "${main_revision:0:7} newer commit" "${old_revision:0:7} older commit" ;;
     clone|reset|clean) return 0 ;;
     *) echo "Unexpected git command: $*" >&2; return 1 ;;
   esac
@@ -73,11 +75,12 @@ nix() {
 reset_case() {
   rm -f "$STATE_DIR/"*.json "$work/opened"
   : > "$work/actions"
+  : > "$work/notifications"
   : > "$work/commands"
   echo "$initial_system" > "$work/active"
   power=yes
-  notification_answer=Install
   notification_exit=0
+  lock_held=no
   fetch_exit=0
   build_exit=0
   auth_exit=0
@@ -89,7 +92,7 @@ reset_case() {
 phase_is() { [[ "$(jq -r .phase "$STATE_DIR/status.json")" == "$1" ]]; }
 offer() {
   reconcile
-  token=$(cat "$work/opened")
+  token=$(jq -r .token "$STATE_DIR/pending.json")
 }
 passed() { echo "ok: $1"; }
 
@@ -142,26 +145,83 @@ phase_is deferred
 [[ ! -e "$work/opened" ]]
 passed "unplugging during build suppresses offer"
 
-for answer_kind in @CLOSED @TIMEOUT @ACTIONCLICKED; do
-  reset_case
-  notification_answer="$answer_kind"
-  if [[ "$notification_answer" == @TIMEOUT ]]; then notification_exit=6; fi
-  reconcile
-  phase_is deferred
-  [[ ! -e "$STATE_DIR/pending.json" && ! -e "$work/opened" ]]
-  passed "$answer_kind never opens authentication"
-done
-
 reset_case
-notification_exit=3
-if reconcile; then echo "notification failure ignored" >&2; exit 1; fi
-[[ ! -e "$STATE_DIR/pending.json" && ! -e "$work/opened" ]]
-passed "notification permission failure cannot open authentication"
+offer
+phase_is ready
+[[ -f "$STATE_DIR/pending.json" && ! -e "$work/opened" && ! -s "$work/actions" ]]
+grep -q "^nudge $main_revision" "$work/notifications"
+passed "a build becomes a standing offer plus a nudge, never authentication"
 
 reset_case
 offer
-phase_is awaiting-auth
+: > "$work/commands"
+: > "$work/notifications"
+reconcile
+phase_is ready
+[[ "$(jq -r .token "$STATE_DIR/pending.json")" == "$token" ]]
+! grep -q '^nix ' "$work/commands"
+grep -q "^nudge $main_revision" "$work/notifications"
+passed "a dismissed or missed nudge leaves the offer, and the next tick nudges again"
+
+reset_case
+notification_exit=3
+reconcile
+phase_is ready
+[[ -f "$STATE_DIR/pending.json" && ! -e "$work/opened" ]]
+passed "notification failure leaves the offer standing without authentication"
+
+reset_case
+offer
+power=no
+reconcile
+phase_is deferred
+[[ "$(jq -r .token "$STATE_DIR/pending.json")" == "$token" ]]
+passed "battery tick keeps the standing offer"
+
+reset_case
+offer
+main_revision=cccccccccccccccccccccccccccccccccccccccc
+: > "$work/commands"
+reconcile
+grep -q '^nix ' "$work/commands"
+[[ "$(jq -r .revision "$STATE_DIR/pending.json")" == "$main_revision" ]]
+[[ "$(jq -r .token "$STATE_DIR/pending.json")" != "$token" ]]
+if install_pending "$token"; then echo "superseded offer accepted" >&2; exit 1; fi
 [[ ! -s "$work/actions" ]]
+main_revision=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+passed "newer main replaces the offer and invalidates the old token"
+
+reset_case
+offer
+record_deployment "$main_revision" "$initial_system"
+reconcile
+[[ ! -e "$STATE_DIR/pending.json" ]]
+passed "an offer for the deployed revision is dropped"
+
+reset_case
+record_deployment "$old_revision" "$initial_system"
+offer
+[[ "$(jq -r '.changes | length' "$STATE_DIR/pending.json")" == 2 ]]
+[[ "$(jq -r '.built_at' "$STATE_DIR/pending.json")" != null ]]
+passed "offer lists what changed since the deployed revision"
+
+reset_case
+if request_install; then echo "install without an offer succeeded" >&2; exit 1; fi
+[[ ! -e "$work/opened" ]]
+passed "install without an offer does nothing"
+
+reset_case
+offer
+lock_held=yes
+if request_install; then echo "install during a running check succeeded" >&2; exit 1; fi
+[[ ! -e "$work/opened" ]]
+grep -q 'sync check is running' "$work/notifications"
+passed "install during a running check refuses with a nudge"
+
+reset_case
+offer
+request_install
+[[ "$(cat "$work/opened")" == "$token" ]]
 install_pending "$token"
 phase_is current
 [[ "$(cat "$work/actions")" == $'auth\nactivate' ]]
@@ -180,19 +240,12 @@ passed "stale notification token cannot activate"
 
 reset_case
 offer
-jq '.expires = 0' "$STATE_DIR/pending.json" > "$work/expired.json"
-mv "$work/expired.json" "$STATE_DIR/pending.json"
-if install_pending "$token"; then echo "expired offer accepted" >&2; exit 1; fi
-[[ ! -s "$work/actions" ]]
-passed "expired offer cannot activate"
-
-reset_case
-offer
 power=no
 install_pending "$token"
 phase_is deferred
 [[ ! -s "$work/actions" ]]
-passed "battery at click time skips authentication"
+[[ -f "$STATE_DIR/pending.json" ]]
+passed "battery at click time skips authentication and keeps the offer"
 
 reset_case
 offer
@@ -200,6 +253,7 @@ echo "$work/manual-preview" > "$work/active"
 install_pending "$token"
 phase_is deferred
 [[ ! -s "$work/actions" ]]
+[[ ! -e "$STATE_DIR/pending.json" ]]
 passed "manual activation after offer is preserved"
 
 reset_case
@@ -225,7 +279,8 @@ install_pending "$token"
 phase_is deferred
 [[ "$(cat "$work/actions")" == auth ]]
 [[ ! -e "$STATE_DIR/deployed.json" ]]
-passed "cancelled authentication never activates or records success"
+[[ "$(jq -r .token "$STATE_DIR/pending.json")" == "$token" ]]
+passed "cancelled authentication never activates and keeps the offer for another try"
 
 reset_case
 record_deployment "$old_revision" "$initial_system"
