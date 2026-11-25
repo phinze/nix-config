@@ -263,6 +263,27 @@ in
             command = "/bin/sh -c '\"\${REX_BIN_DIR:+$REX_BIN_DIR/}rex\" __internal session-start --agent claude --feature-session-naming=false 2>/dev/null || true'";
             timeout = 5;
           };
+          # Leaves each session's latest Bash description where bankshot's
+          # monitor can read it, so a 1Password or ssh agent toast on the Mac
+          # can say what the session was doing. It only writes a file; the
+          # command itself is untouched, so permission rules still match.
+          # Only Linux runs the monitor that reads these.
+          intentHook = {
+            type = "command";
+            command = toString (
+              pkgs.writeShellScript "claude-intent" ''
+                input=$(${pkgs.coreutils}/bin/cat)
+                session=$(printf '%s' "$input" | ${pkgs.jq}/bin/jq -r '.session_id // empty')
+                case "$session" in "" | */* | .*) exit 0 ;; esac
+                dir="$HOME/.local/state/claude-intent"
+                ${pkgs.coreutils}/bin/mkdir -p -m 700 "$dir" || exit 0
+                printf '%s' "$input" | ${pkgs.jq}/bin/jq -r '.tool_input.description // empty' >"$dir/.$session.tmp" &&
+                  ${pkgs.coreutils}/bin/mv "$dir/.$session.tmp" "$dir/$session"
+                exit 0
+              ''
+            );
+            timeout = 5;
+          };
         in
         builtins.listToAttrs (
           map
@@ -275,7 +296,11 @@ in
                   ]
                   ++ lib.optional (event == "SessionStart" && config.phinze.rex.enable) rexHook;
                 }
-              ];
+              ]
+              ++ lib.optional (event == "PreToolUse" && pkgs.stdenv.hostPlatform.isLinux) {
+                matcher = "Bash";
+                hooks = [ intentHook ];
+              };
             })
             [
               "SessionStart"
