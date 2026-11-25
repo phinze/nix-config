@@ -463,6 +463,23 @@ in
   programs.fish = {
     enable = true;
 
+    # Rex panes on foxtrotbase skip double-agent and talk to bankshot's agent
+    # directly. They never have a forwarded agent, so double-agent would only
+    # hand them the fallback anyway, and going through it hides the caller:
+    # bankshot names whoever connected to its socket, which was always
+    # double-agent. Connected directly, the Mac's toast names the real caller
+    # (rig, process chain). ssh sessions carry no REX_BLOCK and keep
+    # double-agent. Rex's own agent forwarding covers only ssh:// hosts so far.
+    shellInit = lib.mkIf (
+      pkgs.stdenv.hostPlatform.isLinux && osConfig.networking.hostName == "foxtrotbase"
+    ) (
+      lib.mkAfter ''
+        if set -q REX_BLOCK; and test -S ${lib.escapeShellArg bankshotAgentSocket}
+          set -gx SSH_AUTH_SOCK ${lib.escapeShellArg bankshotAgentSocket}
+        end
+      ''
+    );
+
     plugins = with pkgs.fishPlugins; [
       {
         name = "async-prompt";
