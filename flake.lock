@@ -48,11 +48,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794872303,
-        "narHash": "sha256-xR+ZoOIKniksufqfPevAnauDInqKeD7kX3BSTkIC9nQ=",
+        "lastModified": 1795636777,
+        "narHash": "sha256-JVWx/GSG9CUqNdJ1Dx7DMX6+6N+Ac2dJS75TLTTDfeg=",
         "owner": "phinze",
         "repo": "bankshot",
-        "rev": "17d64f6804a41ba1b0bb207985fd3db39094ffa0",
+        "rev": "b34a9e1726a0595dacc070318dad3d5e483abaea",
         "type": "github"
       },
       "original": {
@@ -846,11 +846,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795618484,
-        "narHash": "sha256-a+gEc4MXGyvICL+pQxV1T43QUchwyPWhGZPGD37NeDI=",
+        "lastModified": 1795636439,
+        "narHash": "sha256-Vrpndi6t70aMgHagp5I1huSdwp/lvVQimTXZ5nyZHbo=",
         "owner": "phinze",
         "repo": "rig",
-        "rev": "218fa61691a93d3e12f001901d5abe9d54562e7b",
+        "rev": "4bbf65039376a389ef6a571e6a56f828d58a6b28",
         "type": "github"
       },
       "original": {
